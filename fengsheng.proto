@@ -39,6 +39,7 @@ message card {
   direction      card_dir      = 3; // 卡牌上的箭头方向
   card_type      card_type     = 4; // 卡牌类型
   repeated color who_draw_card = 5; // （试探卡）哪个身份的人摸1张牌（那么另外的身份一定是弃1张牌）
+  bool           can_lock      = 6; // 是否有锁定标记
 }
 
 // 通知客户端：初始化游戏
