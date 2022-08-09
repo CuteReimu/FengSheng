@@ -1,0 +1,56 @@
+syntax = "proto3";
+option go_package = "protos/;protos";
+
+enum card_type {
+  Cheng_Qing = 0; // 澄清
+  Shi_Tan    = 1; // 试探
+  Bi_Po      = 2; // 逼迫
+  Li_You     = 3; // 利诱
+  Ping_Heng  = 4; // 平衡
+  Po_Yi      = 5; // 破译
+  Jie_Huo    = 6; // 截获
+  Diao_Bao   = 7; // 掉包
+  Wu_Dao     = 8; // 误导
+}
+
+enum color {
+  Black = 0; // 对于身份，则是绿色（神秘人）；对于卡牌，则是黑色
+  Red = 1;   // 红色
+  Blue = 2;  // 蓝色
+}
+
+enum direction {
+  Up = 0;    // 向上
+  Left = 1;  // 向左
+  Right = 2; // 向右
+}
+
+// 普通卡牌（除了试探以外）的结构体
+message regular_card {
+  uint32         card_id    = 1; // 卡牌ID
+  repeated color card_color = 2; // 卡牌颜色（因为可能有双色卡，所以用了repeated）
+  direction      card_dir   = 3; // 卡牌上的箭头方向
+  card_type      card_type  = 4; // 卡牌类型
+}
+
+// 试探卡的结构体
+message shi_tan_card {
+  uint32         card_id       = 1; // 卡牌ID
+  repeated color card_color    = 2; // 卡牌颜色（因为可能有双色卡，所以用了repeated）
+  direction      card_dir      = 3; // 卡牌上的箭头方向
+  card_type      card_type     = 4; // 卡牌类型
+  repeated color who_draw_card = 5; // 哪个身份的人摸1张牌（那么另外的身份一定是弃1张牌）
+}
+
+// 通知客户端：初始化游戏
+message init_toc {
+  uint32 player_count = 1; // 玩家总人数（包括你）
+}
+
+// 通知客户端：某个玩家摸了一张卡
+message add_card_toc {
+  uint32                player_id          = 1; // 自己是0，右手方第一名玩家是1，以此类推
+  uint32                unknown_card_count = 2; // 背面朝上的牌的数量（用于其它人摸牌，你看不到）
+  repeated regular_card regular_cards      = 3; // 摸到的普通卡牌（除了试探以外）
+  repeated shi_tan_card shi_tan_cards      = 4; // 摸到的试探卡牌
+}
