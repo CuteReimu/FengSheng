@@ -1,0 +1,3 @@
+Jiaozze/TheMessage:
+  - source: fengsheng.proto
+    dest: Assets/Network/fengsheng.proto
