@@ -46,7 +46,7 @@ func (p *BasePlayer) Draw(count int) {
 	for _, card := range cards {
 		p.cards[card.GetId()] = card
 	}
-	logger.Infof("%d号玩家摸了%d张牌, 现在还有%d张牌", p.location, count, len(p.cards))
+	logger.Infof("%d号玩家摸了%v, 现在有%d张手牌", p.location, cards, len(p.cards))
 	for _, player := range p.game.GetPlayers() {
 		if player.Location() == p.Location() {
 			player.NotifyAddHandCard(cards...)

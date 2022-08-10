@@ -17,7 +17,7 @@ func CardColorToString(color ...protos.Color) string {
 			s += "黑"
 		}
 	}
-	switch len(s) {
+	switch len(color) {
 	case 1:
 		return s + "色"
 	case 2:

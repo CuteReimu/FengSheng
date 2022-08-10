@@ -10,6 +10,7 @@ type ICard interface {
 	CanUse(b IGame, user IPlayer, args ...interface{}) bool
 	Execute(b IGame, user IPlayer, args ...interface{})
 	ToPbCard() *protos.Card
+	String() string
 }
 
 type BaseCard struct {
