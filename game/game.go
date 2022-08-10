@@ -3,7 +3,7 @@ package game
 import (
 	"github.com/CuteReimu/FengSheng/config"
 	_ "github.com/CuteReimu/FengSheng/core"
-	"github.com/CuteReimu/FengSheng/protos"
+	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/utils"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/msglog"
@@ -11,6 +11,7 @@ import (
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/proc"
 	_ "github.com/davyxu/cellnet/proc/tcp"
+	"math/rand"
 	"os"
 	"time"
 )
@@ -18,32 +19,22 @@ import (
 var logger = utils.GetLogger("game")
 
 type Game struct {
-	Dir              bool
-	Players          []IPlayer
+	Players          []interfaces.IPlayer
 	TotalPlayerCount int
-	Deck             *Deck
-	LastCard         *protos.Card
+	Deck             interfaces.IDeck
+	CurrentCard      interfaces.ICard
 	WhoseTurn        int
+	Random           *rand.Rand
 	cellnet.EventQueue
 }
 
-func (game *Game) NextPlayer(location int) {
-	if game.Dir {
-		location = -location
-	}
-	game.WhoseTurn += location
-	if game.WhoseTurn < 0 {
-		game.WhoseTurn += game.TotalPlayerCount
-	}
-	game.WhoseTurn %= game.TotalPlayerCount
-}
-
 func (game *Game) Start(totalCount, robotCount int) {
+	game.Random = rand.New(rand.NewSource(time.Now().Unix()))
 	humanCount := totalCount - robotCount
 	game.TotalPlayerCount = totalCount
 	index := 0
 	for ; index < robotCount; index++ {
-		game.Players = append(game.Players, new(basePlayer))
+		game.Players = append(game.Players, new(interfaces.BasePlayer))
 	}
 	logger.Infof("已加入%d个机器人，等待%d人加入。。。", robotCount, humanCount)
 
@@ -91,8 +82,7 @@ func (game *Game) Start(totalCount, robotCount int) {
 }
 
 func (game *Game) start() {
-	game.Deck = NewDeck()
-	game.Dir = true
+	game.Deck = NewDeck(game.Random)
 	for location, player := range game.Players {
 		player.Init(game, location)
 	}
@@ -100,4 +90,20 @@ func (game *Game) start() {
 		player.Draw(7)
 	}
 	game.WhoseTurn = len(game.Players) - 1
+}
+
+func (game *Game) GetPlayers() []interfaces.IPlayer {
+	return game.Players
+}
+
+func (game *Game) GetDeck() interfaces.IDeck {
+	return game.Deck
+}
+
+func (game *Game) GetWhoseTurn() int {
+	return game.WhoseTurn
+}
+
+func (game *Game) GetCurrentCard() interfaces.ICard {
+	return game.CurrentCard
 }
