@@ -27,8 +27,8 @@ enum secret_task {
 }
 
 enum direction {
-  Up = 0;    // 向上
-  Left = 1;  // 向左
+  Up    = 0; // 向上
+  Left  = 1; // 向左
   Right = 2; // 向右
 }
 
@@ -54,4 +54,45 @@ message add_card_toc {
   uint32        player_id          = 1; // 自己是0，右手方第一名玩家是1，以此类推
   uint32        unknown_card_count = 2; // 背面朝上的牌的数量（用于其它人摸牌，你看不到）
   repeated card cards              = 3; // 摸到的卡牌
+}
+
+// 请求使用试探
+message use_shi_tan_tos {
+  uint32 card_id   = 1; // 卡牌ID
+  uint32 player_id = 2;
+}
+
+// 通知客户端，谁对谁使用了试探
+message use_shi_tan_toc {
+  uint32 player_id        = 1;
+  uint32 target_player_id = 2;
+}
+
+// 向被试探者展示试探，并等待回应
+message show_shi_tan_toc {
+  uint32 player_id        = 1;
+  uint32 target_player_id = 2;
+  card   card             = 3; // 只有自己是使用者或者被使用者时，这个字段才会有值，否则为null/nil
+}
+
+// 被试探者执行试探
+message execute_shi_tan_tos {
+  repeated card cards = 1; // 摸牌，或者弃牌但是没牌，就发送空数组。有牌弃就发送弃的牌。
+}
+
+message execute_shi_tan_toc {
+  uint32 player_id    = 1; // 被试探者
+  bool   is_draw_card = 2; // 若他选择了摸牌，则为true。（摸了牌和弃了牌是另外的协议）
+}
+
+// 通知客户端，牌堆的剩余数量
+message sync_deck_num_toc {
+  uint32 num      = 1; // 剩余数量
+  bool   shuffled = 2; // 是否发生了洗牌
+}
+
+// 通知客户端，牌从谁的手牌被弃掉
+message discard_card_toc {
+  uint32        player_id = 1;
+  repeated card cards     = 2;
 }
