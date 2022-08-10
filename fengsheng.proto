@@ -4,7 +4,7 @@ option go_package = "protos/;protos";
 enum card_type {
   Cheng_Qing = 0; // 澄清
   Shi_Tan    = 1; // 试探
-  Bi_Po      = 2; // 逼迫
+  Wei_Bi     = 2; // 威逼
   Li_You     = 3; // 利诱
   Ping_Heng  = 4; // 平衡
   Po_Yi      = 5; // 破译
