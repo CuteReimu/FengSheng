@@ -82,12 +82,13 @@ func (game *Game) Start(totalCount, robotCount int) {
 }
 
 func (game *Game) start() {
-	game.Deck = NewDeck(game.Random)
 	for location, player := range game.Players {
 		player.Init(game, location)
 	}
-	for _, player := range game.Players {
-		player.Draw(7)
+	game.Deck = NewDeck(game)
+	game.WhoseTurn = game.Random.Intn(len(game.Players))
+	for i := 0; i < len(game.Players); i++ {
+		game.Players[(game.WhoseTurn+i)%len(game.Players)].Draw(config.GetHandCardCountBegin())
 	}
 	game.WhoseTurn = len(game.Players) - 1
 }

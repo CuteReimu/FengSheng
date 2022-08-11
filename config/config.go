@@ -11,35 +11,27 @@ import (
 var globalConfig *viper.Viper
 
 const (
-	listenAddress    = "listen_address"
-	totalPlayerCount = "player.total_count"
-	robotPlayerCount = "player.robot_count"
-	tcpDebugLogOpen  = "log.tcp_debug_log"
+	listenAddress      = "listen_address"
+	totalPlayerCount   = "player.total_count"
+	robotPlayerCount   = "player.robot_count"
+	tcpDebugLogOpen    = "log.tcp_debug_log"
+	beginHandCardCount = "rule.hand_card_count_begin"
+	turnHandCardCount  = "rule.hand_card_count_each_turn"
 )
 
-func init() {
+func Init() {
 	globalConfig = viper.New()
 	globalConfig.SetConfigName("application")
 	globalConfig.SetConfigType("yaml")
 	globalConfig.AddConfigPath(".")
 	_ = globalConfig.ReadInConfig()
 	var newConfig []string
-	if !globalConfig.InConfig(listenAddress) {
-		globalConfig.Set(listenAddress, "127.0.0.1:9091")
-		newConfig = append(newConfig, listenAddress)
-	}
-	if !globalConfig.InConfig(totalPlayerCount) {
-		globalConfig.Set(totalPlayerCount, 5)
-		newConfig = append(newConfig, totalPlayerCount)
-	}
-	if !globalConfig.InConfig(robotPlayerCount) {
-		globalConfig.Set(robotPlayerCount, 4)
-		newConfig = append(newConfig, robotPlayerCount)
-	}
-	if !globalConfig.InConfig(tcpDebugLogOpen) {
-		globalConfig.Set(tcpDebugLogOpen, true)
-		newConfig = append(newConfig, tcpDebugLogOpen)
-	}
+	initSingleConfig(&newConfig, listenAddress, "127.0.0.1:9091")
+	initSingleConfig(&newConfig, totalPlayerCount, 5)
+	initSingleConfig(&newConfig, robotPlayerCount, 4)
+	initSingleConfig(&newConfig, tcpDebugLogOpen, true)
+	initSingleConfig(&newConfig, beginHandCardCount, 3)
+	initSingleConfig(&newConfig, turnHandCardCount, 3)
 	if len(newConfig) > 0 {
 		if err := globalConfig.WriteConfigAs("application.yaml"); err != nil {
 			panic(fmt.Sprintf("写入配置失败: %+v", err))
@@ -48,6 +40,13 @@ func init() {
 		b := make([]byte, 1)
 		_, _ = os.Stdin.Read(b)
 		os.Exit(0)
+	}
+}
+
+func initSingleConfig(newConfig *[]string, key string, value interface{}) {
+	if !globalConfig.InConfig(key) {
+		globalConfig.Set(key, value)
+		*newConfig = append(*newConfig, key)
 	}
 }
 
@@ -69,4 +68,14 @@ func GetRobotPlayerCount() int {
 // IsTcpDebugLogOpen 是否开启tcp调试日志
 func IsTcpDebugLogOpen() bool {
 	return globalConfig.GetBool(tcpDebugLogOpen)
+}
+
+// GetHandCardCountBegin 游戏开始时摸牌数
+func GetHandCardCountBegin() int {
+	return globalConfig.GetInt(beginHandCardCount)
+}
+
+// GetHandCardCountEachTurn 每回合摸牌数
+func GetHandCardCountEachTurn() int {
+	return globalConfig.GetInt(turnHandCardCount)
 }

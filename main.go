@@ -6,6 +6,7 @@ import (
 )
 
 func main() {
+	config.Init()
 	totalCount := config.GetTotalPlayerCount()
 	robotCount := config.GetRobotPlayerCount()
 	g := &game.Game{}

@@ -4,17 +4,17 @@ import (
 	"github.com/CuteReimu/FengSheng/game/card"
 	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
-	"math/rand"
+	"github.com/davyxu/cellnet"
 )
 
 type Deck struct {
+	game        *Game
 	cards       []interfaces.ICard
 	discardPile []interfaces.ICard
-	random      *rand.Rand
 }
 
-func NewDeck(random *rand.Rand) *Deck {
-	d := &Deck{random: random}
+func NewDeck(game *Game) *Deck {
+	d := &Deck{game: game}
 	for color := range protos.Color_name {
 		d.cards = append(d.cards,
 			&card.ShiTan{BaseCard: interfaces.BaseCard{Id: 1 + uint32(color)*6, Direction: protos.Direction_Right,
@@ -131,9 +131,10 @@ func NewDeck(random *rand.Rand) *Deck {
 func (d *Deck) Shuffle() {
 	d.cards = append(d.cards, d.discardPile...)
 	d.discardPile = nil
-	d.random.Shuffle(len(d.cards), func(i, j int) {
+	d.game.Random.Shuffle(len(d.cards), func(i, j int) {
 		d.cards[i], d.cards[j] = d.cards[j], d.cards[i]
 	})
+	d.notifyDeckCount(true)
 }
 
 func (d *Deck) Draw(n int) []interfaces.ICard {
@@ -145,6 +146,7 @@ func (d *Deck) Draw(n int) []interfaces.ICard {
 	}
 	result := d.cards[:n]
 	d.cards = d.cards[n:]
+	d.notifyDeckCount(false)
 	return result
 }
 
@@ -154,4 +156,15 @@ func (d *Deck) Discard(cards ...interfaces.ICard) {
 
 func (d *Deck) GetDeckCount() int {
 	return len(d.cards)
+}
+
+func (d *Deck) notifyDeckCount(shuffled bool) {
+	for _, player := range d.game.Players {
+		if s, ok := player.(cellnet.Session); ok {
+			s.Send(&protos.SyncDeckNumToc{
+				Num:      uint32(len(d.cards)),
+				Shuffled: shuffled,
+			})
+		}
+	}
 }

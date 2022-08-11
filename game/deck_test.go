@@ -7,7 +7,7 @@ import (
 )
 
 func TestCardIdUnique(t *testing.T) {
-	deck := NewDeck(rand.New(rand.NewSource(time.Now().UnixMilli())))
+	deck := NewDeck(&Game{Random: rand.New(rand.NewSource(time.Now().UnixMilli()))})
 	m := make(map[uint32]int)
 	for _, c := range deck.cards {
 		m[c.GetId()]++
