@@ -1,6 +1,14 @@
 syntax = "proto3";
 option go_package = "protos/;protos";
 
+enum phase {
+  Draw_Phase  = 0;   // 摸牌阶段
+  Main_Phase  = 1;   // 出牌阶段
+  Send_Phase  = 2;   // 传递阶段
+  Fight_Phase = 3;   // 争夺阶段
+  Receive_Phase = 4; // 接收阶段
+}
+
 enum card_type {
   Cheng_Qing = 0; // 澄清
   Shi_Tan    = 1; // 试探
@@ -64,15 +72,16 @@ message use_shi_tan_tos {
 
 // 通知客户端，谁对谁使用了试探
 message use_shi_tan_toc {
-  uint32 player_id        = 1;
-  uint32 target_player_id = 2;
+  uint32 player_id        = 1; // 使用者
+  uint32 target_player_id = 2; // 被使用者
 }
 
 // 向被试探者展示试探，并等待回应
 message show_shi_tan_toc {
-  uint32 player_id        = 1;
-  uint32 target_player_id = 2;
+  uint32 player_id        = 1; // 使用者
+  uint32 target_player_id = 2; // 被使用者
   card   card             = 3; // 只有自己是使用者或者被使用者时，这个字段才会有值，否则为null/nil
+  uint32 waiting_second   = 4; // 读多少秒
 }
 
 // 被试探者执行试探
@@ -95,4 +104,13 @@ message sync_deck_num_toc {
 message discard_card_toc {
   uint32        player_id = 1;
   repeated card cards     = 2;
+}
+
+// 通知客户端，到谁的哪个阶段了
+message notify_phase_toc {
+  uint32 current_player_id      = 1; // 当前回合玩家
+  phase  current_phase          = 2; // 当前阶段
+  uint32 intelligence_player_id = 3; // 情报在谁面前（只有传递、争夺、接收阶段有效）
+  uint32 waiting_player_id      = 4; // 读秒的玩家ID
+  uint32 waiting_second         = 5; // 读多少秒
 }
