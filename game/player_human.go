@@ -90,11 +90,12 @@ func (r *HumanPlayer) onUseShiTan(pb *protos.UseShiTanTos) {
 	if pb.PlayerId >= uint32(len(r.GetGame().GetPlayers())) {
 		r.logger.Error("目标错误: ", pb.PlayerId)
 	}
-	if card.CanUse(r.GetGame(), r, r.GetAbstractLocation(int(pb.PlayerId))) {
+	target := r.GetGame().GetPlayers()[r.GetAbstractLocation(int(pb.PlayerId))]
+	if card.CanUse(r.GetGame(), r, target) {
 		r.Seq++
 		if r.timer != nil {
 			r.timer.Stop()
 		}
-		card.Execute(r.GetGame(), r, r.GetAbstractLocation(int(pb.PlayerId)))
+		card.Execute(r.GetGame(), r, target)
 	}
 }
