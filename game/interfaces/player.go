@@ -10,9 +10,12 @@ type IPlayer interface {
 	Init(game IGame, location int)
 	GetGame() IGame
 	Location() int
-	NotifyAddHandCard(card ...ICard)
-	NotifyOtherAddHandCard(location int, count int)
+	GetAlternativeLocation(location int) uint32
+	NotifyAddHandCard(location int, unknownCount int, cards ...ICard)
 	Draw(count int)
+	NotifyDrawPhase(location int)
+	NotifyMainPhase(location int, waitSecond uint32)
+	IsAlive() bool
 }
 
 type BasePlayer struct {
@@ -35,10 +38,7 @@ func (p *BasePlayer) Location() int {
 	return p.location
 }
 
-func (p *BasePlayer) NotifyAddHandCard(...ICard) {
-}
-
-func (p *BasePlayer) NotifyOtherAddHandCard(int, int) {
+func (p *BasePlayer) NotifyAddHandCard(int, int, ...ICard) {
 }
 
 func (p *BasePlayer) Draw(count int) {
@@ -49,9 +49,29 @@ func (p *BasePlayer) Draw(count int) {
 	logger.Infof("%d号玩家摸了%v, 现在有%d张手牌", p.location, cards, len(p.cards))
 	for _, player := range p.game.GetPlayers() {
 		if player.Location() == p.Location() {
-			player.NotifyAddHandCard(cards...)
+			player.NotifyAddHandCard(p.Location(), 0, cards...)
 		} else {
-			player.NotifyOtherAddHandCard(p.location, len(cards))
+			player.NotifyAddHandCard(p.Location(), len(cards))
 		}
 	}
+}
+
+func (p *BasePlayer) GetAlternativeLocation(location int) uint32 {
+	location -= p.Location()
+	totalPlayerCount := len(p.GetGame().GetPlayers())
+	if location < 0 {
+		location += totalPlayerCount
+	}
+	return uint32(location % totalPlayerCount)
+}
+
+func (p *BasePlayer) NotifyDrawPhase(int) {
+}
+
+func (p *BasePlayer) NotifyMainPhase(int, uint32) {
+	p.GetGame().Post(p.GetGame().SendPhase)
+}
+
+func (p *BasePlayer) IsAlive() bool {
+	return true
 }

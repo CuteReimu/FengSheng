@@ -12,4 +12,11 @@ type IGame interface {
 	GetDeck() IDeck
 	GetWhoseTurn() int
 	GetCurrentCard() ICard
+	Post(callback func())
+	DrawPhase()
+	MainPhase()
+	SendPhase()
+	FightPhase()
+	ReceivePhase()
+	NextTurn()
 }

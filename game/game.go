@@ -4,6 +4,7 @@ import (
 	"github.com/CuteReimu/FengSheng/config"
 	_ "github.com/CuteReimu/FengSheng/core"
 	"github.com/CuteReimu/FengSheng/game/interfaces"
+	"github.com/CuteReimu/FengSheng/protos"
 	"github.com/CuteReimu/FengSheng/utils"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/msglog"
@@ -24,6 +25,7 @@ type Game struct {
 	Deck             interfaces.IDeck
 	CurrentCard      interfaces.ICard
 	WhoseTurn        int
+	CurrentPhase     protos.Phase
 	Random           *rand.Rand
 	cellnet.EventQueue
 }
@@ -90,7 +92,71 @@ func (game *Game) start() {
 	for i := 0; i < len(game.Players); i++ {
 		game.Players[(game.WhoseTurn+i)%len(game.Players)].Draw(config.GetHandCardCountBegin())
 	}
-	game.WhoseTurn = len(game.Players) - 1
+	game.DrawPhase()
+}
+
+func (game *Game) DrawPhase() {
+	player := game.Players[game.WhoseTurn]
+	if !player.IsAlive() {
+		game.Post(game.NextTurn)
+		return
+	}
+	game.CurrentPhase = protos.Phase_Draw_Phase
+	for _, p := range game.Players {
+		p.NotifyDrawPhase(player.Location())
+	}
+	player.Draw(3)
+	game.Post(game.MainPhase)
+}
+
+func (game *Game) MainPhase() {
+	player := game.Players[game.WhoseTurn]
+	if !player.IsAlive() {
+		game.Post(game.NextTurn)
+		return
+	}
+	game.CurrentPhase = protos.Phase_Main_Phase
+	for _, p := range game.Players {
+		p.NotifyMainPhase(player.Location(), 30)
+	}
+}
+
+func (game *Game) SendPhase() {
+	player := game.Players[game.WhoseTurn]
+	if !player.IsAlive() {
+		game.Post(game.NextTurn)
+		return
+	}
+	game.Post(game.FightPhase)
+}
+
+func (game *Game) FightPhase() {
+	player := game.Players[game.WhoseTurn]
+	if !player.IsAlive() {
+		game.Post(game.NextTurn)
+		return
+	}
+	game.Post(game.ReceivePhase)
+}
+
+func (game *Game) ReceivePhase() {
+	player := game.Players[game.WhoseTurn]
+	if !player.IsAlive() {
+		game.Post(game.NextTurn)
+		return
+	}
+	game.Post(game.NextTurn)
+}
+
+func (game *Game) NextTurn() {
+	for {
+		game.WhoseTurn = (game.WhoseTurn + 1) % len(game.Players)
+		player := game.Players[game.WhoseTurn]
+		if player.IsAlive() {
+			break
+		}
+	}
+	game.Post(game.DrawPhase)
 }
 
 func (game *Game) GetPlayers() []interfaces.IPlayer {

@@ -18,6 +18,9 @@ log:
 player:
     robot_count: 4  # 机器人人数
     total_count: 5  # 玩家总人数
+rule:
+  hand_card_count_begin: 3      # 游戏开始时摸牌数
+  hand_card_count_each_turn: 3  # 每回合摸牌数
 ```
 
 ## 游戏步骤
