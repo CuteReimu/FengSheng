@@ -38,14 +38,14 @@ func (game *Game) Start(totalCount, robotCount int) {
 	}
 	logger.Infof("已加入%d个机器人，等待%d人加入。。。", robotCount, humanCount)
 
-	if !config.GlobalConfig.GetBool("log.tcp_debug_log") {
+	if !config.IsTcpDebugLogOpen() {
 		msglog.SetCurrMsgLogMode(msglog.MsgLogMode_Mute)
 	}
 	// 创建一个事件处理队列，整个服务器只有这一个队列处理事件，服务器属于单线程服务器
 	game.EventQueue = cellnet.NewEventQueue()
 
 	// 创建一个tcp的侦听器，名称为server，所有连接将事件投递到queue队列,单线程的处理
-	p := peer.NewGenericPeer("tcp.Acceptor", "server", config.GlobalConfig.GetString("listen_address"), game.EventQueue)
+	p := peer.NewGenericPeer("tcp.Acceptor", "server", config.GetListenAddress(), game.EventQueue)
 
 	humanMap := make(map[int64]*HumanPlayer)
 	proc.BindProcessorHandler(p, "tcp.ltv", func(ev cellnet.Event) {

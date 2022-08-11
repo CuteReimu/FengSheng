@@ -6,8 +6,8 @@ import (
 )
 
 func main() {
-	totalCount := config.GlobalConfig.GetInt("player.total_count")
-	robotCount := config.GlobalConfig.GetInt("player.robot_count")
+	totalCount := config.GetTotalPlayerCount()
+	robotCount := config.GetRobotPlayerCount()
 	g := &game.Game{}
 	g.Start(totalCount, robotCount)
 }
