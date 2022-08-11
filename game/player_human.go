@@ -56,16 +56,21 @@ func (r *HumanPlayer) NotifyMainPhase(location int, waitSecond uint32) {
 		WaitingPlayerId: playerId,
 		WaitingSecond:   waitSecond,
 	}
+	if r.Location() == r.GetGame().GetWhoseTurn() {
+		msg.Seq = r.Seq
+	}
 	r.Send(msg)
-	seq := r.Seq
-	time.AfterFunc(time.Second*time.Duration(waitSecond), func() {
-		r.GetGame().Post(func() {
-			if seq == r.Seq {
-				r.GetGame().Post(r.GetGame().SendPhase)
-				r.Seq++
-			}
+	if r.Location() == r.GetGame().GetWhoseTurn() {
+		seq := r.Seq
+		time.AfterFunc(time.Second*time.Duration(waitSecond), func() {
+			r.GetGame().Post(func() {
+				if seq == r.Seq {
+					r.GetGame().Post(r.GetGame().SendPhase)
+					r.Seq++
+				}
+			})
 		})
-	})
+	}
 }
 
 func (r *HumanPlayer) onUseShiTan(pb *protos.UseShiTanTos) {
