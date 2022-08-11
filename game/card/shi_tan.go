@@ -66,10 +66,10 @@ func (card *ShiTan) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...in
 			msg := &protos.ShowShiTanToc{
 				PlayerId:       p.GetAlternativeLocation(r.Location()),
 				TargetPlayerId: p.GetAlternativeLocation(target.Location()),
+				WaitingSecond:  10,
 			}
 			switch p.Location() {
 			case target.Location():
-				msg.WaitingSecond = 10
 				msg.Seq = player.Seq
 				fallthrough
 			case r.Location():
