@@ -68,6 +68,7 @@ message add_card_toc {
 message use_shi_tan_tos {
   uint32 card_id   = 1; // 卡牌ID
   uint32 player_id = 2;
+  uint32 seq       = 3;
 }
 
 // 通知客户端，谁对谁使用了试探
@@ -82,11 +83,13 @@ message show_shi_tan_toc {
   uint32 target_player_id = 2; // 被使用者
   card   card             = 3; // 只有自己是使用者或者被使用者时，这个字段才会有值，否则为null/nil
   uint32 waiting_second   = 4; // 读多少秒
+  uint32 seq              = 5;
 }
 
 // 被试探者执行试探
 message execute_shi_tan_tos {
   repeated card cards = 1; // 摸牌，或者弃牌但是没牌，就发送空数组。有牌弃就发送弃的牌。
+  uint32          seq = 2;
 }
 
 message execute_shi_tan_toc {
@@ -113,4 +116,5 @@ message notify_phase_toc {
   uint32 intelligence_player_id = 3; // 情报在谁面前（只有传递、争夺、接收阶段有效）
   uint32 waiting_player_id      = 4; // 读秒的玩家ID
   uint32 waiting_second         = 5; // 读多少秒
+  uint32 seq                    = 6; // 只有当自己需要读秒时，这个字段才有值
 }
