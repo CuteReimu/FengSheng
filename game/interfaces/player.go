@@ -69,7 +69,9 @@ func (p *BasePlayer) NotifyDrawPhase(int) {
 }
 
 func (p *BasePlayer) NotifyMainPhase(int, uint32) {
-	p.GetGame().Post(p.GetGame().SendPhase)
+	if p.Location() == p.GetGame().GetWhoseTurn() {
+		p.GetGame().Post(p.GetGame().SendPhase)
+	}
 }
 
 func (p *BasePlayer) IsAlive() bool {
