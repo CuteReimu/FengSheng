@@ -4,24 +4,27 @@ import (
 	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
 	"github.com/davyxu/cellnet"
+	"github.com/sirupsen/logrus"
 	"time"
 )
 
 type HumanPlayer struct {
 	interfaces.BasePlayer
 	cellnet.Session
-	seq   uint32
-	timer *time.Timer
+	Seq    uint32
+	timer  *time.Timer
+	logger logrus.FieldLogger
 }
 
 func (r *HumanPlayer) Init(game interfaces.IGame, location int) {
+	r.logger = logrus.WithField("human_player", r.Location())
 	r.BasePlayer.Init(game, location)
 	msg := &protos.InitToc{
 		PlayerCount: uint32(len(r.GetGame().GetPlayers())),
 		Identity:    protos.Color_Red,
 	}
 	r.Send(msg)
-	r.seq++
+	r.Seq++
 }
 
 func (r *HumanPlayer) NotifyAddHandCard(location int, unknownCount int, cards ...interfaces.ICard) {
@@ -54,13 +57,39 @@ func (r *HumanPlayer) NotifyMainPhase(location int, waitSecond uint32) {
 		WaitingSecond:   waitSecond,
 	}
 	r.Send(msg)
-	seq := r.seq
+	seq := r.Seq
 	time.AfterFunc(time.Second*time.Duration(waitSecond), func() {
 		r.GetGame().Post(func() {
-			if seq == r.seq {
+			if seq == r.Seq {
 				r.GetGame().Post(r.GetGame().SendPhase)
-				r.seq++
+				r.Seq++
 			}
 		})
 	})
+}
+
+func (r *HumanPlayer) onUseShiTan(pb *protos.UseShiTanTos) {
+	if pb.Seq != r.Seq {
+		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
+		return
+	}
+	card := r.FindCard(pb.CardId)
+	if card == nil {
+		r.logger.Error("没有这张牌")
+		return
+	}
+	if card.GetType() != protos.CardType_Shi_Tan {
+		r.logger.Error("这张牌不是试探，而是", card)
+		return
+	}
+	if pb.PlayerId >= uint32(len(r.GetGame().GetPlayers())) {
+		r.logger.Error("目标错误: ", pb.PlayerId)
+	}
+	if card.CanUse(r.GetGame(), r, r.GetAbstractLocation(int(pb.PlayerId))) {
+		r.Seq++
+		if r.timer != nil {
+			r.timer.Stop()
+		}
+		card.Execute(r.GetGame(), r, r.GetAbstractLocation(int(pb.PlayerId)))
+	}
 }

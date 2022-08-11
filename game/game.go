@@ -51,7 +51,7 @@ func (game *Game) Start(totalCount, robotCount int) {
 
 	humanMap := make(map[int64]*HumanPlayer)
 	proc.BindProcessorHandler(p, "tcp.ltv", func(ev cellnet.Event) {
-		switch ev.Message().(type) {
+		switch pb := ev.Message().(type) {
 		case *cellnet.SessionAccepted:
 			if index < totalCount {
 				player := &HumanPlayer{Session: ev.Session()}
@@ -73,6 +73,8 @@ func (game *Game) Start(totalCount, robotCount int) {
 				time.Sleep(time.Second * 3)
 				os.Exit(1)
 			}
+		case *protos.UseShiTanTos:
+			humanMap[ev.Session().ID()].onUseShiTan(pb)
 		}
 	})
 	p.Start()
@@ -173,4 +175,12 @@ func (game *Game) GetWhoseTurn() int {
 
 func (game *Game) GetCurrentCard() interfaces.ICard {
 	return game.CurrentCard
+}
+
+func (game *Game) SetCurrentCard(card interfaces.ICard) {
+	game.CurrentCard = card
+}
+
+func (game *Game) GetCurrentPhase() protos.Phase {
+	return game.CurrentPhase
 }

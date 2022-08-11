@@ -10,9 +10,12 @@ type IPlayer interface {
 	Init(game IGame, location int)
 	GetGame() IGame
 	Location() int
+	GetAbstractLocation(location int) int
 	GetAlternativeLocation(location int) uint32
 	NotifyAddHandCard(location int, unknownCount int, cards ...ICard)
 	Draw(count int)
+	FindCard(cardId uint32) ICard
+	DeleteCard(cardId uint32)
 	NotifyDrawPhase(location int)
 	NotifyMainPhase(location int, waitSecond uint32)
 	IsAlive() bool
@@ -56,6 +59,10 @@ func (p *BasePlayer) Draw(count int) {
 	}
 }
 
+func (p *BasePlayer) GetAbstractLocation(location int) int {
+	return (location + p.Location()) % len(p.GetGame().GetPlayers())
+}
+
 func (p *BasePlayer) GetAlternativeLocation(location int) uint32 {
 	location -= p.Location()
 	totalPlayerCount := len(p.GetGame().GetPlayers())
@@ -76,4 +83,15 @@ func (p *BasePlayer) NotifyMainPhase(int, uint32) {
 
 func (p *BasePlayer) IsAlive() bool {
 	return true
+}
+
+func (p *BasePlayer) FindCard(cardId uint32) ICard {
+	if card, ok := p.cards[cardId]; ok {
+		return card
+	}
+	return nil
+}
+
+func (p *BasePlayer) DeleteCard(cardId uint32) {
+	delete(p.cards, cardId)
 }
