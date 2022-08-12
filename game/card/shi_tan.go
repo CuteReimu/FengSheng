@@ -118,7 +118,6 @@ func (card *ShiTan) Execute2(g interfaces.IGame, r interfaces.IPlayer, args ...i
 		}
 	}
 	g.SetCurrentCard(nil)
-	g.GetDeck().Discard(card)
 	g.Post(g.MainPhase)
 }
 
