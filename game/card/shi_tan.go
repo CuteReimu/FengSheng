@@ -70,7 +70,7 @@ func (card *ShiTan) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...in
 			}
 			switch p.Location() {
 			case target.Location():
-				player.Timer = time.AfterFunc(time.Second, func() {
+				player.Timer = time.AfterFunc(time.Second*time.Duration(msg.WaitingSecond), func() {
 					g.Post(func() { card.autoSelect(g, player) })
 				})
 				msg.Seq = player.Seq
@@ -113,7 +113,7 @@ func (card *ShiTan) Execute2(g interfaces.IGame, r interfaces.IPlayer, args ...i
 	} else {
 		logger.Info(r, "选择了[弃一张牌]")
 		card.notifyResult(g, r, false)
-		if len(cardIds) == 0 {
+		if len(cardIds) > 0 {
 			g.PlayerDiscardCard(r, r.FindCard(cardIds[0]))
 		}
 	}
