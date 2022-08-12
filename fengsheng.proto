@@ -89,7 +89,7 @@ message show_shi_tan_toc {
 
 // 被试探者执行试探
 message execute_shi_tan_tos {
-  repeated card cards = 1; // 摸牌，或者弃牌但是没牌，就发送空数组。有牌弃就发送弃的牌。
+  repeated uint32 card_id = 1; // 摸牌或者弃牌但是没牌，就发送空数组。有牌弃就发送弃的牌的id。
   uint32          seq = 2;
 }
 
