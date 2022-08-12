@@ -29,6 +29,7 @@ func (r *RobotPlayer) NotifyMainPhase(_ uint32) {
 			time.AfterFunc(time.Second, func() {
 				r.GetGame().Post(func() { ai(r, card) })
 			})
+			return
 		}
 	}
 	time.AfterFunc(time.Second, func() {

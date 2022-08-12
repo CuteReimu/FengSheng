@@ -81,21 +81,14 @@ func (card *ShiTan) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...in
 	if _, ok := target.(*game.RobotPlayer); ok {
 		time.AfterFunc(time.Second, func() {
 			g.Post(func() {
-				draw := card.checkDrawCard(target)
-				card.notifyResult(g, target, draw)
-				if draw {
-					logger.Info(target, "选择了[摸一张牌]")
-					target.Draw(1)
-				} else {
-					logger.Info(target, "选择了[弃一张牌]")
-					for _, c := range target.GetCards() {
-						g.PlayerDiscardCard(target, c)
+				var discardCardIds []uint32
+				if !card.checkDrawCard(target) && len(target.GetCards()) > 0 {
+					for cardId := range target.GetCards() {
+						discardCardIds = append(discardCardIds, cardId)
 						break
 					}
 				}
-				g.SetCurrentCard(nil)
-				g.GetDeck().Discard(card)
-				g.Post(g.MainPhase)
+				card.Execute2(g, target, discardCardIds)
 			})
 		})
 	}
@@ -121,9 +114,11 @@ func (card *ShiTan) Execute2(g interfaces.IGame, r interfaces.IPlayer, args ...i
 	cardIds := args[0].([]uint32)
 	if card.checkDrawCard(r) {
 		logger.Info(r, "选择了[摸一张牌]")
+		card.notifyResult(g, r, true)
 		r.Draw(1)
 	} else {
 		logger.Info(r, "选择了[弃一张牌]")
+		card.notifyResult(g, r, false)
 		if len(cardIds) == 0 {
 			g.PlayerDiscardCard(r, r.FindCard(cardIds[0]))
 		}
