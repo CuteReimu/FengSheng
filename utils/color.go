@@ -26,14 +26,24 @@ func CardColorToString(color ...protos.Color) string {
 	panic(fmt.Sprint("unknown color: ", color))
 }
 
-func IdentityColorToString(color protos.Color) string {
+func IdentityColorToString(color protos.Color, task ...protos.SecretTask) string {
 	switch color {
 	case protos.Color_Red:
 		return "红方"
 	case protos.Color_Blue:
 		return "蓝方"
 	case protos.Color_Black:
-		return "神秘人"
+		if len(task) == 0 {
+			return "神秘人"
+		}
+		switch task[0] {
+		case protos.SecretTask_Killer:
+			return "神秘人[镇压者]"
+		case protos.SecretTask_Stealer:
+			return "神秘人[簒夺者]"
+		case protos.SecretTask_Collector:
+			return "神秘人[双重间谍]"
+		}
 	}
 	panic(fmt.Sprint("unknown color: ", color))
 }

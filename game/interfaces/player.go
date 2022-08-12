@@ -1,36 +1,45 @@
 package interfaces
 
 import (
+	"github.com/CuteReimu/FengSheng/protos"
 	"github.com/CuteReimu/FengSheng/utils"
 )
 
 var logger = utils.GetLogger("interfaces")
 
 type IPlayer interface {
-	Init(game IGame, location int)
+	Init(game IGame, location int, identity protos.Color, secretTask protos.SecretTask)
 	GetGame() IGame
 	Location() int
 	GetAbstractLocation(location int) int
 	GetAlternativeLocation(location int) uint32
 	NotifyAddHandCard(location int, unknownCount int, cards ...ICard)
 	Draw(count int)
+	GetCards() map[uint32]ICard
 	FindCard(cardId uint32) ICard
-	DeleteCard(cardId uint32)
-	NotifyDrawPhase(location int)
-	NotifyMainPhase(location int, waitSecond uint32)
+	DeleteCard(card uint32)
+	NotifyDrawPhase()
+	NotifyMainPhase(waitSecond uint32)
 	IsAlive() bool
+	SetIdentity(identity protos.Color, secretTask protos.SecretTask)
+	GetIdentity() (protos.Color, protos.SecretTask)
+	String() string
 }
 
 type BasePlayer struct {
-	game     IGame
-	location int
-	cards    map[uint32]ICard
+	game       IGame
+	location   int
+	cards      map[uint32]ICard
+	identity   protos.Color
+	secretTask protos.SecretTask
 }
 
-func (p *BasePlayer) Init(game IGame, location int) {
+func (p *BasePlayer) Init(game IGame, location int, identity protos.Color, secretTask protos.SecretTask) {
+	logger.Info(p, "身份是", utils.IdentityColorToString(identity, secretTask))
 	p.game = game
 	p.location = location
 	p.cards = make(map[uint32]ICard)
+	p.SetIdentity(identity, secretTask)
 }
 
 func (p *BasePlayer) GetGame() IGame {
@@ -72,17 +81,15 @@ func (p *BasePlayer) GetAlternativeLocation(location int) uint32 {
 	return uint32(location % totalPlayerCount)
 }
 
-func (p *BasePlayer) NotifyDrawPhase(int) {
-}
-
-func (p *BasePlayer) NotifyMainPhase(int, uint32) {
-	if p.Location() == p.GetGame().GetWhoseTurn() {
-		p.GetGame().Post(p.GetGame().SendPhase)
-	}
+func (p *BasePlayer) NotifyDrawPhase() {
 }
 
 func (p *BasePlayer) IsAlive() bool {
 	return true
+}
+
+func (p *BasePlayer) GetCards() map[uint32]ICard {
+	return p.cards
 }
 
 func (p *BasePlayer) FindCard(cardId uint32) ICard {
@@ -94,4 +101,13 @@ func (p *BasePlayer) FindCard(cardId uint32) ICard {
 
 func (p *BasePlayer) DeleteCard(cardId uint32) {
 	delete(p.cards, cardId)
+}
+
+func (p *BasePlayer) SetIdentity(identity protos.Color, secretTask protos.SecretTask) {
+	p.identity = identity
+	p.secretTask = secretTask
+}
+
+func (p *BasePlayer) GetIdentity() (protos.Color, protos.SecretTask) {
+	return p.identity, p.secretTask
 }

@@ -18,12 +18,22 @@ func (card *PoYi) GetType() protos.CardType {
 	return protos.CardType_Po_Yi
 }
 
-func (card *PoYi) CanUse(b interfaces.IGame, user interfaces.IPlayer, args ...interface{}) bool {
+func (card *PoYi) CanUse(g interfaces.IGame, user interfaces.IPlayer, args ...interface{}) bool {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (card *PoYi) Execute(b interfaces.IGame, user interfaces.IPlayer, args ...interface{}) {
+func (card *PoYi) Execute(g interfaces.IGame, user interfaces.IPlayer, args ...interface{}) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (card *PoYi) CanUse2(g interfaces.IGame, user interfaces.IPlayer, args ...interface{}) bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (card *PoYi) Execute2(g interfaces.IGame, user interfaces.IPlayer, args ...interface{}) {
 	//TODO implement me
 	panic("implement me")
 }

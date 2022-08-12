@@ -18,12 +18,22 @@ func (card *ChengQing) GetType() protos.CardType {
 	return protos.CardType_Cheng_Qing
 }
 
-func (card *ChengQing) CanUse(b interfaces.IGame, user interfaces.IPlayer, args ...interface{}) bool {
+func (card *ChengQing) CanUse(g interfaces.IGame, user interfaces.IPlayer, args ...interface{}) bool {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (card *ChengQing) Execute(b interfaces.IGame, user interfaces.IPlayer, args ...interface{}) {
+func (card *ChengQing) Execute(g interfaces.IGame, user interfaces.IPlayer, args ...interface{}) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (card *ChengQing) CanUse2(g interfaces.IGame, user interfaces.IPlayer, args ...interface{}) bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (card *ChengQing) Execute2(g interfaces.IGame, user interfaces.IPlayer, args ...interface{}) {
 	//TODO implement me
 	panic("implement me")
 }

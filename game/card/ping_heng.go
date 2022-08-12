@@ -18,12 +18,22 @@ func (card *PingHeng) GetType() protos.CardType {
 	return protos.CardType_Ping_Heng
 }
 
-func (card *PingHeng) CanUse(b interfaces.IGame, user interfaces.IPlayer, args ...interface{}) bool {
+func (card *PingHeng) CanUse(g interfaces.IGame, user interfaces.IPlayer, args ...interface{}) bool {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (card *PingHeng) Execute(b interfaces.IGame, user interfaces.IPlayer, args ...interface{}) {
+func (card *PingHeng) Execute(g interfaces.IGame, user interfaces.IPlayer, args ...interface{}) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (card *PingHeng) CanUse2(g interfaces.IGame, user interfaces.IPlayer, args ...interface{}) bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (card *PingHeng) Execute2(g interfaces.IGame, user interfaces.IPlayer, args ...interface{}) {
 	//TODO implement me
 	panic("implement me")
 }

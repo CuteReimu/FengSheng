@@ -9,12 +9,12 @@ import (
 var DefaultDeck []interfaces.ICard
 
 type Deck struct {
-	game        *Game
+	game        interfaces.IGame
 	cards       []interfaces.ICard
 	discardPile []interfaces.ICard
 }
 
-func NewDeck(game *Game) *Deck {
+func NewDeck(game interfaces.IGame) *Deck {
 	d := &Deck{game: game, cards: append(make([]interfaces.ICard, 0), DefaultDeck...)}
 	d.Shuffle()
 	return d
@@ -23,7 +23,7 @@ func NewDeck(game *Game) *Deck {
 func (d *Deck) Shuffle() {
 	d.cards = append(d.cards, d.discardPile...)
 	d.discardPile = nil
-	d.game.Random.Shuffle(len(d.cards), func(i, j int) {
+	d.game.GetRandom().Shuffle(len(d.cards), func(i, j int) {
 		d.cards[i], d.cards[j] = d.cards[j], d.cards[i]
 	})
 	d.notifyDeckCount(true)
@@ -51,7 +51,7 @@ func (d *Deck) GetDeckCount() int {
 }
 
 func (d *Deck) notifyDeckCount(shuffled bool) {
-	for _, player := range d.game.Players {
+	for _, player := range d.game.GetPlayers() {
 		if s, ok := player.(cellnet.Session); ok {
 			s.Send(&protos.SyncDeckNumToc{
 				Num:      uint32(len(d.cards)),

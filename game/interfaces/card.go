@@ -7,8 +7,10 @@ type ICard interface {
 	GetType() protos.CardType
 	GetColor() []protos.Color
 	GetDirection() protos.Direction
-	CanUse(b IGame, user IPlayer, args ...interface{}) bool
-	Execute(b IGame, user IPlayer, args ...interface{})
+	CanUse(g IGame, user IPlayer, args ...interface{}) bool
+	Execute(g IGame, user IPlayer, args ...interface{})
+	CanUse2(g IGame, user IPlayer, args ...interface{}) bool
+	Execute2(g IGame, user IPlayer, args ...interface{})
 	ToPbCard() *protos.Card
 	String() string
 }

@@ -5,12 +5,14 @@ import (
 	"github.com/CuteReimu/FengSheng/protos"
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	_ "github.com/davyxu/cellnet/proc/tcp"
+	"math/rand"
 )
 
 type IGame interface {
 	Start(totalCount, robotCount int)
 	GetPlayers() []IPlayer
 	GetDeck() IDeck
+	GetRandom() *rand.Rand
 	GetWhoseTurn() int
 	GetCurrentCard() ICard
 	SetCurrentCard(card ICard)
@@ -22,4 +24,5 @@ type IGame interface {
 	FightPhase()
 	ReceivePhase()
 	NextTurn()
+	PlayerDiscardCard(player IPlayer, cards ...ICard)
 }

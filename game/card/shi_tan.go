@@ -5,6 +5,7 @@ import (
 	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
 	"github.com/CuteReimu/FengSheng/utils"
+	"time"
 )
 
 type ShiTan struct {
@@ -31,16 +32,8 @@ func (card *ShiTan) GetType() protos.CardType {
 }
 
 func (card *ShiTan) CanUse(game interfaces.IGame, r interfaces.IPlayer, args ...interface{}) bool {
-	if len(args) != 1 {
-		logger.Error("参数错误")
-		return false
-	}
-	target, ok := args[0].(interfaces.IPlayer)
-	if !ok {
-		logger.Error("参数错误")
-		return false
-	}
-	if game.GetCurrentPhase() != protos.Phase_Main_Phase || r.GetGame().GetWhoseTurn() != r.Location() {
+	target := args[0].(interfaces.IPlayer)
+	if game.GetCurrentPhase() != protos.Phase_Main_Phase || game.GetWhoseTurn() != r.Location() {
 		logger.Error("试探的使用时机不对")
 		return false
 	}
@@ -53,6 +46,9 @@ func (card *ShiTan) CanUse(game interfaces.IGame, r interfaces.IPlayer, args ...
 
 func (card *ShiTan) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...interface{}) {
 	target := args[0].(interfaces.IPlayer)
+	logger.Info(r, "对", target, "使用了", card)
+	r.DeleteCard(card.GetId())
+	g.SetCurrentCard(card)
 	for _, p := range g.GetPlayers() {
 		if player, ok := p.(*game.HumanPlayer); ok {
 			msg := &protos.UseShiTanToc{
@@ -82,6 +78,80 @@ func (card *ShiTan) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...in
 			player.Send(msg)
 		}
 	}
+	if _, ok := target.(*game.RobotPlayer); ok {
+		time.AfterFunc(time.Second, func() {
+			g.Post(func() {
+				draw := card.checkDrawCard(target)
+				card.notifyResult(g, target, draw)
+				if draw {
+					logger.Info(target, "选择了[摸一张牌]")
+					target.Draw(1)
+				} else {
+					logger.Info(target, "选择了[弃一张牌]")
+					for _, c := range target.GetCards() {
+						g.PlayerDiscardCard(target, c)
+						break
+					}
+				}
+				g.SetCurrentCard(nil)
+				g.GetDeck().Discard(card)
+				g.Post(g.MainPhase)
+			})
+		})
+	}
+}
+
+func (card *ShiTan) CanUse2(_ interfaces.IGame, r interfaces.IPlayer, args ...interface{}) bool {
+	cardIds := args[0].([]uint32)
+	if card.checkDrawCard(r) || len(r.GetCards()) == 0 {
+		if len(cardIds) != 0 {
+			logger.Error(r, "被使用", card, "时不应该弃牌")
+			return false
+		}
+	} else {
+		if len(cardIds) != 1 {
+			logger.Error(r, "被使用", card, "时应该弃一张牌")
+			return false
+		}
+	}
+	return true
+}
+
+func (card *ShiTan) Execute2(g interfaces.IGame, r interfaces.IPlayer, args ...interface{}) {
+	cardIds := args[0].([]uint32)
+	if card.checkDrawCard(r) {
+		logger.Info(r, "选择了[摸一张牌]")
+		r.Draw(1)
+	} else {
+		logger.Info(r, "选择了[弃一张牌]")
+		if len(cardIds) == 0 {
+			g.PlayerDiscardCard(r, r.FindCard(cardIds[0]))
+		}
+	}
+	g.SetCurrentCard(nil)
+	g.GetDeck().Discard(card)
+	g.Post(g.MainPhase)
+}
+
+func (card *ShiTan) notifyResult(g interfaces.IGame, target interfaces.IPlayer, draw bool) {
+	for _, player := range g.GetPlayers() {
+		if p, ok := player.(*game.HumanPlayer); ok {
+			p.Send(&protos.ExecuteShiTanToc{
+				PlayerId:   p.GetAlternativeLocation(target.Location()),
+				IsDrawCard: draw,
+			})
+		}
+	}
+}
+
+func (card *ShiTan) checkDrawCard(target interfaces.IPlayer) bool {
+	identity, _ := target.GetIdentity()
+	for _, i := range card.WhoDrawCard {
+		if i == identity {
+			return true
+		}
+	}
+	return false
 }
 
 func (card *ShiTan) ToPbCard() *protos.Card {

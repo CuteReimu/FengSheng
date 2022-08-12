@@ -36,7 +36,7 @@ func (game *Game) Start(totalCount, robotCount int) {
 	game.TotalPlayerCount = totalCount
 	index := 0
 	for ; index < robotCount; index++ {
-		game.Players = append(game.Players, new(interfaces.BasePlayer))
+		game.Players = append(game.Players, new(RobotPlayer))
 	}
 	logger.Infof("已加入%d个机器人，等待%d人加入。。。", robotCount, humanCount)
 
@@ -75,6 +75,8 @@ func (game *Game) Start(totalCount, robotCount int) {
 			}
 		case *protos.UseShiTanTos:
 			humanMap[ev.Session().ID()].onUseShiTan(pb)
+		case *protos.ExecuteShiTanTos:
+			humanMap[ev.Session().ID()].onExecuteShiTan(pb)
 		}
 	})
 	p.Start()
@@ -86,8 +88,25 @@ func (game *Game) Start(totalCount, robotCount int) {
 }
 
 func (game *Game) start() {
+	idTask := make([]struct {
+		id   protos.Color
+		task protos.SecretTask
+	}, (len(game.Players)+1)/2*2+1)
+	for i := 0; i < (len(game.Players)-1)/2; i++ {
+		idTask[i*2].id = protos.Color_Red
+		idTask[i*2+1].id = protos.Color_Blue
+	}
+	for i := 0; i < 3; i++ {
+		idTask[len(idTask)-3+i].task = protos.SecretTask(i)
+	}
+	game.Random.Shuffle(3, func(i, j int) {
+		idTask[len(idTask)-3+i], idTask[len(idTask)-3+j] = idTask[len(idTask)-3+j], idTask[len(idTask)-3+i]
+	})
+	game.Random.Shuffle(len(game.Players), func(i, j int) {
+		idTask[i], idTask[j] = idTask[j], idTask[i]
+	})
 	for location, player := range game.Players {
-		player.Init(game, location)
+		player.Init(game, location, idTask[location].id, idTask[location].task)
 	}
 	game.Deck = NewDeck(game)
 	game.WhoseTurn = game.Random.Intn(len(game.Players))
@@ -105,7 +124,7 @@ func (game *Game) DrawPhase() {
 	}
 	game.CurrentPhase = protos.Phase_Draw_Phase
 	for _, p := range game.Players {
-		p.NotifyDrawPhase(player.Location())
+		p.NotifyDrawPhase()
 	}
 	player.Draw(3)
 	game.Post(game.MainPhase)
@@ -119,7 +138,7 @@ func (game *Game) MainPhase() {
 	}
 	game.CurrentPhase = protos.Phase_Main_Phase
 	for _, p := range game.Players {
-		p.NotifyMainPhase(player.Location(), 30)
+		p.NotifyMainPhase(30)
 	}
 }
 
@@ -183,4 +202,25 @@ func (game *Game) SetCurrentCard(card interfaces.ICard) {
 
 func (game *Game) GetCurrentPhase() protos.Phase {
 	return game.CurrentPhase
+}
+
+func (game *Game) GetRandom() *rand.Rand {
+	return game.Random
+}
+
+func (game *Game) PlayerDiscardCard(player interfaces.IPlayer, cards ...interfaces.ICard) {
+	for _, card := range cards {
+		player.DeleteCard(card.GetId())
+	}
+	logger.Info(player, "弃掉了", cards, "，剩余手牌", len(player.GetCards()), "张")
+	game.Deck.Discard(cards...)
+	for _, p := range game.Players {
+		if h, ok := p.(*HumanPlayer); ok {
+			msg := &protos.DiscardCardToc{PlayerId: h.GetAlternativeLocation(player.Location())}
+			for _, card := range cards {
+				msg.Cards = append(msg.Cards, card.ToPbCard())
+			}
+			h.Send(msg)
+		}
+	}
 }
