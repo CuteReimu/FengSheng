@@ -21,7 +21,9 @@ func (r *RobotPlayer) NotifyMainPhase(_ uint32) {
 	if r.Location() != r.GetGame().GetWhoseTurn() {
 		return
 	}
-	for _, card := range r.GetCards() {
+	cards := r.GetCards()
+	for cardId := range cards {
+		card := cards[cardId]
 		ai := AI[card.GetType()]
 		if ai != nil {
 			time.AfterFunc(time.Second, func() {
