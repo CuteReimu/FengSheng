@@ -55,10 +55,14 @@ func (card *ShiTan) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...in
 	target := args[0].(interfaces.IPlayer)
 	for _, p := range g.GetPlayers() {
 		if player, ok := p.(*game.HumanPlayer); ok {
-			player.Send(&protos.UseShiTanToc{
+			msg := &protos.UseShiTanToc{
 				PlayerId:       p.GetAlternativeLocation(r.Location()),
 				TargetPlayerId: p.GetAlternativeLocation(target.Location()),
-			})
+			}
+			if p.Location() == r.Location() {
+				msg.CardId = card.GetId()
+			}
+			player.Send(msg)
 		}
 	}
 	for _, p := range g.GetPlayers() {

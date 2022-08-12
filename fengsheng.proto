@@ -75,6 +75,7 @@ message use_shi_tan_tos {
 message use_shi_tan_toc {
   uint32 player_id        = 1; // 使用者
   uint32 target_player_id = 2; // 被使用者
+  uint32 card_id          = 3; // 此时，只有使用者能看到这个id，其他人都是0
 }
 
 // 向被试探者展示试探，并等待回应
