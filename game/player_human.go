@@ -14,7 +14,7 @@ type HumanPlayer struct {
 	interfaces.BasePlayer
 	cellnet.Session
 	Seq    uint32
-	timer  *time.Timer
+	Timer  *time.Timer
 	logger logrus.FieldLogger
 }
 
@@ -70,7 +70,7 @@ func (r *HumanPlayer) NotifyMainPhase(waitSecond uint32) {
 	r.Send(msg)
 	if r.Location() == r.GetGame().GetWhoseTurn() {
 		seq := r.Seq
-		r.timer = time.AfterFunc(time.Second*time.Duration(waitSecond), func() {
+		r.Timer = time.AfterFunc(time.Second*time.Duration(waitSecond), func() {
 			r.GetGame().Post(func() {
 				if seq == r.Seq {
 					r.GetGame().Post(r.GetGame().SendPhase)
@@ -101,8 +101,8 @@ func (r *HumanPlayer) onUseShiTan(pb *protos.UseShiTanTos) {
 	target := r.GetGame().GetPlayers()[r.GetAbstractLocation(int(pb.PlayerId))]
 	if card.CanUse(r.GetGame(), r, target) {
 		r.Seq++
-		if r.timer != nil {
-			r.timer.Stop()
+		if r.Timer != nil {
+			r.Timer.Stop()
 		}
 		card.Execute(r.GetGame(), r, target)
 	}
@@ -120,8 +120,8 @@ func (r *HumanPlayer) onExecuteShiTan(pb *protos.ExecuteShiTanTos) {
 	}
 	if card.CanUse2(r.GetGame(), r, pb.CardId) {
 		r.Seq++
-		if r.timer != nil {
-			r.timer.Stop()
+		if r.Timer != nil {
+			r.Timer.Stop()
 		}
 		card.Execute2(r.GetGame(), r, pb.CardId)
 	}

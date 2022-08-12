@@ -70,6 +70,9 @@ func (card *ShiTan) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...in
 			}
 			switch p.Location() {
 			case target.Location():
+				player.Timer = time.AfterFunc(time.Second, func() {
+					g.Post(func() { card.autoSelect(g, player) })
+				})
 				msg.Seq = player.Seq
 				fallthrough
 			case r.Location():
@@ -80,16 +83,7 @@ func (card *ShiTan) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...in
 	}
 	if _, ok := target.(*game.RobotPlayer); ok {
 		time.AfterFunc(time.Second, func() {
-			g.Post(func() {
-				var discardCardIds []uint32
-				if !card.checkDrawCard(target) && len(target.GetCards()) > 0 {
-					for cardId := range target.GetCards() {
-						discardCardIds = append(discardCardIds, cardId)
-						break
-					}
-				}
-				card.Execute2(g, target, discardCardIds)
-			})
+			g.Post(func() { card.autoSelect(g, target) })
 		})
 	}
 }
@@ -147,6 +141,17 @@ func (card *ShiTan) checkDrawCard(target interfaces.IPlayer) bool {
 		}
 	}
 	return false
+}
+
+func (card *ShiTan) autoSelect(g interfaces.IGame, target interfaces.IPlayer) {
+	var discardCardIds []uint32
+	if !card.checkDrawCard(target) && len(target.GetCards()) > 0 {
+		for cardId := range target.GetCards() {
+			discardCardIds = append(discardCardIds, cardId)
+			break
+		}
+	}
+	card.Execute2(g, target, discardCardIds)
 }
 
 func (card *ShiTan) ToPbCard() *protos.Card {
