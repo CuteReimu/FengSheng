@@ -73,6 +73,8 @@ func (game *Game) Start(totalCount, robotCount int) {
 				time.Sleep(time.Second * 3)
 				os.Exit(1)
 			}
+		case *protos.EndMainPhaseTos:
+			humanMap[ev.Session().ID()].onEndMainPhase(pb)
 		case *protos.UseShiTanTos:
 			humanMap[ev.Session().ID()].onUseShiTan(pb)
 		case *protos.ExecuteShiTanTos:

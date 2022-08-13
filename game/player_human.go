@@ -81,6 +81,18 @@ func (r *HumanPlayer) NotifyMainPhase(waitSecond uint32) {
 	}
 }
 
+func (r *HumanPlayer) onEndMainPhase(pb *protos.EndMainPhaseTos) {
+	if pb.Seq != r.Seq {
+		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
+		return
+	}
+	r.Seq++
+	if r.Timer != nil {
+		r.Timer.Stop()
+	}
+	r.GetGame().Post(r.GetGame().SendPhase)
+}
+
 func (r *HumanPlayer) onUseShiTan(pb *protos.UseShiTanTos) {
 	if pb.Seq != r.Seq {
 		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
