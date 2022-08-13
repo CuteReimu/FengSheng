@@ -100,6 +100,10 @@ func (card *ShiTan) CanUse2(_ interfaces.IGame, r interfaces.IPlayer, args ...in
 			logger.Error(r, "被使用", card, "时应该弃一张牌")
 			return false
 		}
+		if r.FindCard(cardIds[0]) == nil {
+			logger.Error("没有这张牌")
+			return false
+		}
 	}
 	return true
 }
