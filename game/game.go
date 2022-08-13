@@ -38,7 +38,7 @@ func (game *Game) Start(totalCount, robotCount int) {
 	for ; index < robotCount; index++ {
 		game.Players = append(game.Players, new(RobotPlayer))
 	}
-	logger.Infof("已加入%d个机器人，等待%d人加入。。。", robotCount, humanCount)
+	logger.Info("已加入", robotCount, "个机器人，等待", humanCount, "人加入。。。")
 
 	if !config.IsTcpDebugLogOpen() {
 		msglog.SetCurrMsgLogMode(msglog.MsgLogMode_Mute)
@@ -79,6 +79,8 @@ func (game *Game) Start(totalCount, robotCount int) {
 			humanMap[ev.Session().ID()].onUseShiTan(pb)
 		case *protos.ExecuteShiTanTos:
 			humanMap[ev.Session().ID()].onExecuteShiTan(pb)
+		case *protos.UseLiYouTos:
+			humanMap[ev.Session().ID()].onUseLiYou(pb)
 		}
 	})
 	p.Start()
@@ -124,6 +126,7 @@ func (game *Game) DrawPhase() {
 		game.Post(game.NextTurn)
 		return
 	}
+	logger.Info(player, "的回合开始了")
 	game.CurrentPhase = protos.Phase_Draw_Phase
 	for _, p := range game.Players {
 		p.NotifyDrawPhase()

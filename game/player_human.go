@@ -3,7 +3,6 @@ package game
 import (
 	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
-	"github.com/CuteReimu/FengSheng/utils"
 	"github.com/davyxu/cellnet"
 	"github.com/sirupsen/logrus"
 	"strconv"
@@ -19,11 +18,10 @@ type HumanPlayer struct {
 }
 
 func (r *HumanPlayer) String() string {
-	return strconv.Itoa(r.Location()) + "[玩家]"
+	return strconv.Itoa(r.Location()) + "号[玩家]"
 }
 
 func (r *HumanPlayer) Init(game interfaces.IGame, location int, identity protos.Color, secretTask protos.SecretTask) {
-	logger.Info(r, "身份是", utils.IdentityColorToString(identity, secretTask))
 	r.logger = logrus.WithField("human_player", r.Location())
 	r.BasePlayer.Init(game, location, identity, secretTask)
 	msg := &protos.InitToc{
@@ -136,5 +134,32 @@ func (r *HumanPlayer) onExecuteShiTan(pb *protos.ExecuteShiTanTos) {
 			r.Timer.Stop()
 		}
 		card.Execute2(r.GetGame(), r, pb.CardId)
+	}
+}
+
+func (r *HumanPlayer) onUseLiYou(pb *protos.UseLiYouTos) {
+	if pb.Seq != r.Seq {
+		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
+		return
+	}
+	card := r.FindCard(pb.CardId)
+	if card == nil {
+		r.logger.Error("没有这张牌")
+		return
+	}
+	if card.GetType() != protos.CardType_Li_You {
+		r.logger.Error("这张牌不是利诱，而是", card)
+		return
+	}
+	if pb.PlayerId >= uint32(len(r.GetGame().GetPlayers())) {
+		r.logger.Error("目标错误: ", pb.PlayerId)
+	}
+	target := r.GetGame().GetPlayers()[r.GetAbstractLocation(int(pb.PlayerId))]
+	if card.CanUse(r.GetGame(), r, target) {
+		r.Seq++
+		if r.Timer != nil {
+			r.Timer.Stop()
+		}
+		card.Execute(r.GetGame(), r, target)
 	}
 }

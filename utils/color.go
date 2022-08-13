@@ -47,3 +47,12 @@ func IdentityColorToString(color protos.Color, task ...protos.SecretTask) string
 	}
 	panic(fmt.Sprint("unknown color: ", color))
 }
+
+func IsColorIn(color protos.Color, colors []protos.Color) bool {
+	for _, c := range colors {
+		if c == color {
+			return true
+		}
+	}
+	return false
+}

@@ -8,24 +8,18 @@ import (
 )
 
 func init() {
-	game.AI[protos.CardType_Shi_Tan] = shiTan
+	game.AI[protos.CardType_Li_You] = liYou
 }
 
-func shiTan(player interfaces.IPlayer, card interfaces.ICard) bool {
+func liYou(player interfaces.IPlayer, card interfaces.ICard) bool {
 	var players []interfaces.IPlayer
 	for _, p := range player.GetGame().GetPlayers() {
-		if p.Location() != player.Location() {
-			if h, ok := p.(*game.HumanPlayer); ok {
-				players = append(players, h)
-			}
+		if h, ok := p.(*game.HumanPlayer); ok {
+			players = append(players, h)
 		}
 	}
 	if len(players) == 0 {
-		for _, p := range player.GetGame().GetPlayers() {
-			if p.Location() != player.Location() {
-				players = append(players, p)
-			}
-		}
+		players = player.GetGame().GetPlayers()
 	}
 	p := players[player.GetGame().GetRandom().Intn(len(players))]
 	if card.CanUse(player.GetGame(), player, p) {

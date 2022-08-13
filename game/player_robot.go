@@ -7,14 +7,14 @@ import (
 	"time"
 )
 
-var AI = make(map[protos.CardType]func(player interfaces.IPlayer, card interfaces.ICard))
+var AI = make(map[protos.CardType]func(player interfaces.IPlayer, card interfaces.ICard) bool)
 
 type RobotPlayer struct {
 	interfaces.BasePlayer
 }
 
 func (r *RobotPlayer) String() string {
-	return strconv.Itoa(r.Location()) + "[机器人]"
+	return strconv.Itoa(r.Location()) + "号[机器人]"
 }
 
 func (r *RobotPlayer) NotifyMainPhase(_ uint32) {
@@ -25,10 +25,7 @@ func (r *RobotPlayer) NotifyMainPhase(_ uint32) {
 	for cardId := range cards {
 		card := cards[cardId]
 		ai := AI[card.GetType()]
-		if ai != nil {
-			time.AfterFunc(time.Second, func() {
-				r.GetGame().Post(func() { ai(r, card) })
-			})
+		if ai != nil && ai(r, card) {
 			return
 		}
 	}

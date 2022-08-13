@@ -1,6 +1,7 @@
 package card
 
 import (
+	"github.com/CuteReimu/FengSheng/game"
 	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
 	"github.com/CuteReimu/FengSheng/utils"
@@ -18,24 +19,53 @@ func (card *LiYou) GetType() protos.CardType {
 	return protos.CardType_Li_You
 }
 
-func (card *LiYou) CanUse(g interfaces.IGame, user interfaces.IPlayer, args ...interface{}) bool {
-	//TODO implement me
-	panic("implement me")
+func (card *LiYou) CanUse(game interfaces.IGame, r interfaces.IPlayer, _ ...interface{}) bool {
+	if game.GetCurrentPhase() != protos.Phase_Main_Phase || game.GetWhoseTurn() != r.Location() || game.GetCurrentCard() != nil {
+		logger.Error("利诱的使用时机不对")
+		return false
+	}
+	return true
 }
 
-func (card *LiYou) Execute(g interfaces.IGame, user interfaces.IPlayer, args ...interface{}) {
-	//TODO implement me
-	panic("implement me")
+func (card *LiYou) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...interface{}) {
+	target := args[0].(interfaces.IPlayer)
+	logger.Info(r, "对", target, "使用了", card)
+	r.DeleteCard(card.GetId())
+	deckCards := g.GetDeck().Draw(1)
+	var joinIntoHand bool
+	if len(deckCards) > 0 {
+		target.AddMessageCards(deckCards...)
+		if target.CheckThreeSameMessageCard(deckCards[0].GetColor()...) {
+			target.DeleteMessageCard(deckCards[0].GetId())
+			joinIntoHand = true
+			r.AddCards(deckCards...)
+			logger.Info(deckCards, "加入了", r, "的手牌")
+		} else {
+			logger.Info(deckCards, "加入了", target, "的情报区")
+		}
+	}
+	for _, p := range g.GetPlayers() {
+		if player, ok := p.(*game.HumanPlayer); ok {
+			msg := &protos.UseLiYouToc{
+				PlayerId:       p.GetAlternativeLocation(r.Location()),
+				TargetPlayerId: p.GetAlternativeLocation(target.Location()),
+				JoinIntoHand:   joinIntoHand,
+			}
+			if len(deckCards) > 0 {
+				msg.Card = deckCards[0].ToPbCard()
+			}
+			player.Send(msg)
+		}
+	}
+	g.Post(g.MainPhase)
 }
 
-func (card *LiYou) CanUse2(g interfaces.IGame, user interfaces.IPlayer, args ...interface{}) bool {
-	//TODO implement me
-	panic("implement me")
+func (card *LiYou) CanUse2(interfaces.IGame, interfaces.IPlayer, ...interface{}) bool {
+	panic("unreachable code")
 }
 
-func (card *LiYou) Execute2(g interfaces.IGame, user interfaces.IPlayer, args ...interface{}) {
-	//TODO implement me
-	panic("implement me")
+func (card *LiYou) Execute2(interfaces.IGame, interfaces.IPlayer, ...interface{}) {
+	panic("unreachable code")
 }
 
 func (card *LiYou) ToPbCard() *protos.Card {
