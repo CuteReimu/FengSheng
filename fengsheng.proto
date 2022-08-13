@@ -119,3 +119,23 @@ message notify_phase_toc {
   uint32 waiting_second         = 5; // 读多少秒
   uint32 seq                    = 6; // 只有当自己需要读秒时，这个字段才有值
 }
+
+// 请求结束出牌阶段，进入情报传递阶段
+message end_main_phase_tos {
+  uint32 seq = 1;
+}
+
+// 请求使用利诱
+message use_li_you_tos {
+  uint32 card_id   = 1; // 卡牌ID
+  uint32 player_id = 2;
+  uint32 seq       = 3;
+}
+
+// 通知客户端使用利诱的结果
+message use_li_you_toc {
+  uint32 player_id        = 1; // 使用者
+  uint32 target_player_id = 2; // 被使用者
+  card   card             = 3; // 利诱翻出来的牌。如果牌堆和弃牌堆全用完了，则为null/nil
+  bool   join_into_hand   = 4; // 是否改为加入使用者手牌
+}
