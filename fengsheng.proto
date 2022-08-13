@@ -136,6 +136,7 @@ message use_li_you_tos {
 message use_li_you_toc {
   uint32 player_id        = 1; // 使用者
   uint32 target_player_id = 2; // 被使用者
-  card   card             = 3; // 利诱翻出来的牌。如果牌堆和弃牌堆全用完了，则为null/nil
-  bool   join_into_hand   = 4; // 是否改为加入使用者手牌
+  card   li_you_card      = 3; // 使用的这张利诱牌
+  card   message_card     = 4; // 利诱翻出来的牌。如果牌堆和弃牌堆全用完了，则为null/nil
+  bool   join_into_hand   = 5; // 是否改为加入使用者手牌
 }

@@ -49,10 +49,11 @@ func (card *LiYou) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...int
 			msg := &protos.UseLiYouToc{
 				PlayerId:       p.GetAlternativeLocation(r.Location()),
 				TargetPlayerId: p.GetAlternativeLocation(target.Location()),
+				LiYouCard:      card.ToPbCard(),
 				JoinIntoHand:   joinIntoHand,
 			}
 			if len(deckCards) > 0 {
-				msg.Card = deckCards[0].ToPbCard()
+				msg.MessageCard = deckCards[0].ToPbCard()
 			}
 			player.Send(msg)
 		}
