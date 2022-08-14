@@ -81,6 +81,8 @@ func (game *Game) Start(totalCount, robotCount int) {
 			humanMap[ev.Session().ID()].onExecuteShiTan(pb)
 		case *protos.UseLiYouTos:
 			humanMap[ev.Session().ID()].onUseLiYou(pb)
+		case *protos.UsePingHengTos:
+			humanMap[ev.Session().ID()].onUsePingHeng(pb)
 		}
 	})
 	p.Start()

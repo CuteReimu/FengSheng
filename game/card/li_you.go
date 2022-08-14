@@ -19,9 +19,14 @@ func (card *LiYou) GetType() protos.CardType {
 	return protos.CardType_Li_You
 }
 
-func (card *LiYou) CanUse(game interfaces.IGame, r interfaces.IPlayer, _ ...interface{}) bool {
+func (card *LiYou) CanUse(game interfaces.IGame, r interfaces.IPlayer, args ...interface{}) bool {
 	if game.GetCurrentPhase() != protos.Phase_Main_Phase || game.GetWhoseTurn() != r.Location() || game.GetCurrentCard() != nil {
 		logger.Error("利诱的使用时机不对")
+		return false
+	}
+	target := args[0].(interfaces.IPlayer)
+	if !target.IsAlive() {
+		logger.Error("目标已死亡")
 		return false
 	}
 	return true

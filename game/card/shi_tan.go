@@ -41,6 +41,10 @@ func (card *ShiTan) CanUse(game interfaces.IGame, r interfaces.IPlayer, args ...
 		logger.Error("试探不能对自己使用")
 		return false
 	}
+	if !target.IsAlive() {
+		logger.Error("目标已死亡")
+		return false
+	}
 	return true
 }
 

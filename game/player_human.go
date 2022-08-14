@@ -163,3 +163,30 @@ func (r *HumanPlayer) onUseLiYou(pb *protos.UseLiYouTos) {
 		card.Execute(r.GetGame(), r, target)
 	}
 }
+
+func (r *HumanPlayer) onUsePingHeng(pb *protos.UsePingHengTos) {
+	if pb.Seq != r.Seq {
+		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
+		return
+	}
+	card := r.FindCard(pb.CardId)
+	if card == nil {
+		r.logger.Error("没有这张牌")
+		return
+	}
+	if card.GetType() != protos.CardType_Ping_Heng {
+		r.logger.Error("这张牌不是平衡，而是", card)
+		return
+	}
+	if pb.PlayerId >= uint32(len(r.GetGame().GetPlayers())) {
+		r.logger.Error("目标错误: ", pb.PlayerId)
+	}
+	target := r.GetGame().GetPlayers()[r.GetAbstractLocation(int(pb.PlayerId))]
+	if card.CanUse(r.GetGame(), r, target) {
+		r.Seq++
+		if r.Timer != nil {
+			r.Timer.Stop()
+		}
+		card.Execute(r.GetGame(), r, target)
+	}
+}

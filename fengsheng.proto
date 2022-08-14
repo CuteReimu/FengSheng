@@ -140,3 +140,19 @@ message use_li_you_toc {
   card   message_card     = 4; // 利诱翻出来的牌。如果牌堆和弃牌堆全用完了，则为null/nil
   bool   join_into_hand   = 5; // 是否改为加入使用者手牌
 }
+
+// 请求使用平衡
+message use_ping_heng_tos {
+  uint32 card_id   = 1; // 卡牌ID
+  uint32 player_id = 2;
+  uint32 seq       = 3;
+}
+
+// 通知客户端使用利诱的结果
+message use_ping_heng_toc {
+  uint32        player_id            = 1; // 使用者
+  uint32        target_player_id     = 2; // 被使用者
+  card          ping_heng_card       = 3; // 使用的这张利诱牌
+  repeated card discard_cards        = 4; // 使用者弃掉的牌。（平衡摸的三张牌直接发add_card_toc协议）
+  repeated card target_discard_cards = 5; // 被使用者弃掉的牌。（平衡摸的三张牌直接发add_card_toc协议）
+}

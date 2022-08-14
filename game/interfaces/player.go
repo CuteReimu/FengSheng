@@ -19,6 +19,7 @@ type IPlayer interface {
 	GetCards() map[uint32]ICard
 	FindCard(cardId uint32) ICard
 	DeleteCard(card uint32)
+	DeleteAllCards() []ICard
 	AddMessageCards(cards ...ICard)
 	GetMessageCards() map[uint32]ICard
 	FindMessageCard(cardId uint32) ICard
@@ -113,6 +114,15 @@ func (p *BasePlayer) FindCard(cardId uint32) ICard {
 
 func (p *BasePlayer) DeleteCard(cardId uint32) {
 	delete(p.cards, cardId)
+}
+
+func (p *BasePlayer) DeleteAllCards() []ICard {
+	var cards []ICard
+	for _, card := range p.cards {
+		cards = append(cards, card)
+	}
+	p.cards = make(map[uint32]ICard)
+	return cards
 }
 
 func (p *BasePlayer) AddMessageCards(cards ...ICard) {
