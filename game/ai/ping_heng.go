@@ -15,16 +15,7 @@ func pingHeng(player interfaces.IPlayer, card interfaces.ICard) bool {
 	var players []interfaces.IPlayer
 	for _, p := range player.GetGame().GetPlayers() {
 		if p.Location() != player.Location() {
-			if h, ok := p.(*game.HumanPlayer); ok {
-				players = append(players, h)
-			}
-		}
-	}
-	if len(players) == 0 {
-		for _, p := range player.GetGame().GetPlayers() {
-			if p.Location() != player.Location() {
-				players = append(players, p)
-			}
+			players = append(players, p)
 		}
 	}
 	p := players[player.GetGame().GetRandom().Intn(len(players))]

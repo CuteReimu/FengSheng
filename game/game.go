@@ -220,7 +220,7 @@ func (game *Game) PlayerDiscardCard(player interfaces.IPlayer, cards ...interfac
 		player.DeleteCard(card.GetId())
 	}
 	logger.Info(player, "弃掉了", cards, "，剩余手牌", len(player.GetCards()), "张")
-	game.Deck.Discard(cards...)
+	game.GetDeck().Discard(cards...)
 	for _, p := range game.Players {
 		if h, ok := p.(*HumanPlayer); ok {
 			msg := &protos.DiscardCardToc{PlayerId: h.GetAlternativeLocation(player.Location())}

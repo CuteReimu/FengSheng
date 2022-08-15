@@ -39,10 +39,13 @@ func (card *PingHeng) CanUse(game interfaces.IGame, r interfaces.IPlayer, args .
 func (card *PingHeng) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...interface{}) {
 	target := args[0].(interfaces.IPlayer)
 	logger.Info(r, "对", target, "使用了", card)
+	r.DeleteCard(card.GetId())
 	discardCards := r.DeleteAllCards()
 	logger.Info(r, "弃掉了", discardCards)
+	g.GetDeck().Discard(discardCards...)
 	targetDiscardCards := target.DeleteAllCards()
 	logger.Info(target, "弃掉了", targetDiscardCards)
+	g.GetDeck().Discard(targetDiscardCards...)
 	for _, p := range g.GetPlayers() {
 		if player, ok := p.(*game.HumanPlayer); ok {
 			msg := &protos.UsePingHengToc{
