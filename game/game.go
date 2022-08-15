@@ -23,7 +23,7 @@ type Game struct {
 	Players          []interfaces.IPlayer
 	TotalPlayerCount int
 	Deck             interfaces.IDeck
-	CurrentCard      interfaces.ICard
+	CurrentCard      *interfaces.CurrentCard
 	WhoseTurn        int
 	CurrentPhase     protos.Phase
 	Random           *rand.Rand
@@ -199,11 +199,11 @@ func (game *Game) GetWhoseTurn() int {
 	return game.WhoseTurn
 }
 
-func (game *Game) GetCurrentCard() interfaces.ICard {
+func (game *Game) GetCurrentCard() *interfaces.CurrentCard {
 	return game.CurrentCard
 }
 
-func (game *Game) SetCurrentCard(card interfaces.ICard) {
+func (game *Game) SetCurrentCard(card *interfaces.CurrentCard) {
 	game.CurrentCard = card
 }
 

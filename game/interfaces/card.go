@@ -2,6 +2,12 @@ package interfaces
 
 import "github.com/CuteReimu/FengSheng/protos"
 
+type CurrentCard struct {
+	Card         ICard
+	Player       int
+	TargetPlayer int
+}
+
 type ICard interface {
 	GetId() uint32
 	GetType() protos.CardType

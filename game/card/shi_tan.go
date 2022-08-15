@@ -52,7 +52,7 @@ func (card *ShiTan) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...in
 	target := args[0].(interfaces.IPlayer)
 	logger.Info(r, "对", target, "使用了", card)
 	r.DeleteCard(card.GetId())
-	g.SetCurrentCard(card)
+	g.SetCurrentCard(&interfaces.CurrentCard{Card: card, Player: r.Location(), TargetPlayer: target.Location()})
 	for _, p := range g.GetPlayers() {
 		if player, ok := p.(*game.HumanPlayer); ok {
 			msg := &protos.UseShiTanToc{

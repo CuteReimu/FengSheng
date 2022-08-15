@@ -123,17 +123,21 @@ func (r *HumanPlayer) onExecuteShiTan(pb *protos.ExecuteShiTanTos) {
 		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
 		return
 	}
-	card := r.GetGame().GetCurrentCard()
-	if card == nil || card.GetType() != protos.CardType_Shi_Tan {
-		r.logger.Error("现在并不在结算试探", card)
+	currentCard := r.GetGame().GetCurrentCard()
+	if currentCard == nil || currentCard.Card.GetType() != protos.CardType_Shi_Tan {
+		r.logger.Error("现在并不在结算试探", currentCard.Card)
 		return
 	}
-	if card.CanUse2(r.GetGame(), r, pb.CardId) {
+	if currentCard.TargetPlayer != r.Location() {
+		r.logger.Error("你不是试探的目标", currentCard.Card)
+		return
+	}
+	if currentCard.Card.CanUse2(r.GetGame(), r, pb.CardId) {
 		r.Seq++
 		if r.Timer != nil {
 			r.Timer.Stop()
 		}
-		card.Execute2(r.GetGame(), r, pb.CardId)
+		currentCard.Card.Execute2(r.GetGame(), r, pb.CardId)
 	}
 }
 

@@ -14,8 +14,8 @@ type IGame interface {
 	GetDeck() IDeck
 	GetRandom() *rand.Rand
 	GetWhoseTurn() int
-	GetCurrentCard() ICard
-	SetCurrentCard(card ICard)
+	GetCurrentCard() *CurrentCard
+	SetCurrentCard(currentCard *CurrentCard)
 	GetCurrentPhase() protos.Phase
 	IsIdleTimePoint() bool
 	Post(callback func())
