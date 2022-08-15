@@ -83,6 +83,10 @@ func (game *Game) Start(totalCount, robotCount int) {
 			humanMap[ev.Session().ID()].onUseLiYou(pb)
 		case *protos.UsePingHengTos:
 			humanMap[ev.Session().ID()].onUsePingHeng(pb)
+		case *protos.UseWeiBiTos:
+			humanMap[ev.Session().ID()].onUseWeiBi(pb)
+		case *protos.WeiBiGiveCardTos:
+			humanMap[ev.Session().ID()].onWeiBiGiveCard(pb)
 		}
 	})
 	p.Start()

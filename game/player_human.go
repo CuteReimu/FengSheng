@@ -196,3 +196,54 @@ func (r *HumanPlayer) onUsePingHeng(pb *protos.UsePingHengTos) {
 		card.Execute(r.GetGame(), r, target)
 	}
 }
+
+func (r *HumanPlayer) onUseWeiBi(pb *protos.UseWeiBiTos) {
+	if pb.Seq != r.Seq {
+		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
+		return
+	}
+	card := r.FindCard(pb.CardId)
+	if card == nil {
+		r.logger.Error("没有这张牌")
+		return
+	}
+	if card.GetType() != protos.CardType_Wei_Bi {
+		r.logger.Error("这张牌不是威逼，而是", card)
+		return
+	}
+	if pb.PlayerId >= uint32(len(r.GetGame().GetPlayers())) {
+		r.logger.Error("目标错误: ", pb.PlayerId)
+		return
+	}
+	target := r.GetGame().GetPlayers()[r.GetAbstractLocation(int(pb.PlayerId))]
+	if card.CanUse(r.GetGame(), r, target, pb.WantType) {
+		r.Seq++
+		if r.Timer != nil {
+			r.Timer.Stop()
+		}
+		card.Execute(r.GetGame(), r, target, pb.WantType)
+	}
+}
+
+func (r *HumanPlayer) onWeiBiGiveCard(pb *protos.WeiBiGiveCardTos) {
+	if pb.Seq != r.Seq {
+		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
+		return
+	}
+	currentCard := r.GetGame().GetCurrentCard()
+	if currentCard == nil || currentCard.Card.GetType() != protos.CardType_Shi_Tan {
+		r.logger.Error("现在并不在结算威逼", currentCard.Card)
+		return
+	}
+	if currentCard.TargetPlayer != r.Location() {
+		r.logger.Error("你不是威逼的目标", currentCard.Card)
+		return
+	}
+	if currentCard.Card.CanUse2(r.GetGame(), r.GetGame().GetPlayers()[currentCard.Player], r, pb.CardId) {
+		r.Seq++
+		if r.Timer != nil {
+			r.Timer.Stop()
+		}
+		currentCard.Card.Execute2(r.GetGame(), r.GetGame().GetPlayers()[currentCard.Player], r, pb.CardId)
+	}
+}
