@@ -107,6 +107,7 @@ func (r *HumanPlayer) onUseShiTan(pb *protos.UseShiTanTos) {
 	}
 	if pb.PlayerId >= uint32(len(r.GetGame().GetPlayers())) {
 		r.logger.Error("目标错误: ", pb.PlayerId)
+		return
 	}
 	target := r.GetGame().GetPlayers()[r.GetAbstractLocation(int(pb.PlayerId))]
 	if card.CanUse(r.GetGame(), r, target) {
@@ -157,6 +158,7 @@ func (r *HumanPlayer) onUseLiYou(pb *protos.UseLiYouTos) {
 	}
 	if pb.PlayerId >= uint32(len(r.GetGame().GetPlayers())) {
 		r.logger.Error("目标错误: ", pb.PlayerId)
+		return
 	}
 	target := r.GetGame().GetPlayers()[r.GetAbstractLocation(int(pb.PlayerId))]
 	if card.CanUse(r.GetGame(), r, target) {
