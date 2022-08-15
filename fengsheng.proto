@@ -167,7 +167,7 @@ message use_wei_bi_tos {
 
 // 威逼等待给牌
 message wei_bi_wait_for_give_card_toc {
-  uint32    card_id          = 1; // 卡牌ID
+  card      card             = 1; // 使用的那张威逼卡牌
   uint32    player_id        = 2;
   uint32    target_player_id = 3;
   card_type want_type        = 4; // 声明的卡牌类型（截获/误导/调包/澄清）
@@ -190,7 +190,8 @@ message wei_bi_give_card_toc {
 
 // 通知所有人威逼的牌没有，展示所有手牌
 message wei_bi_show_hand_card_toc {
-  uint32        player_id        = 1;
-  uint32        target_player_id = 2;
-  repeated card cards            = 3; // 展示所有手牌，只有使用者能看到，其他人收到的都是空数组
+  card          card             = 1; // 使用的那张威逼卡牌
+  uint32        player_id        = 2;
+  uint32        target_player_id = 3;
+  repeated card cards            = 4; // 展示所有手牌，只有使用者能看到，其他人收到的都是空数组
 }
