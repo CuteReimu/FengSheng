@@ -12,8 +12,7 @@ func init() {
 }
 
 func liYou(player interfaces.IPlayer, card interfaces.ICard) bool {
-	var players []interfaces.IPlayer
-	players = player.GetGame().GetPlayers()
+	players := player.GetGame().GetPlayers()
 	p := players[player.GetGame().GetRandom().Intn(len(players))]
 	if card.CanUse(player.GetGame(), player, p) {
 		time.AfterFunc(time.Second, func() {
