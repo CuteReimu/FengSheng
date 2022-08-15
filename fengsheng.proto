@@ -171,7 +171,8 @@ message wei_bi_wait_for_give_card_toc {
   uint32    player_id        = 2;
   uint32    target_player_id = 3;
   card_type want_type        = 4; // 声明的卡牌类型（截获/误导/调包/澄清）
-  uint32    seq              = 5;
+  uint32    waiting_second   = 5; // 读多少秒
+  uint32    seq              = 6;
 }
 
 // 威逼给牌
