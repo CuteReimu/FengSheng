@@ -156,3 +156,40 @@ message use_ping_heng_toc {
   repeated card discard_cards        = 4; // 使用者弃掉的牌。（平衡摸的三张牌直接发add_card_toc协议）
   repeated card target_discard_cards = 5; // 被使用者弃掉的牌。（平衡摸的三张牌直接发add_card_toc协议）
 }
+
+// 请求使用平衡
+message use_wei_bi_tos {
+  uint32    card_id   = 1; // 卡牌ID
+  uint32    player_id = 2;
+  card_type want_type = 3; // 声明的卡牌类型（截获/误导/调包/澄清）
+  uint32    seq       = 4;
+}
+
+// 威逼等待给牌
+message wei_bi_wait_for_give_card_toc {
+  uint32    card_id          = 1; // 卡牌ID
+  uint32    player_id        = 2;
+  uint32    target_player_id = 3;
+  card_type want_type        = 4; // 声明的卡牌类型（截获/误导/调包/澄清）
+  uint32    seq              = 5;
+}
+
+// 威逼给牌
+message wei_bi_give_card_tos {
+  uint32 card_id = 1; // 给出去的卡牌ID
+  uint32     seq = 2;
+}
+
+// 通知所有人威逼给牌
+message wei_bi_give_card_toc {
+  uint32 player_id        = 1;
+  uint32 target_player_id = 2;
+  uint32 card_id          = 3; // 给出去的卡牌ID
+}
+
+// 通知所有人威逼的牌没有，展示所有手牌
+message wei_bi_show_hand_card_toc {
+  uint32        player_id        = 1;
+  uint32        target_player_id = 2;
+  repeated card cards            = 3; // 展示所有手牌，只有使用者能看到，其他人收到的都是空数组
+}
