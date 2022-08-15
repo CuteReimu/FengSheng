@@ -64,6 +64,7 @@ func (card *PingHeng) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...
 	}
 	r.Draw(3)
 	target.Draw(3)
+	g.GetDeck().Discard(card)
 	g.Post(g.MainPhase)
 }
 

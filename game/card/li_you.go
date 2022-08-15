@@ -63,6 +63,7 @@ func (card *LiYou) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...int
 			player.Send(msg)
 		}
 	}
+	g.GetDeck().Discard(card)
 	g.Post(g.MainPhase)
 }
 
