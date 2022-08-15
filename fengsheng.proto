@@ -184,7 +184,7 @@ message wei_bi_give_card_tos {
 message wei_bi_give_card_toc {
   uint32 player_id        = 1;
   uint32 target_player_id = 2;
-  uint32 card_id          = 3; // 给出去的卡牌ID
+  card   card             = 3; // 给出去的卡牌
 }
 
 // 通知所有人威逼的牌没有，展示所有手牌
