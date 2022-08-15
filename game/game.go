@@ -207,6 +207,10 @@ func (game *Game) SetCurrentCard(card interfaces.ICard) {
 	game.CurrentCard = card
 }
 
+func (game *Game) IsIdleTimePoint() bool {
+	return game.CurrentCard == nil
+}
+
 func (game *Game) GetCurrentPhase() protos.Phase {
 	return game.CurrentPhase
 }

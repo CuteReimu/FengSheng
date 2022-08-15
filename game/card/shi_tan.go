@@ -33,7 +33,7 @@ func (card *ShiTan) GetType() protos.CardType {
 
 func (card *ShiTan) CanUse(game interfaces.IGame, r interfaces.IPlayer, args ...interface{}) bool {
 	target := args[0].(interfaces.IPlayer)
-	if game.GetCurrentPhase() != protos.Phase_Main_Phase || game.GetWhoseTurn() != r.Location() || game.GetCurrentCard() != nil {
+	if game.GetCurrentPhase() != protos.Phase_Main_Phase || game.GetWhoseTurn() != r.Location() || game.IsIdleTimePoint() {
 		logger.Error("试探的使用时机不对")
 		return false
 	}

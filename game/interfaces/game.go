@@ -17,6 +17,7 @@ type IGame interface {
 	GetCurrentCard() ICard
 	SetCurrentCard(card ICard)
 	GetCurrentPhase() protos.Phase
+	IsIdleTimePoint() bool
 	Post(callback func())
 	DrawPhase()
 	MainPhase()
