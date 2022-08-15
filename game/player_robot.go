@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var AI = make(map[protos.CardType]func(player interfaces.IPlayer, card interfaces.ICard) bool)
+var AIMainPhase = make(map[protos.CardType]func(player interfaces.IPlayer, card interfaces.ICard) bool)
 
 type RobotPlayer struct {
 	interfaces.BasePlayer
@@ -24,7 +24,7 @@ func (r *RobotPlayer) NotifyMainPhase(_ uint32) {
 	cards := r.GetCards()
 	for cardId := range cards {
 		card := cards[cardId]
-		ai := AI[card.GetType()]
+		ai := AIMainPhase[card.GetType()]
 		if ai != nil && ai(r, card) {
 			return
 		}

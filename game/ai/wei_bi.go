@@ -7,11 +7,13 @@ import (
 	"time"
 )
 
+var weiBiTypes = []protos.CardType{protos.CardType_Cheng_Qing, protos.CardType_Jie_Huo, protos.CardType_Diao_Bao, protos.CardType_Wu_Dao}
+
 func init() {
-	game.AIMainPhase[protos.CardType_Shi_Tan] = shiTan
+	game.AIMainPhase[protos.CardType_Wei_Bi] = weiBi
 }
 
-func shiTan(player interfaces.IPlayer, card interfaces.ICard) bool {
+func weiBi(player interfaces.IPlayer, card interfaces.ICard) bool {
 	chooseHuman := player.GetGame().GetRandom().Intn(2) == 0
 	var players []interfaces.IPlayer
 	for _, p := range player.GetGame().GetPlayers() {
@@ -32,8 +34,9 @@ func shiTan(player interfaces.IPlayer, card interfaces.ICard) bool {
 		return false
 	}
 	p := players[player.GetGame().GetRandom().Intn(len(players))]
+	cardType := weiBiTypes[player.GetGame().GetRandom().Intn(len(weiBiTypes))]
 	time.AfterFunc(time.Second, func() {
-		player.GetGame().Post(func() { card.Execute(player.GetGame(), player, p) })
+		player.GetGame().Post(func() { card.Execute(player.GetGame(), player, p, cardType) })
 	})
 	return true
 }

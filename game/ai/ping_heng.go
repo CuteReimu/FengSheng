@@ -8,22 +8,32 @@ import (
 )
 
 func init() {
-	game.AI[protos.CardType_Ping_Heng] = pingHeng
+	game.AIMainPhase[protos.CardType_Ping_Heng] = pingHeng
 }
 
 func pingHeng(player interfaces.IPlayer, card interfaces.ICard) bool {
+	chooseHuman := player.GetGame().GetRandom().Intn(2) == 0
 	var players []interfaces.IPlayer
 	for _, p := range player.GetGame().GetPlayers() {
-		if p.Location() != player.Location() {
-			players = append(players, p)
+		if p.Location() != player.Location() && p.IsAlive() {
+			if _, ok := p.(*game.HumanPlayer); ok == chooseHuman {
+				players = append(players, p)
+			}
 		}
 	}
-	p := players[player.GetGame().GetRandom().Intn(len(players))]
-	if card.CanUse(player.GetGame(), player, p) {
-		time.AfterFunc(time.Second, func() {
-			player.GetGame().Post(func() { card.Execute(player.GetGame(), player, p) })
-		})
-		return true
+	if len(players) == 0 {
+		for _, p := range player.GetGame().GetPlayers() {
+			if p.Location() != player.Location() && p.IsAlive() {
+				players = append(players, p)
+			}
+		}
 	}
-	return false
+	if len(players) == 0 {
+		return false
+	}
+	p := players[player.GetGame().GetRandom().Intn(len(players))]
+	time.AfterFunc(time.Second, func() {
+		player.GetGame().Post(func() { card.Execute(player.GetGame(), player, p) })
+	})
+	return true
 }
