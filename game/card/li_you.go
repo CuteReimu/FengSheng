@@ -20,7 +20,7 @@ func (card *LiYou) GetType() protos.CardType {
 }
 
 func (card *LiYou) CanUse(game interfaces.IGame, r interfaces.IPlayer, args ...interface{}) bool {
-	if game.GetCurrentPhase() != protos.Phase_Main_Phase || game.GetWhoseTurn() != r.Location() || game.IsIdleTimePoint() {
+	if game.GetCurrentPhase() != protos.Phase_Main_Phase || game.GetWhoseTurn() != r.Location() || !game.IsIdleTimePoint() {
 		logger.Error("利诱的使用时机不对")
 		return false
 	}

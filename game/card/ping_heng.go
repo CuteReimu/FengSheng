@@ -20,7 +20,7 @@ func (card *PingHeng) GetType() protos.CardType {
 }
 
 func (card *PingHeng) CanUse(game interfaces.IGame, r interfaces.IPlayer, args ...interface{}) bool {
-	if game.GetCurrentPhase() != protos.Phase_Main_Phase || game.GetWhoseTurn() != r.Location() || game.IsIdleTimePoint() {
+	if game.GetCurrentPhase() != protos.Phase_Main_Phase || game.GetWhoseTurn() != r.Location() || !game.IsIdleTimePoint() {
 		logger.Error("平衡的使用时机不对")
 		return false
 	}

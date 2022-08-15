@@ -23,7 +23,7 @@ func (card *WeiBi) GetType() protos.CardType {
 func (card *WeiBi) CanUse(g interfaces.IGame, r interfaces.IPlayer, args ...interface{}) bool {
 	target := args[0].(interfaces.IPlayer)
 	wantType := args[1].(protos.CardType)
-	if g.GetCurrentPhase() != protos.Phase_Main_Phase || g.GetWhoseTurn() != r.Location() || g.IsIdleTimePoint() {
+	if g.GetCurrentPhase() != protos.Phase_Main_Phase || g.GetWhoseTurn() != r.Location() || !g.IsIdleTimePoint() {
 		logger.Error("威逼的使用时机不对")
 		return false
 	}
