@@ -85,6 +85,7 @@ func (card *WeiBi) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...int
 		for _, p := range g.GetPlayers() {
 			if player, ok := p.(*game.HumanPlayer); ok {
 				msg := &protos.WeiBiShowHandCardToc{
+					Card:           card.ToPbCard(),
 					PlayerId:       p.GetAlternativeLocation(r.Location()),
 					TargetPlayerId: p.GetAlternativeLocation(target.Location()),
 				}
@@ -117,6 +118,15 @@ func (card *WeiBi) Execute2(g interfaces.IGame, r interfaces.IPlayer, args ...in
 	logger.Info(target, "给了", r, "一张", c)
 	target.DeleteCard(cardId)
 	r.AddCards(c)
+	for _, p := range g.GetPlayers() {
+		if player, ok := p.(*game.HumanPlayer); ok {
+			player.Send(&protos.WeiBiGiveCardToc{
+				PlayerId:       player.GetAlternativeLocation(r.Location()),
+				TargetPlayerId: player.GetAlternativeLocation(target.Location()),
+				Card:           c.ToPbCard(),
+			})
+		}
+	}
 	g.SetCurrentCard(nil)
 	g.GetDeck().Discard(card)
 	g.Post(g.MainPhase)
