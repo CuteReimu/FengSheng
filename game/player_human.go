@@ -231,8 +231,8 @@ func (r *HumanPlayer) onWeiBiGiveCard(pb *protos.WeiBiGiveCardTos) {
 		return
 	}
 	currentCard := r.GetGame().GetCurrentCard()
-	if currentCard == nil || currentCard.Card.GetType() != protos.CardType_Shi_Tan {
-		r.logger.Error("现在并不在结算威逼", currentCard.Card)
+	if currentCard == nil || currentCard.Card.GetType() != protos.CardType_Wei_Bi {
+		r.logger.Error("现在并不在结算威逼")
 		return
 	}
 	if currentCard.TargetPlayer != r.Location() {
