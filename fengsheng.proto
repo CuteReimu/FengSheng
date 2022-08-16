@@ -195,3 +195,19 @@ message wei_bi_show_hand_card_toc {
   uint32        target_player_id = 3;
   repeated card cards            = 4; // 展示所有手牌，只有使用者能看到，其他人收到的都是空数组
 }
+
+// 请求使用澄清
+message use_cheng_qing_tos {
+  uint32 card_id        = 1; // 卡牌ID
+  uint32 player_id      = 2;
+  uint32 target_card_id = 3;
+  uint32 seq            = 4;
+}
+
+// 通知所有人澄清
+message use_cheng_qing_toc {
+  card   card             = 1;
+  uint32 player_id        = 2;
+  uint32 target_player_id = 3;
+  uint32 target_card_id   = 4;
+}

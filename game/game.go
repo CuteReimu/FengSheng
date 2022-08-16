@@ -87,6 +87,8 @@ func (game *Game) Start(totalCount, robotCount int) {
 			humanMap[ev.Session().ID()].onUseWeiBi(pb)
 		case *protos.WeiBiGiveCardTos:
 			humanMap[ev.Session().ID()].onWeiBiGiveCard(pb)
+		case *protos.UseChengQingTos:
+			humanMap[ev.Session().ID()].onUseChengQing(pb)
 		}
 	})
 	p.Start()

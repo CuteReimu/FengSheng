@@ -247,3 +247,31 @@ func (r *HumanPlayer) onWeiBiGiveCard(pb *protos.WeiBiGiveCardTos) {
 		currentCard.Card.Execute2(r.GetGame(), r.GetGame().GetPlayers()[currentCard.Player], r, pb.CardId)
 	}
 }
+
+func (r *HumanPlayer) onUseChengQing(pb *protos.UseChengQingTos) {
+	if pb.Seq != r.Seq {
+		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
+		return
+	}
+	card := r.FindCard(pb.CardId)
+	if card == nil {
+		r.logger.Error("没有这张牌")
+		return
+	}
+	if card.GetType() != protos.CardType_Cheng_Qing {
+		r.logger.Error("这张牌不是澄清，而是", card)
+		return
+	}
+	if pb.PlayerId >= uint32(len(r.GetGame().GetPlayers())) {
+		r.logger.Error("目标错误: ", pb.PlayerId)
+		return
+	}
+	target := r.GetGame().GetPlayers()[r.GetAbstractLocation(int(pb.PlayerId))]
+	if card.CanUse(r.GetGame(), r, target, pb.TargetCardId) {
+		r.Seq++
+		if r.Timer != nil {
+			r.Timer.Stop()
+		}
+		card.Execute(r.GetGame(), r, target)
+	}
+}
