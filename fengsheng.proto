@@ -2,11 +2,12 @@ syntax = "proto3";
 option go_package = "protos/;protos";
 
 enum phase {
-  Draw_Phase  = 0;   // 摸牌阶段
-  Main_Phase  = 1;   // 出牌阶段
-  Send_Phase  = 2;   // 传递阶段
-  Fight_Phase = 3;   // 争夺阶段
-  Receive_Phase = 4; // 接收阶段
+  Draw_Phase       = 0; // 摸牌阶段
+  Main_Phase       = 1; // 出牌阶段
+  Send_Start_Phase = 2; // 情报传递阶段开始时
+  Send_Phase       = 3; // 传递阶段
+  Fight_Phase      = 4; // 争夺阶段
+  Receive_Phase    = 5; // 接收阶段
 }
 
 enum card_type {
