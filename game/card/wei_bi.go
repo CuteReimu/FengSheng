@@ -67,10 +67,15 @@ func (card *WeiBi) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...int
 					WaitingSecond:  10,
 				}
 				if p.Location() == target.Location() {
-					player.Timer = time.AfterFunc(time.Second*time.Duration(msg.WaitingSecond), func() {
-						g.Post(func() { card.autoSelect(g, r, player, wantType) })
-					})
+					seq := player.Seq
 					msg.Seq = player.Seq
+					player.Timer = time.AfterFunc(time.Second*time.Duration(msg.WaitingSecond), func() {
+						g.Post(func() {
+							if player.Seq == seq {
+								card.autoSelect(g, r, player, wantType)
+							}
+						})
+					})
 				}
 				player.Send(msg)
 			}

@@ -74,10 +74,15 @@ func (card *ShiTan) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...in
 			}
 			switch p.Location() {
 			case target.Location():
-				player.Timer = time.AfterFunc(time.Second*time.Duration(msg.WaitingSecond), func() {
-					g.Post(func() { card.autoSelect(g, player) })
-				})
+				seq := player.Seq
 				msg.Seq = player.Seq
+				player.Timer = time.AfterFunc(time.Second*time.Duration(msg.WaitingSecond), func() {
+					g.Post(func() {
+						if player.Seq == seq {
+							card.autoSelect(g, player)
+						}
+					})
+				})
 				fallthrough
 			case r.Location():
 				msg.Card = card.ToPbCard()
