@@ -221,7 +221,7 @@ message send_message_card_tos {
   uint32          card_id          = 1;
   uint32          target_player_id = 2;
   repeated uint32 lock_player_id   = 3;
-  uint32          card_dir         = 4;
+  direction       card_dir         = 4;
   uint32          seq              = 5;
 }
 
