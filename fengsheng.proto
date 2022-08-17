@@ -216,7 +216,7 @@ message use_cheng_qing_toc {
 
 // 请求传情报
 message send_message_card_tos {
-  card               card = 1;
+  uint32          card_id = 1;
   uint32 target_player_id = 2;
   uint32              seq = 3;
 }
