@@ -272,6 +272,6 @@ func (r *HumanPlayer) onUseChengQing(pb *protos.UseChengQingTos) {
 		if r.Timer != nil {
 			r.Timer.Stop()
 		}
-		card.Execute(r.GetGame(), r, target)
+		card.Execute(r.GetGame(), r, target, pb.TargetCardId)
 	}
 }
