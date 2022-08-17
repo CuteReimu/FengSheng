@@ -79,6 +79,7 @@ func (card *ShiTan) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...in
 				player.Timer = time.AfterFunc(time.Second*time.Duration(msg.WaitingSecond), func() {
 					g.Post(func() {
 						if player.Seq == seq {
+							player.Seq++
 							card.autoSelect(g, player)
 						}
 					})
