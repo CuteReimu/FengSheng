@@ -27,19 +27,32 @@ type IPlayer interface {
 	CheckThreeSameMessageCard(colors ...protos.Color) bool
 	NotifyDrawPhase()
 	NotifyMainPhase(waitSecond uint32)
+	NotifySendPhaseStart(waitSecond uint32)
+	NotifySendPhase(waitSecond uint32)
+	NotifyFightPhase(waitSecond uint32)
+	NotifyReceivePhase()
+	NotifyDie(location int, loseGame bool)
+	SetAlive(alive bool)
 	IsAlive() bool
+	SetLose(lose bool)
+	IsLose() bool
+	SetHasNoIdentity(hasNoIdentity bool)
+	HasNoIdentity() bool
 	SetIdentity(identity protos.Color, secretTask protos.SecretTask)
 	GetIdentity() (protos.Color, protos.SecretTask)
 	String() string
 }
 
 type BasePlayer struct {
-	game         IGame
-	location     int
-	cards        map[uint32]ICard
-	messageCards map[uint32]ICard
-	identity     protos.Color
-	secretTask   protos.SecretTask
+	game          IGame
+	location      int
+	cards         map[uint32]ICard
+	messageCards  map[uint32]ICard
+	identity      protos.Color
+	secretTask    protos.SecretTask
+	alive         bool
+	lose          bool
+	hasNoIdentity bool
 }
 
 func (p *BasePlayer) Init(game IGame, location int, identity protos.Color, secretTask protos.SecretTask) {
@@ -48,6 +61,7 @@ func (p *BasePlayer) Init(game IGame, location int, identity protos.Color, secre
 	p.location = location
 	p.cards = make(map[uint32]ICard)
 	p.messageCards = make(map[uint32]ICard)
+	p.alive = true
 	p.SetIdentity(identity, secretTask)
 }
 
@@ -88,11 +102,28 @@ func (p *BasePlayer) GetAlternativeLocation(location int) uint32 {
 	return uint32(location % totalPlayerCount)
 }
 
-func (p *BasePlayer) NotifyDrawPhase() {
+func (p *BasePlayer) SetAlive(alive bool) {
+	p.alive = alive
 }
 
 func (p *BasePlayer) IsAlive() bool {
-	return true
+	return p.alive
+}
+
+func (p *BasePlayer) SetLose(lose bool) {
+	p.lose = lose
+}
+
+func (p *BasePlayer) IsLose() bool {
+	return p.lose
+}
+
+func (p *BasePlayer) SetHasNoIdentity(hasNoIdentity bool) {
+	p.hasNoIdentity = hasNoIdentity
+}
+
+func (p *BasePlayer) HasNoIdentity() bool {
+	return p.hasNoIdentity
 }
 
 func (p *BasePlayer) AddCards(cards ...ICard) {

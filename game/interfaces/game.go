@@ -17,12 +17,23 @@ type IGame interface {
 	GetCurrentCard() *CurrentCard
 	SetCurrentCard(currentCard *CurrentCard)
 	GetCurrentPhase() protos.Phase
+	GetWhoseSendTurn() int
+	GetWhoseFightTurn() int
+	GetMessageCardDirection() protos.Direction
+	GetCurrentMessageCard() ICard
+	SetCurrentMessageCard(currentMessageCard ICard)
+	IsMessageCardFaceUp() bool
+	SetMessageCardFaceUp(messageCardFaceUp bool)
+	GetLockPlayers() []int
 	IsIdleTimePoint() bool
 	Post(callback func())
 	DrawPhase()
 	MainPhase()
-	SendPhase()
-	FightPhase()
+	SendPhaseStart()
+	OnSendCard(card ICard, dir protos.Direction, targetLocation int, lockLocations []int)
+	MessageMoveNext()
+	OnChooseReceiveCard()
+	FightPhaseNext()
 	ReceivePhase()
 	NextTurn()
 	PlayerDiscardCard(player IPlayer, cards ...ICard)

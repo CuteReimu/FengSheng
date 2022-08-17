@@ -13,6 +13,7 @@ type ICard interface {
 	GetType() protos.CardType
 	GetColor() []protos.Color
 	GetDirection() protos.Direction
+	CanLock() bool
 	CanUse(g IGame, user IPlayer, args ...interface{}) bool
 	Execute(g IGame, user IPlayer, args ...interface{})
 	CanUse2(g IGame, user IPlayer, args ...interface{}) bool

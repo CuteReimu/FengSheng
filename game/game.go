@@ -20,13 +20,19 @@ import (
 var logger = utils.GetLogger("game")
 
 type Game struct {
-	Players          []interfaces.IPlayer
-	TotalPlayerCount int
-	Deck             interfaces.IDeck
-	CurrentCard      *interfaces.CurrentCard
-	WhoseTurn        int
-	CurrentPhase     protos.Phase
-	Random           *rand.Rand
+	Players            []interfaces.IPlayer
+	TotalPlayerCount   int
+	Deck               interfaces.IDeck
+	CurrentCard        *interfaces.CurrentCard
+	WhoseTurn          int
+	WhoseSendTurn      int
+	WhoseFightTurn     int
+	CurrentMessageCard interfaces.ICard
+	MessageCardFaceUp  bool
+	CardDirection      protos.Direction
+	WhoIsLocked        []int
+	CurrentPhase       protos.Phase
+	Random             *rand.Rand
 	cellnet.EventQueue
 }
 
@@ -89,6 +95,10 @@ func (game *Game) Start(totalCount, robotCount int) {
 			humanMap[ev.Session().ID()].onWeiBiGiveCard(pb)
 		case *protos.UseChengQingTos:
 			humanMap[ev.Session().ID()].onUseChengQing(pb)
+		case *protos.SendMessageCardTos:
+			humanMap[ev.Session().ID()].onSendMessageCard(pb)
+		case *protos.ChooseWhetherReceiveTos:
+			humanMap[ev.Session().ID()].onChooseWhetherReceive(pb)
 		}
 	})
 	p.Start()
@@ -155,38 +165,116 @@ func (game *Game) MainPhase() {
 	}
 }
 
-func (game *Game) SendPhase() {
+func (game *Game) SendPhaseStart() {
 	player := game.Players[game.WhoseTurn]
+	if player.IsAlive() {
+		if len(player.GetCards()) == 0 {
+			logger.Info(player, "没有情报可传，输掉了游戏")
+			game.GetDeck().Discard(player.DeleteAllCards()...)
+			player.SetLose(true)
+			player.SetAlive(false)
+			for _, p := range game.GetPlayers() {
+				p.NotifyDie(game.WhoseTurn, true)
+			}
+		}
+	}
 	if !player.IsAlive() {
 		game.Post(game.NextTurn)
 		return
 	}
-	game.Post(game.FightPhase)
+	game.CurrentPhase = protos.Phase_Send_Start_Phase
+	for _, p := range game.Players {
+		p.NotifySendPhaseStart(20)
+	}
 }
 
-func (game *Game) FightPhase() {
+func (game *Game) OnSendCard(card interfaces.ICard, dir protos.Direction, targetLocation int, lockLocations []int) {
 	player := game.Players[game.WhoseTurn]
-	if !player.IsAlive() {
-		game.Post(game.NextTurn)
-		return
+	logger.Info(player, "传出了", card)
+	player.DeleteCard(card.GetId())
+	game.CurrentMessageCard = card
+	game.CardDirection = dir
+	game.WhoseSendTurn = targetLocation
+	game.WhoIsLocked = append(game.WhoIsLocked, lockLocations...)
+	game.CurrentPhase = protos.Phase_Send_Phase
+	logger.Info("情报到达", game.Players[game.WhoseSendTurn], "面前")
+	for _, p := range game.Players {
+		p.NotifySendPhase(20)
 	}
-	game.Post(game.ReceivePhase)
+}
+
+func (game *Game) MessageMoveNext() {
+	if game.CardDirection == protos.Direction_Up {
+		if game.Players[game.WhoseTurn].IsAlive() {
+			game.WhoseSendTurn = game.WhoseTurn
+		} else {
+			game.Post(game.NextTurn)
+			return
+		}
+	} else {
+		for {
+			if game.CardDirection == protos.Direction_Left {
+				game.WhoseSendTurn = (game.WhoseSendTurn + len(game.Players) - 1) % len(game.Players)
+			} else {
+				game.WhoseSendTurn = (game.WhoseSendTurn + 1) % len(game.Players)
+			}
+			if game.Players[game.WhoseSendTurn].IsAlive() {
+				break
+			} else if game.WhoseTurn == game.WhoseSendTurn {
+				game.Post(game.NextTurn)
+				return
+			}
+		}
+	}
+	logger.Info("情报到达", game.Players[game.WhoseSendTurn], "面前")
+	for _, p := range game.Players {
+		p.NotifySendPhase(20)
+	}
+}
+
+func (game *Game) OnChooseReceiveCard() {
+	logger.Info(game.Players[game.WhoseSendTurn], "选择接收情报")
+	game.WhoseFightTurn = game.WhoseSendTurn
+	game.CurrentPhase = protos.Phase_Fight_Phase
+	for _, p := range game.Players {
+		p.NotifyFightPhase(5)
+	}
+}
+
+func (game *Game) FightPhaseNext() {
+	for {
+		game.WhoseFightTurn = (game.WhoseFightTurn + 1) % len(game.Players)
+		if game.WhoseFightTurn == game.WhoseSendTurn {
+			game.Post(game.ReceivePhase)
+			return
+		} else if game.Players[game.WhoseFightTurn].IsAlive() {
+			break
+		}
+	}
+	for _, p := range game.Players {
+		p.NotifyFightPhase(5)
+	}
 }
 
 func (game *Game) ReceivePhase() {
-	player := game.Players[game.WhoseTurn]
-	if !player.IsAlive() {
-		game.Post(game.NextTurn)
-		return
+	player := game.Players[game.WhoseSendTurn]
+	if player.IsAlive() {
+		game.CurrentPhase = protos.Phase_Receive_Phase
+		player.AddMessageCards(game.CurrentMessageCard)
+		logger.Info(player, "成功接收情报")
+		for _, p := range game.Players {
+			p.NotifyReceivePhase()
+		}
 	}
 	game.Post(game.NextTurn)
 }
 
 func (game *Game) NextTurn() {
+	game.CurrentMessageCard = nil
+	game.WhoIsLocked = nil
 	for {
 		game.WhoseTurn = (game.WhoseTurn + 1) % len(game.Players)
-		player := game.Players[game.WhoseTurn]
-		if player.IsAlive() {
+		if game.Players[game.WhoseTurn].IsAlive() {
 			break
 		}
 	}
@@ -205,12 +293,44 @@ func (game *Game) GetWhoseTurn() int {
 	return game.WhoseTurn
 }
 
+func (game *Game) GetWhoseSendTurn() int {
+	return game.WhoseSendTurn
+}
+
+func (game *Game) GetWhoseFightTurn() int {
+	return game.WhoseFightTurn
+}
+
+func (game *Game) GetMessageCardDirection() protos.Direction {
+	return game.CardDirection
+}
+
 func (game *Game) GetCurrentCard() *interfaces.CurrentCard {
 	return game.CurrentCard
 }
 
 func (game *Game) SetCurrentCard(card *interfaces.CurrentCard) {
 	game.CurrentCard = card
+}
+
+func (game *Game) GetCurrentMessageCard() interfaces.ICard {
+	return game.CurrentMessageCard
+}
+
+func (game *Game) SetCurrentMessageCard(currentMessageCard interfaces.ICard) {
+	game.CurrentMessageCard = currentMessageCard
+}
+
+func (game *Game) IsMessageCardFaceUp() bool {
+	return game.MessageCardFaceUp
+}
+
+func (game *Game) SetMessageCardFaceUp(messageCardFaceUp bool) {
+	game.MessageCardFaceUp = messageCardFaceUp
+}
+
+func (game *Game) GetLockPlayers() []int {
+	return game.WhoIsLocked
 }
 
 func (game *Game) IsIdleTimePoint() bool {
