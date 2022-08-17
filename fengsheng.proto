@@ -113,15 +113,15 @@ message discard_card_toc {
 
 // 通知客户端，到谁的哪个阶段了
 message notify_phase_toc {
-  uint32           current_player_id      = 1; // 当前回合玩家
-  phase            current_phase          = 2; // 当前阶段
-  uint32           intelligence_player_id = 3; // 情报在谁面前（只有传递、争夺、接收阶段有效）
-  direction        message_card_dir       = 4; // 情报传递方向（只有传递、争夺、接收阶段有效）
-  card             message_card           = 5; // 在某些情况下，正在传递的情报应该正面向上，这时候就应该有这个字段
-  repeated uint32  lock_player_ids        = 6; // 被锁定的玩家ID
-  uint32           waiting_player_id      = 7; // 读秒的玩家ID
-  uint32           waiting_second         = 8; // 读多少秒
-  uint32           seq                    = 9; // 只有当自己需要读秒时，这个字段才有值
+  uint32          current_player_id      = 1; // 当前回合玩家
+  phase           current_phase          = 2; // 当前阶段
+  uint32          intelligence_player_id = 3; // 情报在谁面前（只有传递、争夺、接收阶段有效）
+  direction       message_card_dir       = 4; // 情报传递方向（只有传递、争夺、接收阶段有效）
+  card            message_card           = 5; // 在某些情况下，正在传递的情报应该正面向上，这时候就应该有这个字段
+  repeated uint32 lock_player_ids        = 6; // 被锁定的玩家ID
+  uint32          waiting_player_id      = 7; // 读秒的玩家ID
+  uint32          waiting_second         = 8; // 读多少秒
+  uint32          seq                    = 9; // 只有当自己需要读秒时，这个字段才有值
 }
 
 // 请求结束出牌阶段，进入情报传递阶段
@@ -221,7 +221,8 @@ message send_message_card_tos {
   uint32          card_id          = 1;
   uint32          target_player_id = 2;
   repeated uint32 lock_player_id   = 3;
-  uint32          seq              = 4;
+  uint32          card_dir         = 4;
+  uint32          seq              = 5;
 }
 
 // 选择是否接收情报
