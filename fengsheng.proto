@@ -236,3 +236,11 @@ message notify_die_toc {
   uint32 player_id = 1;
   bool   lose_game = 2; // true表示因为轮到传递情报时没情报传了导致输掉游戏
 }
+
+// 通知谁获胜了
+message notify_winner_toc {
+  uint32               declare_player_id = 1;
+  repeated uint32      winner_ids        = 2;
+  repeated color       identity          = 3; // 所有人的身份，自己的下标为0，右手第一个人的下标为1
+  repeated secret_task secret_tasks      = 4; // 神秘人任务，下标同上一一对应，不是神秘人的那个位置会空出来
+}
