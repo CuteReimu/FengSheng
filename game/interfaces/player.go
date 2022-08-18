@@ -24,6 +24,7 @@ type IPlayer interface {
 	GetMessageCards() map[uint32]ICard
 	FindMessageCard(cardId uint32) ICard
 	DeleteMessageCard(cardId uint32)
+	DeleteAllMessageCards() []ICard
 	CheckThreeSameMessageCard(colors ...protos.Color) bool
 	NotifyDrawPhase()
 	NotifyMainPhase(waitSecond uint32)
@@ -175,6 +176,15 @@ func (p *BasePlayer) FindMessageCard(cardId uint32) ICard {
 
 func (p *BasePlayer) DeleteMessageCard(cardId uint32) {
 	delete(p.messageCards, cardId)
+}
+
+func (p *BasePlayer) DeleteAllMessageCards() []ICard {
+	var cards []ICard
+	for _, card := range p.messageCards {
+		cards = append(cards, card)
+	}
+	p.messageCards = make(map[uint32]ICard)
+	return cards
 }
 
 func (p *BasePlayer) CheckThreeSameMessageCard(colors ...protos.Color) bool {

@@ -170,7 +170,7 @@ func (game *Game) SendPhaseStart() {
 	if player.IsAlive() {
 		if len(player.GetCards()) == 0 {
 			logger.Info(player, "没有情报可传，输掉了游戏")
-			game.GetDeck().Discard(player.DeleteAllCards()...)
+			game.GetDeck().Discard(player.DeleteAllMessageCards()...)
 			player.SetLose(true)
 			player.SetAlive(false)
 			for _, p := range game.GetPlayers() {
