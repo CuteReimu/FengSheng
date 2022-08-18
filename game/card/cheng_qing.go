@@ -62,7 +62,11 @@ func (card *ChengQing) Execute(g interfaces.IGame, r interfaces.IPlayer, args ..
 		}
 	}
 	g.GetDeck().Discard(card)
-	g.Post(g.MainPhase)
+	if g.GetDieState() == interfaces.DieStateWaitForChengQing {
+		g.AfterChengQing()
+	} else {
+		g.Post(g.MainPhase)
+	}
 }
 
 func (card *ChengQing) CanUse2(interfaces.IGame, interfaces.IPlayer, ...interface{}) bool {

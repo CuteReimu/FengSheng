@@ -81,6 +81,32 @@ func (r *RobotPlayer) NotifyReceivePhase() {
 func (r *RobotPlayer) NotifyDie(int, bool) {
 }
 
+func (r *RobotPlayer) NotifyWin(interfaces.IPlayer, []interfaces.IPlayer) {
+
+}
+
+func (r *RobotPlayer) NotifyAskForChengQing(_ interfaces.IPlayer, askWhom interfaces.IPlayer) {
+	if askWhom.Location() != r.Location() {
+		return
+	}
+	time.AfterFunc(time.Second/2, func() {
+		r.GetGame().Post(func() {
+			r.GetGame().Post(r.GetGame().AskNextForChengQing)
+		})
+	})
+}
+
+func (r *RobotPlayer) WaitForDieGiveCard(whoDie interfaces.IPlayer) {
+	if whoDie.Location() != r.Location() {
+		return
+	}
+	time.AfterFunc(time.Second, func() {
+		r.GetGame().Post(func() {
+			r.GetGame().Post(r.GetGame().AfterChengQing)
+		})
+	})
+}
+
 func autoSendMessageCard(r interfaces.IPlayer, lock bool) {
 	var card interfaces.ICard
 	for _, card = range r.GetCards() {

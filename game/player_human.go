@@ -185,6 +185,64 @@ func (r *HumanPlayer) NotifyDie(location int, loseGame bool) {
 	})
 }
 
+func (r *HumanPlayer) NotifyWin(declareWinner interfaces.IPlayer, winner []interfaces.IPlayer) {
+	msg := &protos.NotifyWinnerToc{
+		DeclarePlayerId: r.GetAlternativeLocation(declareWinner.Location()),
+		Identity:        make([]protos.Color, len(r.GetGame().GetPlayers())),
+		SecretTasks:     make([]protos.SecretTask, len(r.GetGame().GetPlayers())),
+	}
+	for _, p := range winner {
+		msg.WinnerIds = append(msg.WinnerIds, r.GetAlternativeLocation(p.Location()))
+	}
+	for _, p := range r.GetGame().GetPlayers() {
+		index := r.GetAbstractLocation(p.Location())
+		msg.Identity[index], msg.SecretTasks[index] = p.GetIdentity()
+	}
+	r.Send(msg)
+}
+
+func (r *HumanPlayer) NotifyAskForChengQing(whoDie interfaces.IPlayer, askWhom interfaces.IPlayer) {
+	msg := &protos.WaitForChengQingToc{
+		DiePlayerId:     r.GetAlternativeLocation(whoDie.Location()),
+		WaitingPlayerId: r.GetAlternativeLocation(askWhom.Location()),
+		WaitingSecond:   20,
+	}
+	if askWhom.Location() == r.Location() {
+		msg.Seq = r.Seq
+		seq := r.Seq
+		time.AfterFunc(time.Duration(msg.WaitingSecond)*time.Second, func() {
+			r.GetGame().Post(func() {
+				if r.Seq == seq {
+					r.Seq++
+					r.GetGame().Post(r.GetGame().AskNextForChengQing)
+				}
+			})
+		})
+	}
+	r.Send(msg)
+}
+
+func (r *HumanPlayer) WaitForDieGiveCard(whoDie interfaces.IPlayer) {
+	msg := &protos.WaitForDieGiveCardToc{
+		PlayerId:      r.GetAlternativeLocation(whoDie.Location()),
+		WaitingSecond: 30,
+		Seq:           r.Seq,
+	}
+	if whoDie.Location() == r.Location() {
+		msg.Seq = r.Seq
+		seq := r.Seq
+		time.AfterFunc(time.Duration(msg.WaitingSecond)*time.Second, func() {
+			r.GetGame().Post(func() {
+				if r.Seq == seq {
+					r.Seq++
+					r.GetGame().Post(r.GetGame().AfterChengQing)
+				}
+			})
+		})
+	}
+	r.Send(msg)
+}
+
 func (r *HumanPlayer) onEndMainPhase(pb *protos.EndMainPhaseTos) {
 	if pb.Seq != r.Seq {
 		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
@@ -449,6 +507,7 @@ func (r *HumanPlayer) onChooseWhetherReceive(pb *protos.ChooseWhetherReceiveTos)
 		return
 	}
 	if pb.Receive {
+		r.Seq++
 		r.GetGame().Post(r.GetGame().MessageMoveNext)
 	} else {
 		if r.Location() == r.GetGame().GetWhoseTurn() {
@@ -466,6 +525,87 @@ func (r *HumanPlayer) onChooseWhetherReceive(pb *protos.ChooseWhetherReceiveTos)
 			r.logger.Error("被锁定，必须接收")
 			return
 		}
+		r.Seq++
 		r.GetGame().Post(r.GetGame().OnChooseReceiveCard)
 	}
+}
+
+func (r *HumanPlayer) onEndFightPhase(pb *protos.EndFightPhaseTos) {
+	if pb.Seq != r.Seq {
+		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
+		return
+	}
+	if r.GetGame().GetCurrentPhase() != protos.Phase_Fight_Phase {
+		r.logger.Error("时机不对")
+		return
+	}
+	r.Seq++
+	r.GetGame().Post(r.GetGame().FightPhaseNext)
+}
+
+func (r *HumanPlayer) onChengQingSaveDie(pb *protos.ChengQingSaveDieTos) {
+	if pb.Seq != r.Seq {
+		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
+		return
+	}
+	if r.GetGame().GetDieState() != interfaces.DieStateWaitForChengQing {
+		r.logger.Error("现在不是使用澄清的时候")
+		return
+	}
+	card := r.FindCard(pb.CardId)
+	if card == nil {
+		r.logger.Error("没有这张牌")
+		return
+	}
+	if card.GetType() != protos.CardType_Cheng_Qing {
+		r.logger.Error("这张牌不是澄清，而是", card)
+		return
+	}
+	target := r.GetGame().GetPlayers()[r.GetGame().GetWhoDie()]
+	if card.CanUse(r.GetGame(), r, target, pb.TargetCardId) {
+		r.Seq++
+		if r.Timer != nil {
+			r.Timer.Stop()
+		}
+		card.Execute(r.GetGame(), r, target, pb.TargetCardId)
+	}
+}
+
+func (r *HumanPlayer) onDieGiveCard(pb *protos.DieGiveCardTos) {
+	if pb.Seq != r.Seq {
+		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
+		return
+	}
+	if r.GetGame().GetDieState() != interfaces.DieStateDying {
+		r.logger.Error("时机不对")
+		return
+	}
+	if pb.TargetPlayerId == 0 {
+		pb.Seq++
+		r.GetGame().Post(r.GetGame().AfterChengQing)
+		return
+	} else if pb.TargetPlayerId >= uint32(len(r.GetGame().GetPlayers())) {
+		r.logger.Error("目标错误: ", pb.TargetPlayerId)
+		return
+	}
+	if len(pb.CardId) == 0 {
+		r.logger.Warn("参数似乎有些不对，姑且认为不给牌吧")
+		return
+	}
+	var cards []interfaces.ICard
+	for _, cardId := range pb.CardId {
+		card := r.FindCard(cardId)
+		if card == nil {
+			r.logger.Error("没有这张牌")
+			return
+		}
+		cards = append(cards, card)
+	}
+	for _, card := range cards {
+		r.DeleteCard(card.GetId())
+	}
+	target := r.GetGame().GetPlayers()[r.GetAbstractLocation(int(pb.TargetPlayerId))]
+	target.AddCards(cards...)
+	logger.Info(r, "给了", target, cards)
+	r.GetGame().Post(r.GetGame().AfterChengQing)
 }

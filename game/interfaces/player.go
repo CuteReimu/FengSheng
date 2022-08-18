@@ -33,6 +33,9 @@ type IPlayer interface {
 	NotifyFightPhase(waitSecond uint32)
 	NotifyReceivePhase()
 	NotifyDie(location int, loseGame bool)
+	NotifyWin(declareWinner IPlayer, winner []IPlayer)
+	NotifyAskForChengQing(whoDie IPlayer, askWhom IPlayer)
+	WaitForDieGiveCard(whoDie IPlayer)
 	SetAlive(alive bool)
 	IsAlive() bool
 	SetLose(lose bool)

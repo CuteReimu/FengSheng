@@ -13,6 +13,7 @@ type IGame interface {
 	GetPlayers() []IPlayer
 	GetDeck() IDeck
 	GetRandom() *rand.Rand
+	GetWhoDie() int
 	GetWhoseTurn() int
 	GetCurrentCard() *CurrentCard
 	SetCurrentCard(currentCard *CurrentCard)
@@ -35,6 +36,18 @@ type IGame interface {
 	OnChooseReceiveCard()
 	FightPhaseNext()
 	ReceivePhase()
+	AskForChengQing()
+	AskNextForChengQing()
+	AfterChengQing()
 	NextTurn()
 	PlayerDiscardCard(player IPlayer, cards ...ICard)
+	GetDieState() DieState
 }
+
+type DieState int32
+
+const (
+	DieStateNone DieState = iota
+	DieStateWaitForChengQing
+	DieStateDying
+)

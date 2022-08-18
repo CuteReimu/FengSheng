@@ -27,12 +27,15 @@ type Game struct {
 	WhoseTurn          int
 	WhoseSendTurn      int
 	WhoseFightTurn     int
+	WhoDie             int
+	DieState           interfaces.DieState
 	CurrentMessageCard interfaces.ICard
 	MessageCardFaceUp  bool
 	CardDirection      protos.Direction
 	WhoIsLocked        []int
 	CurrentPhase       protos.Phase
 	Random             *rand.Rand
+	afterChengQing     func()
 	cellnet.EventQueue
 }
 
@@ -99,6 +102,12 @@ func (game *Game) Start(totalCount, robotCount int) {
 			humanMap[ev.Session().ID()].onSendMessageCard(pb)
 		case *protos.ChooseWhetherReceiveTos:
 			humanMap[ev.Session().ID()].onChooseWhetherReceive(pb)
+		case *protos.EndFightPhaseTos:
+			humanMap[ev.Session().ID()].onEndFightPhase(pb)
+		case *protos.ChengQingSaveDieTos:
+			humanMap[ev.Session().ID()].onChengQingSaveDie(pb)
+		case *protos.DieGiveCardTos:
+			humanMap[ev.Session().ID()].onDieGiveCard(pb)
 		}
 	})
 	p.Start()
@@ -265,6 +274,9 @@ func (game *Game) ReceivePhase() {
 		for _, p := range game.Players {
 			p.NotifyReceivePhase()
 		}
+		if game.checkWinOrDie() {
+			return
+		}
 	}
 	game.Post(game.NextTurn)
 }
@@ -287,6 +299,10 @@ func (game *Game) GetPlayers() []interfaces.IPlayer {
 
 func (game *Game) GetDeck() interfaces.IDeck {
 	return game.Deck
+}
+
+func (game *Game) GetWhoDie() int {
+	return game.WhoDie
 }
 
 func (game *Game) GetWhoseTurn() int {
@@ -341,6 +357,10 @@ func (game *Game) GetCurrentPhase() protos.Phase {
 	return game.CurrentPhase
 }
 
+func (game *Game) GetDieState() interfaces.DieState {
+	return game.DieState
+}
+
 func (game *Game) GetRandom() *rand.Rand {
 	return game.Random
 }
@@ -358,6 +378,149 @@ func (game *Game) PlayerDiscardCard(player interfaces.IPlayer, cards ...interfac
 				msg.Cards = append(msg.Cards, card.ToPbCard())
 			}
 			h.Send(msg)
+		}
+	}
+}
+
+func (game *Game) checkWinOrDie() bool {
+	var killer, stealer interfaces.IPlayer
+	var redPlayers, bluePlayers []interfaces.IPlayer
+	for _, p := range game.GetPlayers() {
+		if p.IsAlive() {
+			identity, secretTask := p.GetIdentity()
+			switch identity {
+			case protos.Color_Black:
+				switch secretTask {
+				case protos.SecretTask_Killer:
+					killer = p
+				case protos.SecretTask_Stealer:
+					stealer = p
+				}
+			case protos.Color_Red:
+				redPlayers = append(redPlayers, p)
+			case protos.Color_Blue:
+				bluePlayers = append(bluePlayers, p)
+			}
+		}
+	}
+	player := game.GetPlayers()[game.WhoseSendTurn]
+	var red, blue, black int
+	for _, card := range player.GetMessageCards() {
+		for _, color := range card.GetColor() {
+			switch color {
+			case protos.Color_Black:
+				black++
+			case protos.Color_Red:
+				red++
+			case protos.Color_Blue:
+				blue++
+			}
+		}
+	}
+	var declareWinner interfaces.IPlayer
+	var winner []interfaces.IPlayer
+	identity, secretTask := player.GetIdentity()
+	switch identity {
+	case protos.Color_Black:
+		if secretTask == protos.SecretTask_Collector && (red >= 3 || blue >= 3) {
+			declareWinner = player
+			winner = append(winner, player)
+		}
+	case protos.Color_Red:
+		if red >= 3 {
+			declareWinner = player
+			winner = redPlayers
+		}
+	case protos.Color_Blue:
+		if blue >= 3 {
+			declareWinner = player
+			winner = bluePlayers
+		}
+	}
+	if declareWinner != nil && stealer != nil && game.WhoseTurn == stealer.Location() {
+		declareWinner = stealer
+		winner = []interfaces.IPlayer{stealer}
+	}
+	if declareWinner != nil {
+		logger.Info(declareWinner, "宣告胜利，胜利者有", winner)
+		for _, p := range game.GetPlayers() {
+			p.NotifyWin(declareWinner, winner)
+		}
+		return true
+	}
+	if black >= 3 {
+		if red+blue < 2 {
+			killer = nil
+		}
+		logger.Info(game.Players[game.WhoDie], "濒死")
+		game.WhoDie = game.WhoseSendTurn
+		game.DieState = interfaces.DieStateWaitForChengQing
+		game.AskForChengQing()
+		game.afterChengQing = func() {
+			if !game.Players[game.WhoDie].IsAlive() && killer != nil && game.WhoseTurn == killer.Location() {
+				logger.Info(declareWinner, "宣告胜利，胜利者有", winner)
+				for _, p := range game.GetPlayers() {
+					p.NotifyWin(killer, []interfaces.IPlayer{killer})
+				}
+				return
+			}
+			game.Post(game.NextTurn)
+		}
+		return true
+	}
+	return false
+}
+
+func (game *Game) AskForChengQing() {
+	if !game.Players[game.WhoDie].IsAlive() {
+		game.AskNextForChengQing()
+	}
+	logger.Info("正在询问", game.Players[game.WhoseFightTurn], "是否使用澄清")
+	for _, p := range game.GetPlayers() {
+		p.NotifyAskForChengQing(game.Players[game.WhoDie], game.Players[game.WhoseFightTurn])
+	}
+}
+
+func (game *Game) AskNextForChengQing() {
+	for {
+		if game.Players[game.WhoseFightTurn].IsAlive() {
+			break
+		}
+		game.WhoseFightTurn = (game.WhoseFightTurn + 1) % len(game.Players)
+		if game.WhoseFightTurn == game.WhoseTurn {
+			player := game.Players[game.WhoDie]
+			player.SetAlive(false)
+			game.GetDeck().Discard(player.DeleteAllCards()...)
+			game.GetDeck().Discard(player.DeleteAllMessageCards()...)
+			for _, p := range game.GetPlayers() {
+				p.NotifyDie(game.WhoDie, false)
+			}
+			logger.Info("无人拯救，", player, "已死亡")
+			game.DieState = interfaces.DieStateDying
+			break
+		}
+	}
+	for _, p := range game.GetPlayers() {
+		p.NotifyAskForChengQing(game.Players[game.WhoseSendTurn], game.Players[game.WhoseFightTurn])
+	}
+}
+
+func (game *Game) AfterChengQing() {
+	var black int
+	for _, card := range game.Players[game.WhoseSendTurn].GetMessageCards() {
+		if utils.IsColorIn(protos.Color_Black, card.GetColor()) {
+			black++
+		}
+	}
+	if black >= 3 {
+		for _, p := range game.GetPlayers() {
+			p.NotifyAskForChengQing(game.Players[game.WhoseSendTurn], game.Players[game.WhoseFightTurn])
+		}
+	} else {
+		game.DieState = interfaces.DieStateNone
+		if game.afterChengQing != nil {
+			game.Post(game.afterChengQing)
+			game.afterChengQing = nil
 		}
 	}
 }
