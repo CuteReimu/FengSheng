@@ -265,3 +265,22 @@ message cheng_qing_save_die_tos {
   uint32 target_card_id = 3; // 目标卡牌ID
   uint32 seq            = 4;
 }
+
+// 等待死亡时给三张牌
+message wait_for_die_give_card_toc {
+  uint32 player_id      = 1;
+  uint32 waiting_second = 2; // 读多少秒
+  uint32 seq            = 3;
+}
+
+message die_give_card_tos {
+  uint32          target_player_id = 1; // 不给就填0
+  repeated uint32 card_id          = 2; // 不给就填空数组
+  uint32          seq              = 3;
+}
+
+message notify_die_give_card_toc {
+  uint32        player_id        = 1;
+  uint32        target_player_id = 2; // 不给就填0
+  repeated card card_id          = 3; // 不给就填空数组
+}
