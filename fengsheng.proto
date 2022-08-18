@@ -231,6 +231,11 @@ message choose_whether_receive_tos {
   uint32 seq     = 2;
 }
 
+// 争夺阶段，轮到自己，选择什么都不出
+message end_fight_phase_tos {
+  uint32 seq = 1;
+}
+
 // 通知客户端谁死亡了
 message notify_die_toc {
   uint32 player_id = 1;
@@ -243,4 +248,20 @@ message notify_winner_toc {
   repeated uint32      winner_ids        = 2;
   repeated color       identity          = 3; // 所有人的身份，自己的下标为0，右手第一个人的下标为1
   repeated secret_task secret_tasks      = 4; // 神秘人任务，下标同上一一对应，不是神秘人的那个位置会空出来
+}
+
+// 濒死求澄清
+message wait_for_cheng_qing_toc {
+  uint32 die_player_id     = 1; // 谁濒死
+  uint32 waiting_player_id = 2; // 读秒的玩家ID
+  uint32 waiting_second    = 3; // 读多少秒
+  uint32 seq               = 4;
+}
+
+// 是否使用澄清
+message cheng_qing_save_die_tos {
+  bool   use            = 1; // 是否使用澄清
+  uint32 card_id        = 2; // 使用的澄清卡牌ID
+  uint32 target_card_id = 3; // 目标卡牌ID
+  uint32 seq            = 4;
 }
