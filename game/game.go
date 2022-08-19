@@ -108,6 +108,16 @@ func (game *Game) Start(totalCount, robotCount int) {
 			humanMap[ev.Session().ID()].onChengQingSaveDie(pb)
 		case *protos.DieGiveCardTos:
 			humanMap[ev.Session().ID()].onDieGiveCard(pb)
+		case *protos.UsePoYiTos:
+			humanMap[ev.Session().ID()].onUsePoYi(pb)
+		case *protos.PoYiShowTos:
+			humanMap[ev.Session().ID()].onPoYiShow(pb)
+		case *protos.UseJieHuoTos:
+			humanMap[ev.Session().ID()].onUseJieHuo(pb)
+		case *protos.UseDiaoBaoTos:
+			humanMap[ev.Session().ID()].onUseDiaoBao(pb)
+		case *protos.UseWuDaoTos:
+			humanMap[ev.Session().ID()].onUseWuDao(pb)
 		}
 	})
 	p.Start()
@@ -261,7 +271,7 @@ func (game *Game) FightPhaseNext() {
 		}
 	}
 	for _, p := range game.Players {
-		p.NotifyFightPhase(5)
+		p.NotifyFightPhase(20)
 	}
 }
 
@@ -311,6 +321,10 @@ func (game *Game) GetWhoseTurn() int {
 
 func (game *Game) GetWhoseSendTurn() int {
 	return game.WhoseSendTurn
+}
+
+func (game *Game) SetWhoseSendTurn(whoseSendTurn int) {
+	game.WhoseSendTurn = whoseSendTurn
 }
 
 func (game *Game) GetWhoseFightTurn() int {

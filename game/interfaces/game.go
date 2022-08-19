@@ -16,6 +16,7 @@ type IGame interface {
 	SetCurrentCard(currentCard *CurrentCard)
 	GetCurrentPhase() protos.Phase
 	GetWhoseSendTurn() int
+	SetWhoseSendTurn(whoseSendTurn int)
 	GetWhoseFightTurn() int
 	GetMessageCardDirection() protos.Direction
 	GetCurrentMessageCard() ICard

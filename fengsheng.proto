@@ -284,3 +284,68 @@ message notify_die_give_card_toc {
   uint32        target_player_id = 2; // 不给就填0
   repeated card card_id          = 3; // 不给就填空数组
 }
+
+// 使用破译
+message use_po_yi_tos {
+  uint32 card_id = 1; // 用的那张破译牌
+  uint32 seq     = 2;
+}
+
+// 通知所有人使用破译，并询问是否翻开并摸一张牌（只有黑情报才能翻开）
+message use_po_yi_toc {
+  card   card           = 1; // 用的那张破译牌
+  uint32 player_id      = 2; // 使用者
+  card   message_card   = 3; // 只有使用者才能看到这张情报
+  uint32 waiting_second = 4;
+  uint32 seq            = 5;
+}
+
+message po_yi_show_tos {
+  bool   show = 1; // 是否翻开并摸一张牌（只有黑情报才能翻开）
+  uint32 seq  = 2;
+}
+
+message po_yi_show_toc {
+  uint32 player_id    = 1; // 使用者
+  bool   show         = 2; // 是否翻开并摸一张牌（只有黑情报才能翻开）（摸牌直接走摸牌协议）
+  card   message_card = 3; // 只有选择翻开时，才会显示这个情报
+}
+
+// 使用截获
+message use_jie_huo_tos {
+  uint32 card_id = 1; // 用的那张截获牌
+  uint32 seq     = 2;
+}
+
+// 通知所有人使用截获
+message use_jie_huo_toc {
+  card   card      = 1; // 用的那张截获牌
+  uint32 player_id = 2; // 使用者
+}
+
+// 使用调包
+message use_diao_bao_tos {
+  uint32 card_id = 1; // 用的那张截获牌
+  uint32 seq     = 2;
+}
+
+// 通知所有人使用调包
+message use_diao_bao_toc {
+  uint32 card_id          = 1; // 用的那张调包牌（但是调包后，这张调包会面朝下代替原情报继续传递），只有使用调包的人能收到这个值
+  card   old_message_card = 2; // 被弃掉的那张原来的情报
+  uint32 player_id        = 3; // 使用者
+}
+
+// 使用误导
+message use_wu_dao_tos {
+  uint32 card_id          = 1; // 用的那张误导牌
+  uint32 target_player_id = 2; // 误导的目标
+  uint32 seq              = 3;
+}
+
+// 通知所有人使用误导
+message use_wu_dao_toc {
+  card   card             = 1; // 用的那张误导牌
+  uint32 player_id        = 2; // 使用者
+  uint32 target_player_id = 3; // 误导的目标
+}

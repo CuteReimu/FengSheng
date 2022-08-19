@@ -1,6 +1,7 @@
 package card
 
 import (
+	"github.com/CuteReimu/FengSheng/game"
 	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
 	"github.com/CuteReimu/FengSheng/utils"
@@ -18,24 +19,36 @@ func (card *JieHuo) GetType() protos.CardType {
 	return protos.CardType_Jie_Huo
 }
 
-func (card *JieHuo) CanUse(g interfaces.IGame, user interfaces.IPlayer, args ...interface{}) bool {
-	//TODO implement me
-	panic("implement me")
+func (card *JieHuo) CanUse(game interfaces.IGame, _ interfaces.IPlayer, _ ...interface{}) bool {
+	if game.GetCurrentPhase() != protos.Phase_Fight_Phase {
+		logger.Error("截获的使用时机不对")
+		return false
+	}
+	return true
 }
 
-func (card *JieHuo) Execute(g interfaces.IGame, user interfaces.IPlayer, args ...interface{}) {
-	//TODO implement me
-	panic("implement me")
+func (card *JieHuo) Execute(g interfaces.IGame, r interfaces.IPlayer, _ ...interface{}) {
+	g.SetWhoseSendTurn(r.Location())
+	for _, player := range g.GetPlayers() {
+		if p, ok := player.(*game.HumanPlayer); ok {
+			msg := &protos.UseJieHuoToc{
+				Card:     card.ToPbCard(),
+				PlayerId: p.GetAlternativeLocation(r.Location()),
+			}
+			p.Send(msg)
+		}
+	}
+	for _, p := range g.GetPlayers() {
+		p.NotifyFightPhase(20)
+	}
 }
 
-func (card *JieHuo) CanUse2(g interfaces.IGame, user interfaces.IPlayer, args ...interface{}) bool {
-	//TODO implement me
-	panic("implement me")
+func (card *JieHuo) CanUse2(interfaces.IGame, interfaces.IPlayer, ...interface{}) bool {
+	panic("unreachable code")
 }
 
-func (card *JieHuo) Execute2(g interfaces.IGame, user interfaces.IPlayer, args ...interface{}) {
-	//TODO implement me
-	panic("implement me")
+func (card *JieHuo) Execute2(interfaces.IGame, interfaces.IPlayer, ...interface{}) {
+	panic("unreachable code")
 }
 
 func (card *JieHuo) ToPbCard() *protos.Card {

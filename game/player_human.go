@@ -620,3 +620,127 @@ func (r *HumanPlayer) onDieGiveCard(pb *protos.DieGiveCardTos) {
 	logger.Info(r, "给了", target, cards)
 	r.GetGame().Post(r.GetGame().AfterChengQing)
 }
+
+func (r *HumanPlayer) onUsePoYi(pb *protos.UsePoYiTos) {
+	if pb.Seq != r.Seq {
+		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
+		return
+	}
+	card := r.FindCard(pb.CardId)
+	if card == nil {
+		r.logger.Error("没有这张牌")
+		return
+	}
+	if card.GetType() != protos.CardType_Po_Yi {
+		r.logger.Error("这张牌不是破译，而是", card)
+		return
+	}
+	if card.CanUse(r.GetGame(), r) {
+		r.Seq++
+		if r.Timer != nil {
+			r.Timer.Stop()
+		}
+		card.Execute(r.GetGame(), r)
+	}
+}
+
+func (r *HumanPlayer) onPoYiShow(pb *protos.PoYiShowTos) {
+	if pb.Seq != r.Seq {
+		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
+		return
+	}
+	currentCard := r.GetGame().GetCurrentCard()
+	if currentCard == nil {
+		r.logger.Error("没有这张牌")
+		return
+	}
+	if currentCard.Player != r.Location() {
+		r.logger.Error("你不是破译的使用者")
+		return
+	}
+	if currentCard.Card.GetType() != protos.CardType_Po_Yi {
+		r.logger.Error("这张牌不是误导，而是", currentCard)
+		return
+	}
+	if currentCard.Card.CanUse2(r.GetGame(), r, pb.Show) {
+		r.Seq++
+		if r.Timer != nil {
+			r.Timer.Stop()
+		}
+		currentCard.Card.Execute2(r.GetGame(), r, pb.Show)
+	}
+}
+
+func (r *HumanPlayer) onUseJieHuo(pb *protos.UseJieHuoTos) {
+	if pb.Seq != r.Seq {
+		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
+		return
+	}
+	card := r.FindCard(pb.CardId)
+	if card == nil {
+		r.logger.Error("没有这张牌")
+		return
+	}
+	if card.GetType() != protos.CardType_Jie_Huo {
+		r.logger.Error("这张牌不是截获，而是", card)
+		return
+	}
+	if card.CanUse(r.GetGame(), r) {
+		r.Seq++
+		if r.Timer != nil {
+			r.Timer.Stop()
+		}
+		card.Execute(r.GetGame(), r)
+	}
+}
+
+func (r *HumanPlayer) onUseWuDao(pb *protos.UseWuDaoTos) {
+	if pb.Seq != r.Seq {
+		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
+		return
+	}
+	card := r.FindCard(pb.CardId)
+	if card == nil {
+		r.logger.Error("没有这张牌")
+		return
+	}
+	if card.GetType() != protos.CardType_Wu_Dao {
+		r.logger.Error("这张牌不是误导，而是", card)
+		return
+	}
+	if pb.TargetPlayerId >= uint32(len(r.GetGame().GetPlayers())) {
+		r.logger.Error("目标错误: ", pb.TargetPlayerId)
+		return
+	}
+	target := r.GetGame().GetPlayers()[r.GetAbstractLocation(int(pb.TargetPlayerId))]
+	if card.CanUse(r.GetGame(), r, target) {
+		r.Seq++
+		if r.Timer != nil {
+			r.Timer.Stop()
+		}
+		card.Execute(r.GetGame(), r, target)
+	}
+}
+
+func (r *HumanPlayer) onUseDiaoBao(pb *protos.UseDiaoBaoTos) {
+	if pb.Seq != r.Seq {
+		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
+		return
+	}
+	card := r.FindCard(pb.CardId)
+	if card == nil {
+		r.logger.Error("没有这张牌")
+		return
+	}
+	if card.GetType() != protos.CardType_Diao_Bao {
+		r.logger.Error("这张牌不是调包，而是", card)
+		return
+	}
+	if card.CanUse(r.GetGame(), r) {
+		r.Seq++
+		if r.Timer != nil {
+			r.Timer.Stop()
+		}
+		card.Execute(r.GetGame(), r)
+	}
+}
