@@ -100,7 +100,7 @@ func (r *HumanPlayer) NotifySendPhaseStart(waitSecond uint32) {
 	r.Send(msg)
 }
 
-func (r *HumanPlayer) NotifySendPhase(waitSecond uint32) {
+func (r *HumanPlayer) NotifySendPhase(waitSecond uint32, isFirstTime bool) {
 	playerId := r.GetAlternativeLocation(r.GetGame().GetWhoseTurn())
 	msg := &protos.NotifyPhaseToc{
 		CurrentPlayerId:      playerId,
@@ -110,7 +110,7 @@ func (r *HumanPlayer) NotifySendPhase(waitSecond uint32) {
 		WaitingPlayerId:      r.GetAlternativeLocation(r.GetGame().GetWhoseSendTurn()),
 		WaitingSecond:        waitSecond,
 	}
-	if r.GetGame().IsMessageCardFaceUp() {
+	if isFirstTime && r.GetGame().GetWhoseTurn() == r.Location() || r.GetGame().IsMessageCardFaceUp() {
 		msg.MessageCard = r.GetGame().GetCurrentMessageCard().ToPbCard()
 	}
 	for _, id := range r.GetGame().GetLockPlayers() {

@@ -29,7 +29,7 @@ type IPlayer interface {
 	NotifyDrawPhase()
 	NotifyMainPhase(waitSecond uint32)
 	NotifySendPhaseStart(waitSecond uint32)
-	NotifySendPhase(waitSecond uint32)
+	NotifySendPhase(waitSecond uint32, isFirstTime bool)
 	NotifyFightPhase(waitSecond uint32)
 	NotifyReceivePhase()
 	NotifyDie(location int, loseGame bool)

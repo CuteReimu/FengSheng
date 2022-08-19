@@ -208,7 +208,7 @@ func (game *Game) OnSendCard(card interfaces.ICard, dir protos.Direction, target
 	game.CurrentPhase = protos.Phase_Send_Phase
 	logger.Info("情报到达", game.Players[game.WhoseSendTurn], "面前")
 	for _, p := range game.Players {
-		p.NotifySendPhase(20)
+		p.NotifySendPhase(20, true)
 	}
 }
 
@@ -237,7 +237,7 @@ func (game *Game) MessageMoveNext() {
 	}
 	logger.Info("情报到达", game.Players[game.WhoseSendTurn], "面前")
 	for _, p := range game.Players {
-		p.NotifySendPhase(20)
+		p.NotifySendPhase(20, false)
 	}
 }
 
