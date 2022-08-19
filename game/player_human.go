@@ -123,7 +123,18 @@ func (r *HumanPlayer) NotifySendPhase(waitSecond uint32, isFirstTime bool) {
 			r.GetGame().Post(func() {
 				if seq == r.Seq {
 					r.Seq++
-					r.GetGame().Post(r.GetGame().MessageMoveNext)
+					if func(r interfaces.IPlayer) bool {
+						for _, p := range r.GetGame().GetLockPlayers() {
+							if r.Location() == p {
+								return true
+							}
+						}
+						return r.GetGame().GetWhoseSendTurn() == r.GetGame().GetWhoseTurn()
+					}(r) {
+						r.GetGame().Post(r.GetGame().OnChooseReceiveCard)
+					} else {
+						r.GetGame().Post(r.GetGame().MessageMoveNext)
+					}
 				}
 			})
 		})
