@@ -508,7 +508,7 @@ func (r *HumanPlayer) onChooseWhetherReceive(pb *protos.ChooseWhetherReceiveTos)
 	}
 	if pb.Receive {
 		r.Seq++
-		r.GetGame().Post(r.GetGame().MessageMoveNext)
+		r.GetGame().Post(r.GetGame().OnChooseReceiveCard)
 	} else {
 		if r.Location() == r.GetGame().GetWhoseTurn() {
 			r.logger.Error("传出者必须接收")
