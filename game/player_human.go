@@ -537,7 +537,7 @@ func (r *HumanPlayer) onChooseWhetherReceive(pb *protos.ChooseWhetherReceiveTos)
 			return
 		}
 		r.Seq++
-		r.GetGame().Post(r.GetGame().OnChooseReceiveCard)
+		r.GetGame().Post(r.GetGame().MessageMoveNext)
 	}
 }
 
