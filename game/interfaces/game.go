@@ -1,10 +1,7 @@
 package interfaces
 
 import (
-	_ "github.com/CuteReimu/FengSheng/core"
 	"github.com/CuteReimu/FengSheng/protos"
-	_ "github.com/davyxu/cellnet/peer/tcp"
-	_ "github.com/davyxu/cellnet/proc/tcp"
 	"math/rand"
 )
 
