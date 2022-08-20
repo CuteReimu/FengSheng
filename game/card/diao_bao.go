@@ -28,6 +28,8 @@ func (card *DiaoBao) CanUse(game interfaces.IGame, _ interfaces.IPlayer, _ ...in
 }
 
 func (card *DiaoBao) Execute(g interfaces.IGame, r interfaces.IPlayer, _ ...interface{}) {
+	logger.Info(r, "使用了", card)
+	r.DeleteCard(card.GetId())
 	oldCard := g.GetCurrentMessageCard()
 	g.GetDeck().Discard(oldCard)
 	g.SetCurrentMessageCard(card)

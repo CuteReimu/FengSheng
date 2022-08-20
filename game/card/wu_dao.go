@@ -19,8 +19,9 @@ func (card *WuDao) GetType() protos.CardType {
 	return protos.CardType_Wu_Dao
 }
 
-func (card *WuDao) CanUse(game interfaces.IGame, _ interfaces.IPlayer, args ...interface{}) bool {
+func (card *WuDao) CanUse(game interfaces.IGame, r interfaces.IPlayer, args ...interface{}) bool {
 	target := args[0].(interfaces.IPlayer)
+	logger.Info(r, "对", target, "使用了", card)
 	if game.GetCurrentPhase() != protos.Phase_Fight_Phase {
 		logger.Error("误导的使用时机不对")
 		return false
@@ -34,6 +35,7 @@ func (card *WuDao) CanUse(game interfaces.IGame, _ interfaces.IPlayer, args ...i
 
 func (card *WuDao) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...interface{}) {
 	target := args[0].(interfaces.IPlayer)
+	r.DeleteCard(card.GetId())
 	g.SetWhoseSendTurn(target.Location())
 	for _, player := range g.GetPlayers() {
 		if p, ok := player.(*game.HumanPlayer); ok {

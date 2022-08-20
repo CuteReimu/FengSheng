@@ -5,6 +5,7 @@ import (
 	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
 	"github.com/CuteReimu/FengSheng/utils"
+	"time"
 )
 
 type PoYi struct {
@@ -28,6 +29,8 @@ func (card *PoYi) CanUse(game interfaces.IGame, r interfaces.IPlayer, _ ...inter
 }
 
 func (card *PoYi) Execute(g interfaces.IGame, r interfaces.IPlayer, _ ...interface{}) {
+	logger.Info(r, "使用了", card)
+	r.DeleteCard(card.GetId())
 	g.SetCurrentCard(&interfaces.CurrentCard{Card: card, Player: r.Location(), TargetPlayer: r.Location()})
 	for _, player := range g.GetPlayers() {
 		if p, ok := player.(*game.HumanPlayer); ok {
@@ -42,7 +45,11 @@ func (card *PoYi) Execute(g interfaces.IGame, r interfaces.IPlayer, _ ...interfa
 			}
 			p.Send(msg)
 		} else {
-			card.showAndDrawCard(g, r, utils.IsColorIn(protos.Color_Black, g.GetCurrentMessageCard().GetColor()))
+			time.AfterFunc(time.Second, func() {
+				g.Post(func() {
+					card.showAndDrawCard(g, r, utils.IsColorIn(protos.Color_Black, g.GetCurrentMessageCard().GetColor()))
+				})
+			})
 		}
 	}
 }
@@ -68,6 +75,7 @@ func (card *PoYi) ToPbCard() *protos.Card {
 }
 
 func (card *PoYi) showAndDrawCard(g interfaces.IGame, r interfaces.IPlayer, show bool) {
+	logger.Info(g.GetCurrentMessageCard(), "被翻开了")
 	g.SetMessageCardFaceUp(true)
 	r.Draw(1)
 	for _, player := range g.GetPlayers() {
