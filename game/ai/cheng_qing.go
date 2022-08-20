@@ -19,13 +19,9 @@ type playerAndCard struct {
 
 func chengQing(player interfaces.IPlayer, card interfaces.ICard) bool {
 	var playerAndCards []playerAndCard
-	for _, p := range player.GetGame().GetPlayers() {
-		if p.IsAlive() {
-			for _, c := range p.GetMessageCards() {
-				if utils.IsColorIn(protos.Color_Black, c.GetColor()) {
-					playerAndCards = append(playerAndCards, playerAndCard{p, c})
-				}
-			}
+	for _, c := range player.GetMessageCards() {
+		if utils.IsColorIn(protos.Color_Black, c.GetColor()) {
+			playerAndCards = append(playerAndCards, playerAndCard{player, c})
 		}
 	}
 	if len(playerAndCards) == 0 {
