@@ -19,9 +19,13 @@ func (card *JieHuo) GetType() protos.CardType {
 	return protos.CardType_Jie_Huo
 }
 
-func (card *JieHuo) CanUse(game interfaces.IGame, _ interfaces.IPlayer, _ ...interface{}) bool {
+func (card *JieHuo) CanUse(game interfaces.IGame, r interfaces.IPlayer, _ ...interface{}) bool {
 	if game.GetCurrentPhase() != protos.Phase_Fight_Phase {
 		logger.Error("截获的使用时机不对")
+		return false
+	}
+	if game.GetWhoseSendTurn() == r.Location() {
+		logger.Error("情报在自己面前不能使用截获")
 		return false
 	}
 	return true
