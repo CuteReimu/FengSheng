@@ -102,19 +102,29 @@ func (r *HumanPlayer) NotifySendPhaseStart(waitSecond uint32) {
 
 func (r *HumanPlayer) NotifySendPhase(waitSecond uint32, isFirstTime bool) {
 	playerId := r.GetAlternativeLocation(r.GetGame().GetWhoseTurn())
+	if isFirstTime {
+		msg := &protos.SendMessageCardToc{
+			PlayerId:       playerId,
+			TargetPlayerId: r.GetAlternativeLocation(r.GetGame().GetWhoseSendTurn()),
+			CardDir:        r.GetGame().GetMessageCardDirection(),
+		}
+		if r.GetGame().GetWhoseTurn() == r.Location() {
+			msg.CardId = r.GetGame().GetCurrentMessageCard().GetId()
+		}
+		for _, id := range r.GetGame().GetLockPlayers() {
+			msg.LockPlayerIds = append(msg.LockPlayerIds, r.GetAlternativeLocation(id))
+		}
+	}
 	msg := &protos.NotifyPhaseToc{
-		CurrentPlayerId:      playerId,
-		CurrentPhase:         protos.Phase_Send_Phase,
-		IntelligencePlayerId: r.GetAlternativeLocation(r.GetGame().GetWhoseSendTurn()),
-		MessageCardDir:       r.GetGame().GetMessageCardDirection(),
-		WaitingPlayerId:      r.GetAlternativeLocation(r.GetGame().GetWhoseSendTurn()),
-		WaitingSecond:        waitSecond,
+		CurrentPlayerId: playerId,
+		CurrentPhase:    protos.Phase_Send_Phase,
+		MessagePlayerId: r.GetAlternativeLocation(r.GetGame().GetWhoseSendTurn()),
+		MessageCardDir:  r.GetGame().GetMessageCardDirection(),
+		WaitingPlayerId: r.GetAlternativeLocation(r.GetGame().GetWhoseSendTurn()),
+		WaitingSecond:   waitSecond,
 	}
-	if isFirstTime && r.GetGame().GetWhoseTurn() == r.Location() || r.GetGame().IsMessageCardFaceUp() {
+	if r.GetGame().IsMessageCardFaceUp() {
 		msg.MessageCard = r.GetGame().GetCurrentMessageCard().ToPbCard()
-	}
-	for _, id := range r.GetGame().GetLockPlayers() {
-		msg.LockPlayerIds = append(msg.LockPlayerIds, r.GetAlternativeLocation(id))
 	}
 	if r.Location() == r.GetGame().GetWhoseSendTurn() {
 		msg.Seq = r.Seq
@@ -142,21 +152,22 @@ func (r *HumanPlayer) NotifySendPhase(waitSecond uint32, isFirstTime bool) {
 	r.Send(msg)
 }
 
+func (r *HumanPlayer) NotifyChooseReceiveCard() {
+	r.Send(&protos.ChooseReceiveToc{PlayerId: r.GetAlternativeLocation(r.GetGame().GetWhoseSendTurn())})
+}
+
 func (r *HumanPlayer) NotifyFightPhase(waitSecond uint32) {
 	playerId := r.GetAlternativeLocation(r.GetGame().GetWhoseTurn())
 	msg := &protos.NotifyPhaseToc{
-		CurrentPlayerId:      playerId,
-		CurrentPhase:         protos.Phase_Fight_Phase,
-		IntelligencePlayerId: r.GetAlternativeLocation(r.GetGame().GetWhoseSendTurn()),
-		MessageCardDir:       r.GetGame().GetMessageCardDirection(),
-		WaitingPlayerId:      r.GetAlternativeLocation(r.GetGame().GetWhoseFightTurn()),
-		WaitingSecond:        waitSecond,
+		CurrentPlayerId: playerId,
+		CurrentPhase:    protos.Phase_Fight_Phase,
+		MessagePlayerId: r.GetAlternativeLocation(r.GetGame().GetWhoseSendTurn()),
+		MessageCardDir:  r.GetGame().GetMessageCardDirection(),
+		WaitingPlayerId: r.GetAlternativeLocation(r.GetGame().GetWhoseFightTurn()),
+		WaitingSecond:   waitSecond,
 	}
 	if r.GetGame().IsMessageCardFaceUp() {
 		msg.MessageCard = r.GetGame().GetCurrentMessageCard().ToPbCard()
-	}
-	for _, id := range r.GetGame().GetLockPlayers() {
-		msg.LockPlayerIds = append(msg.LockPlayerIds, r.GetAlternativeLocation(id))
 	}
 	if r.Location() == r.GetGame().GetWhoseFightTurn() {
 		msg.Seq = r.Seq
@@ -174,19 +185,14 @@ func (r *HumanPlayer) NotifyFightPhase(waitSecond uint32) {
 }
 
 func (r *HumanPlayer) NotifyReceivePhase() {
-	playerId := r.GetAlternativeLocation(r.GetGame().GetWhoseTurn())
-	msg := &protos.NotifyPhaseToc{
-		CurrentPlayerId:      playerId,
-		CurrentPhase:         protos.Phase_Receive_Phase,
-		IntelligencePlayerId: r.GetAlternativeLocation(r.GetGame().GetWhoseSendTurn()),
-		MessageCardDir:       r.GetGame().GetMessageCardDirection(),
-		MessageCard:          r.GetGame().GetCurrentMessageCard().ToPbCard(),
-		WaitingPlayerId:      r.GetAlternativeLocation(r.GetGame().GetWhoseFightTurn()),
-	}
-	for _, id := range r.GetGame().GetLockPlayers() {
-		msg.LockPlayerIds = append(msg.LockPlayerIds, r.GetAlternativeLocation(id))
-	}
-	r.Send(msg)
+	r.Send(&protos.NotifyPhaseToc{
+		CurrentPlayerId: r.GetAlternativeLocation(r.GetGame().GetWhoseTurn()),
+		CurrentPhase:    protos.Phase_Receive_Phase,
+		MessagePlayerId: r.GetAlternativeLocation(r.GetGame().GetWhoseSendTurn()),
+		MessageCardDir:  r.GetGame().GetMessageCardDirection(),
+		MessageCard:     r.GetGame().GetCurrentMessageCard().ToPbCard(),
+		WaitingPlayerId: r.GetAlternativeLocation(r.GetGame().GetWhoseFightTurn()),
+	})
 }
 
 func (r *HumanPlayer) NotifyDie(location int, loseGame bool) {

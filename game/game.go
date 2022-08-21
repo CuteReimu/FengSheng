@@ -256,6 +256,7 @@ func (game *Game) OnChooseReceiveCard() {
 	game.WhoseFightTurn = game.WhoseSendTurn
 	game.CurrentPhase = protos.Phase_Fight_Phase
 	for _, p := range game.Players {
+		p.NotifyChooseReceiveCard()
 		p.NotifyFightPhase(20)
 	}
 }

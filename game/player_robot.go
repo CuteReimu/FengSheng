@@ -66,6 +66,9 @@ func (r *RobotPlayer) NotifySendPhase(uint32, bool) {
 	})
 }
 
+func (r *RobotPlayer) NotifyChooseReceiveCard() {
+}
+
 func (r *RobotPlayer) NotifyFightPhase(uint32) {
 	if r.Location() != r.GetGame().GetWhoseFightTurn() {
 		return
@@ -82,7 +85,6 @@ func (r *RobotPlayer) NotifyDie(int, bool) {
 }
 
 func (r *RobotPlayer) NotifyWin(interfaces.IPlayer, []interfaces.IPlayer) {
-
 }
 
 func (r *RobotPlayer) NotifyAskForChengQing(_ interfaces.IPlayer, askWhom interfaces.IPlayer) {
