@@ -469,6 +469,7 @@ func (game *Game) checkWinOrDie() bool {
 		logger.Info(game.Players[game.WhoDie], "濒死")
 		game.WhoDie = game.WhoseSendTurn
 		game.DieState = interfaces.DieStateWaitForChengQing
+		game.WhoseFightTurn = game.WhoseTurn
 		game.AskForChengQing()
 		game.afterChengQing = func() {
 			if !game.Players[game.WhoDie].IsAlive() && killer != nil && game.WhoseTurn == killer.Location() {
@@ -486,7 +487,7 @@ func (game *Game) checkWinOrDie() bool {
 }
 
 func (game *Game) AskForChengQing() {
-	if !game.Players[game.WhoDie].IsAlive() {
+	if !game.Players[game.WhoseFightTurn].IsAlive() {
 		game.AskNextForChengQing()
 	}
 	logger.Info("正在询问", game.Players[game.WhoseFightTurn], "是否使用澄清")
@@ -497,9 +498,6 @@ func (game *Game) AskForChengQing() {
 
 func (game *Game) AskNextForChengQing() {
 	for {
-		if game.Players[game.WhoseFightTurn].IsAlive() {
-			break
-		}
 		game.WhoseFightTurn = (game.WhoseFightTurn + 1) % len(game.Players)
 		if game.WhoseFightTurn == game.WhoseTurn {
 			player := game.Players[game.WhoDie]
@@ -511,6 +509,9 @@ func (game *Game) AskNextForChengQing() {
 			}
 			logger.Info("无人拯救，", player, "已死亡")
 			game.DieState = interfaces.DieStateDying
+			break
+		}
+		if game.Players[game.WhoseFightTurn].IsAlive() {
 			break
 		}
 	}
