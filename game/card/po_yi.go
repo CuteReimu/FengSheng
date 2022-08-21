@@ -76,16 +76,18 @@ func (card *PoYi) ToPbCard() *protos.Card {
 }
 
 func (card *PoYi) showAndDrawCard(g interfaces.IGame, r interfaces.IPlayer, show bool) {
-	logger.Info(g.GetCurrentMessageCard(), "被翻开了")
-	g.SetMessageCardFaceUp(true)
-	r.Draw(1)
+	if show {
+		logger.Info(g.GetCurrentMessageCard(), "被翻开了")
+		g.SetMessageCardFaceUp(true)
+		r.Draw(1)
+	}
 	for _, player := range g.GetPlayers() {
 		if p, ok := player.(*game.HumanPlayer); ok {
 			msg := &protos.PoYiShowToc{
 				PlayerId: p.GetAlternativeLocation(r.Location()),
 				Show:     show,
 			}
-			if show && r.Location() == p.Location() {
+			if show {
 				msg.MessageCard = card.ToPbCard()
 			}
 			p.Send(msg)
