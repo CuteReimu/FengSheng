@@ -44,13 +44,14 @@ func (card *PoYi) Execute(g interfaces.IGame, r interfaces.IPlayer, _ ...interfa
 				msg.Seq = p.Seq
 			}
 			p.Send(msg)
-		} else {
-			time.AfterFunc(time.Second, func() {
-				g.Post(func() {
-					card.showAndDrawCard(g, r, utils.IsColorIn(protos.Color_Black, g.GetCurrentMessageCard().GetColor()))
-				})
-			})
 		}
+	}
+	if _, ok := r.(*game.RobotPlayer); ok {
+		time.AfterFunc(time.Second, func() {
+			g.Post(func() {
+				card.showAndDrawCard(g, r, utils.IsColorIn(protos.Color_Black, g.GetCurrentMessageCard().GetColor()))
+			})
+		})
 	}
 }
 
