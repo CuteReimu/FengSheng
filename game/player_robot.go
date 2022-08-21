@@ -120,16 +120,28 @@ func autoSendMessageCard(r interfaces.IPlayer, lock bool) {
 			availableLocations = append(availableLocations, p.Location())
 		}
 	}
-	if lock && card.CanLock() && r.GetGame().GetRandom().Intn(2) == 0 {
-		lockLocation = append(lockLocation, availableLocations[r.GetGame().GetRandom().Intn(len(availableLocations))])
+	if lock && card.CanLock() && r.GetGame().GetRandom().Intn(3) != 0 {
+		location := availableLocations[r.GetGame().GetRandom().Intn(len(availableLocations))]
+		if r.GetGame().GetPlayers()[location].IsAlive() {
+			lockLocation = append(lockLocation, location)
+		}
 	}
 	switch dir {
 	case protos.Direction_Up:
 		targetLocation = availableLocations[r.GetGame().GetRandom().Intn(len(availableLocations))]
+		for !r.GetGame().GetPlayers()[targetLocation].IsAlive() {
+			targetLocation = availableLocations[r.GetGame().GetRandom().Intn(len(availableLocations))]
+		}
 	case protos.Direction_Left:
 		targetLocation = (r.Location() + len(r.GetGame().GetPlayers()) - 1) % len(r.GetGame().GetPlayers())
+		for !r.GetGame().GetPlayers()[targetLocation].IsAlive() {
+			targetLocation = (targetLocation + len(r.GetGame().GetPlayers()) - 1) % len(r.GetGame().GetPlayers())
+		}
 	case protos.Direction_Right:
 		targetLocation = (r.Location() + 1) % len(r.GetGame().GetPlayers())
+		for !r.GetGame().GetPlayers()[targetLocation].IsAlive() {
+			targetLocation++
+		}
 	}
 	r.GetGame().Post(func() { r.GetGame().OnSendCard(card, dir, targetLocation, lockLocation) })
 }
