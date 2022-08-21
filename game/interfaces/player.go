@@ -103,7 +103,7 @@ func (p *BasePlayer) GetAlternativeLocation(location int) uint32 {
 	if location < 0 {
 		location += totalPlayerCount
 	}
-	return uint32(location % totalPlayerCount)
+	return uint32(location)
 }
 
 func (p *BasePlayer) SetAlive(alive bool) {
