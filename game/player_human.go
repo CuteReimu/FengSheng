@@ -114,6 +114,7 @@ func (r *HumanPlayer) NotifySendPhase(waitSecond uint32, isFirstTime bool) {
 		for _, id := range r.GetGame().GetLockPlayers() {
 			msg.LockPlayerIds = append(msg.LockPlayerIds, r.GetAlternativeLocation(id))
 		}
+		r.Send(msg)
 	}
 	msg := &protos.NotifyPhaseToc{
 		CurrentPlayerId: playerId,
