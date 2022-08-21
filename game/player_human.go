@@ -206,7 +206,7 @@ func (r *HumanPlayer) NotifyWin(declareWinner interfaces.IPlayer, winner []inter
 		msg.WinnerIds = append(msg.WinnerIds, r.GetAlternativeLocation(p.Location()))
 	}
 	for _, p := range r.GetGame().GetPlayers() {
-		index := r.GetAbstractLocation(p.Location())
+		index := r.GetAlternativeLocation(p.Location())
 		msg.Identity[index], msg.SecretTasks[index] = p.GetIdentity()
 	}
 	r.Send(msg)
