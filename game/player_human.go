@@ -100,22 +100,23 @@ func (r *HumanPlayer) NotifySendPhaseStart(waitSecond uint32) {
 	r.Send(msg)
 }
 
-func (r *HumanPlayer) NotifySendPhase(waitSecond uint32, isFirstTime bool) {
-	playerId := r.GetAlternativeLocation(r.GetGame().GetWhoseTurn())
-	if isFirstTime {
-		msg := &protos.SendMessageCardToc{
-			PlayerId:       playerId,
-			TargetPlayerId: r.GetAlternativeLocation(r.GetGame().GetWhoseSendTurn()),
-			CardDir:        r.GetGame().GetMessageCardDirection(),
-		}
-		if r.GetGame().GetWhoseTurn() == r.Location() {
-			msg.CardId = r.GetGame().GetCurrentMessageCard().GetId()
-		}
-		for _, id := range r.GetGame().GetLockPlayers() {
-			msg.LockPlayerIds = append(msg.LockPlayerIds, r.GetAlternativeLocation(id))
-		}
-		r.Send(msg)
+func (r *HumanPlayer) NotifySendMessageCard() {
+	msg := &protos.SendMessageCardToc{
+		PlayerId:       r.GetAlternativeLocation(r.GetGame().GetWhoseTurn()),
+		TargetPlayerId: r.GetAlternativeLocation(r.GetGame().GetWhoseSendTurn()),
+		CardDir:        r.GetGame().GetMessageCardDirection(),
 	}
+	if r.GetGame().GetWhoseTurn() == r.Location() {
+		msg.CardId = r.GetGame().GetCurrentMessageCard().GetId()
+	}
+	for _, id := range r.GetGame().GetLockPlayers() {
+		msg.LockPlayerIds = append(msg.LockPlayerIds, r.GetAlternativeLocation(id))
+	}
+	r.Send(msg)
+}
+
+func (r *HumanPlayer) NotifySendPhase(waitSecond uint32) {
+	playerId := r.GetAlternativeLocation(r.GetGame().GetWhoseTurn())
 	msg := &protos.NotifyPhaseToc{
 		CurrentPlayerId: playerId,
 		CurrentPhase:    protos.Phase_Send_Phase,

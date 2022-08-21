@@ -46,7 +46,10 @@ func (r *RobotPlayer) NotifySendPhaseStart(uint32) {
 	})
 }
 
-func (r *RobotPlayer) NotifySendPhase(uint32, bool) {
+func (r *RobotPlayer) NotifySendMessageCard() {
+}
+
+func (r *RobotPlayer) NotifySendPhase(uint32) {
 	if r.Location() != r.GetGame().GetWhoseSendTurn() {
 		return
 	}

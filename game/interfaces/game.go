@@ -5,6 +5,10 @@ import (
 	"math/rand"
 )
 
+type ResolveStackNode interface {
+	Resolve() (finished bool)
+}
+
 type IGame interface {
 	Start(totalCount, robotCount int)
 	GetPlayers() []IPlayer
@@ -40,6 +44,10 @@ type IGame interface {
 	NextTurn()
 	PlayerDiscardCard(player IPlayer, cards ...ICard)
 	GetDieState() DieState
+	PushResolveStackNode(node ResolveStackNode)
+	PeekResolveStackNode() ResolveStackNode
+	PopResolveStackNode()
+	ContinueResolve()
 }
 
 type DieState int32

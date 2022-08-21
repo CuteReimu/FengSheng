@@ -35,6 +35,7 @@ type Game struct {
 	WhoIsLocked        []int
 	CurrentPhase       protos.Phase
 	Random             *rand.Rand
+	resolveStack       []interfaces.ResolveStackNode
 	afterChengQing     func()
 	cellnet.EventQueue
 }
@@ -218,7 +219,8 @@ func (game *Game) OnSendCard(card interfaces.ICard, dir protos.Direction, target
 	game.CurrentPhase = protos.Phase_Send_Phase
 	logger.Info("情报到达", game.Players[game.WhoseSendTurn], "面前")
 	for _, p := range game.Players {
-		p.NotifySendPhase(20, true)
+		p.NotifySendMessageCard()
+		p.NotifySendPhase(20)
 	}
 }
 
@@ -247,7 +249,7 @@ func (game *Game) MessageMoveNext() {
 	}
 	logger.Info("情报到达", game.Players[game.WhoseSendTurn], "面前")
 	for _, p := range game.Players {
-		p.NotifySendPhase(20, false)
+		p.NotifySendPhase(20)
 	}
 }
 
@@ -538,5 +540,28 @@ func (game *Game) AfterChengQing() {
 			game.Post(game.afterChengQing)
 			game.afterChengQing = nil
 		}
+	}
+}
+
+func (game *Game) PushResolveStackNode(node interfaces.ResolveStackNode) {
+	game.Post(func() { game.resolveStack = append(game.resolveStack, node) })
+}
+
+func (game *Game) PeekResolveStackNode() interfaces.ResolveStackNode {
+	return game.resolveStack[len(game.resolveStack)-1]
+}
+
+func (game *Game) PopResolveStackNode() {
+	game.resolveStack = game.resolveStack[:len(game.resolveStack)-1]
+}
+
+func (game *Game) ContinueResolve() {
+	if game.resolveStack[len(game.resolveStack)-1].Resolve() {
+		game.PopResolveStackNode()
+		game.Post(func() {
+			if len(game.resolveStack) > 0 {
+				game.ContinueResolve()
+			}
+		})
 	}
 }
