@@ -73,7 +73,7 @@ func (r *RobotPlayer) NotifyFightPhase(uint32) {
 	if r.Location() != r.GetGame().GetWhoseFightTurn() {
 		return
 	}
-	time.AfterFunc(time.Second/2, func() {
+	time.AfterFunc(time.Second, func() {
 		r.GetGame().Post(r.GetGame().FightPhaseNext)
 	})
 }
@@ -91,7 +91,7 @@ func (r *RobotPlayer) NotifyAskForChengQing(_ interfaces.IPlayer, askWhom interf
 	if askWhom.Location() != r.Location() {
 		return
 	}
-	time.AfterFunc(time.Second/2, func() {
+	time.AfterFunc(time.Second, func() {
 		r.GetGame().Post(func() {
 			r.GetGame().Post(r.GetGame().AskNextForChengQing)
 		})
