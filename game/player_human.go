@@ -493,7 +493,7 @@ func (r *HumanPlayer) onSendMessageCard(pb *protos.SendMessageCardTos) {
 			targetLocation++
 		}
 	}
-	if pb.TargetPlayerId != r.GetAlternativeLocation(targetLocation) {
+	if pb.CardDir != protos.Direction_Up && pb.TargetPlayerId != r.GetAlternativeLocation(targetLocation) {
 		r.logger.Error("不能传给那个人: ", pb.TargetPlayerId)
 		return
 	}
