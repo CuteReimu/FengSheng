@@ -18,7 +18,7 @@ enum card_type {
   Ping_Heng  = 4; // 平衡
   Po_Yi      = 5; // 破译
   Jie_Huo    = 6; // 截获
-  Diao_Bao   = 7; // 掉包
+  Diao_Bao   = 7; // 调包
   Wu_Dao     = 8; // 误导
 }
 
