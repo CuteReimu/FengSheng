@@ -87,9 +87,11 @@ func Start(totalCount int) {
 			player := &HumanPlayer{Session: ev.Session()}
 			humanMap[player.Session.ID()] = player
 			index := onAdd(player)
-			msg := &protos.GetRoomInfoToc{MyPosition: uint32(index)}
+			msg := &protos.GetRoomInfoToc{Names: make([]string, len(game.Players)), MyPosition: uint32(index)}
 			for i := range game.Players {
-				msg.Names = append(msg.Names, game.Players[i].String())
+				if game.Players[i] != nil {
+					msg.Names[i] = game.Players[i].String()
+				}
 			}
 			player.Send(msg)
 		case *cellnet.SessionClosed:
