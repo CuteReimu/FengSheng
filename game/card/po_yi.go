@@ -96,6 +96,6 @@ func (card *PoYi) showAndDrawCard(g interfaces.IGame, r interfaces.IPlayer, show
 	g.SetCurrentCard(nil)
 	g.GetDeck().Discard(card)
 	for _, p := range g.GetPlayers() {
-		p.NotifySendPhase(20, false)
+		p.NotifySendPhase(20)
 	}
 }

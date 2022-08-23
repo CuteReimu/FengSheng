@@ -12,7 +12,7 @@ type DrawPhase struct {
 func (dp *DrawPhase) Resolve() (finished bool) {
 	game := dp.player.GetGame()
 	if !dp.player.IsAlive() {
-		game.Post(game.NextTurn)
+		Post(game.NextTurn)
 		return
 	}
 	logger.Info(dp.player, "的回合开始了")
@@ -31,7 +31,7 @@ type MainPhaseIdle struct {
 func (mp *MainPhaseIdle) Resolve() (finished bool) {
 	game := mp.player.GetGame()
 	if !mp.player.IsAlive() {
-		game.Post(game.NextTurn)
+		Post(game.NextTurn)
 		return
 	}
 	for _, p := range game.GetPlayers() {
