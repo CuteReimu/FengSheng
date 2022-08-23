@@ -60,11 +60,6 @@ func GetTotalPlayerCount() int {
 	return globalConfig.GetInt(totalPlayerCount)
 }
 
-// GetRobotPlayerCount 机器人人数
-func GetRobotPlayerCount() int {
-	return globalConfig.GetInt(robotPlayerCount)
-}
-
 // IsTcpDebugLogOpen 是否开启tcp调试日志
 func IsTcpDebugLogOpen() bool {
 	return globalConfig.GetBool(tcpDebugLogOpen)

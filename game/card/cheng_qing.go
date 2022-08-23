@@ -65,7 +65,7 @@ func (card *ChengQing) Execute(g interfaces.IGame, r interfaces.IPlayer, args ..
 	if g.GetDieState() == interfaces.DieStateWaitForChengQing {
 		g.AfterChengQing()
 	} else {
-		g.Post(g.MainPhase)
+		game.Post(g.MainPhase)
 	}
 }
 

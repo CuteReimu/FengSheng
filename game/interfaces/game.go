@@ -2,7 +2,6 @@ package interfaces
 
 import (
 	"github.com/CuteReimu/FengSheng/protos"
-	"math/rand"
 )
 
 type ResolveStackNode interface {
@@ -10,10 +9,8 @@ type ResolveStackNode interface {
 }
 
 type IGame interface {
-	Start(totalCount, robotCount int)
 	GetPlayers() []IPlayer
 	GetDeck() IDeck
-	GetRandom() *rand.Rand
 	GetWhoDie() int
 	GetWhoseTurn() int
 	GetCurrentCard() *CurrentCard
@@ -29,7 +26,6 @@ type IGame interface {
 	SetMessageCardFaceUp(messageCardFaceUp bool)
 	GetLockPlayers() []int
 	IsIdleTimePoint() bool
-	Post(callback func())
 	DrawPhase()
 	MainPhase()
 	SendPhaseStart()

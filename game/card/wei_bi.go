@@ -70,7 +70,7 @@ func (card *WeiBi) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...int
 					seq := player.Seq
 					msg.Seq = player.Seq
 					player.Timer = time.AfterFunc(time.Second*time.Duration(msg.WaitingSecond), func() {
-						g.Post(func() {
+						game.Post(func() {
 							if player.Seq == seq {
 								player.Seq++
 								card.autoSelect(g, r, player, wantType)
@@ -83,7 +83,7 @@ func (card *WeiBi) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...int
 		}
 		if _, ok := target.(*game.RobotPlayer); ok {
 			time.AfterFunc(time.Second, func() {
-				g.Post(func() { card.autoSelect(g, r, target, wantType) })
+				game.Post(func() { card.autoSelect(g, r, target, wantType) })
 			})
 		}
 	} else {
@@ -103,7 +103,7 @@ func (card *WeiBi) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...int
 				player.Send(msg)
 			}
 		}
-		g.Post(g.MainPhase)
+		game.Post(g.MainPhase)
 	}
 }
 
@@ -135,7 +135,7 @@ func (card *WeiBi) Execute2(g interfaces.IGame, r interfaces.IPlayer, args ...in
 	}
 	g.SetCurrentCard(nil)
 	g.GetDeck().Discard(card)
-	g.Post(g.MainPhase)
+	game.Post(g.MainPhase)
 }
 
 func (card *WeiBi) ToPbCard() *protos.Card {
@@ -151,5 +151,5 @@ func (card *WeiBi) autoSelect(g interfaces.IGame, player, target interfaces.IPla
 			availableCards = append(availableCards, c.GetId())
 		}
 	}
-	card.Execute2(g, player, target, availableCards[g.GetRandom().Intn(len(availableCards))])
+	card.Execute2(g, player, target, availableCards[utils.Random.Intn(len(availableCards))])
 }

@@ -10,7 +10,5 @@ import (
 func main() {
 	config.Init()
 	totalCount := config.GetTotalPlayerCount()
-	robotCount := config.GetRobotPlayerCount()
-	g := &game.Game{}
-	g.Start(totalCount, robotCount)
+	game.Start(totalCount)
 }

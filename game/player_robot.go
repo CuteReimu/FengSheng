@@ -3,6 +3,7 @@ package game
 import (
 	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
+	"github.com/CuteReimu/FengSheng/utils"
 	"strconv"
 	"time"
 )
@@ -33,7 +34,7 @@ func (r *RobotPlayer) NotifyMainPhase(uint32) {
 		}
 	}
 	time.AfterFunc(time.Second, func() {
-		r.GetGame().Post(r.GetGame().SendPhaseStart)
+		Post(r.GetGame().SendPhaseStart)
 	})
 }
 
@@ -61,10 +62,10 @@ func (r *RobotPlayer) NotifySendPhase(uint32) {
 				}
 			}
 			return false
-		}(r.Location(), r.GetGame().GetLockPlayers()) || r.Location() == r.GetGame().GetWhoseTurn() || r.GetGame().GetRandom().Intn((len(r.GetGame().GetPlayers())-1)*2) == 0 {
-			r.GetGame().Post(r.GetGame().OnChooseReceiveCard)
+		}(r.Location(), r.GetGame().GetLockPlayers()) || r.Location() == r.GetGame().GetWhoseTurn() || utils.Random.Intn((len(r.GetGame().GetPlayers())-1)*2) == 0 {
+			Post(r.GetGame().OnChooseReceiveCard)
 		} else {
-			r.GetGame().Post(r.GetGame().MessageMoveNext)
+			Post(r.GetGame().MessageMoveNext)
 		}
 	})
 }
@@ -77,7 +78,7 @@ func (r *RobotPlayer) NotifyFightPhase(uint32) {
 		return
 	}
 	time.AfterFunc(time.Second, func() {
-		r.GetGame().Post(r.GetGame().FightPhaseNext)
+		Post(r.GetGame().FightPhaseNext)
 	})
 }
 
@@ -95,8 +96,8 @@ func (r *RobotPlayer) NotifyAskForChengQing(_ interfaces.IPlayer, askWhom interf
 		return
 	}
 	time.AfterFunc(time.Second, func() {
-		r.GetGame().Post(func() {
-			r.GetGame().Post(r.GetGame().AskNextForChengQing)
+		Post(func() {
+			Post(r.GetGame().AskNextForChengQing)
 		})
 	})
 }
@@ -106,8 +107,8 @@ func (r *RobotPlayer) WaitForDieGiveCard(whoDie interfaces.IPlayer) {
 		return
 	}
 	time.AfterFunc(time.Second, func() {
-		r.GetGame().Post(func() {
-			r.GetGame().Post(r.GetGame().AfterChengQing)
+		Post(func() {
+			Post(r.GetGame().AfterChengQing)
 		})
 	})
 }
@@ -125,17 +126,17 @@ func autoSendMessageCard(r interfaces.IPlayer, lock bool) {
 			availableLocations = append(availableLocations, p.Location())
 		}
 	}
-	if lock && card.CanLock() && r.GetGame().GetRandom().Intn(3) != 0 {
-		location := availableLocations[r.GetGame().GetRandom().Intn(len(availableLocations))]
+	if lock && card.CanLock() && utils.Random.Intn(3) != 0 {
+		location := availableLocations[utils.Random.Intn(len(availableLocations))]
 		if r.GetGame().GetPlayers()[location].IsAlive() {
 			lockLocation = append(lockLocation, location)
 		}
 	}
 	switch dir {
 	case protos.Direction_Up:
-		targetLocation = availableLocations[r.GetGame().GetRandom().Intn(len(availableLocations))]
+		targetLocation = availableLocations[utils.Random.Intn(len(availableLocations))]
 		for !r.GetGame().GetPlayers()[targetLocation].IsAlive() {
-			targetLocation = availableLocations[r.GetGame().GetRandom().Intn(len(availableLocations))]
+			targetLocation = availableLocations[utils.Random.Intn(len(availableLocations))]
 		}
 	case protos.Direction_Left:
 		targetLocation = (r.Location() + len(r.GetGame().GetPlayers()) - 1) % len(r.GetGame().GetPlayers())
@@ -148,5 +149,5 @@ func autoSendMessageCard(r interfaces.IPlayer, lock bool) {
 			targetLocation++
 		}
 	}
-	r.GetGame().Post(func() { r.GetGame().OnSendCard(card, dir, targetLocation, lockLocation) })
+	Post(func() { r.GetGame().OnSendCard(card, dir, targetLocation, lockLocation) })
 }

@@ -27,9 +27,9 @@ func chengQing(player interfaces.IPlayer, card interfaces.ICard) bool {
 	if len(playerAndCards) == 0 {
 		return false
 	}
-	p := playerAndCards[player.GetGame().GetRandom().Intn(len(playerAndCards))]
+	p := playerAndCards[utils.Random.Intn(len(playerAndCards))]
 	time.AfterFunc(time.Second, func() {
-		player.GetGame().Post(func() { card.Execute(player.GetGame(), player, p.player, p.card.GetId()) })
+		game.Post(func() { card.Execute(player.GetGame(), player, p.player, p.card.GetId()) })
 	})
 	return true
 }

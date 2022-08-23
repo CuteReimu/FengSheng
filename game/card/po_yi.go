@@ -48,7 +48,7 @@ func (card *PoYi) Execute(g interfaces.IGame, r interfaces.IPlayer, _ ...interfa
 	}
 	if _, ok := r.(*game.RobotPlayer); ok {
 		time.AfterFunc(time.Second, func() {
-			g.Post(func() {
+			game.Post(func() {
 				card.showAndDrawCard(g, r, utils.IsColorIn(protos.Color_Black, g.GetCurrentMessageCard().GetColor()))
 			})
 		})

@@ -3,6 +3,7 @@ package game
 import (
 	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
+	"github.com/CuteReimu/FengSheng/utils"
 	"github.com/davyxu/cellnet"
 )
 
@@ -23,7 +24,7 @@ func NewDeck(game interfaces.IGame) *Deck {
 func (d *Deck) Shuffle() {
 	d.cards = append(d.cards, d.discardPile...)
 	d.discardPile = nil
-	d.game.GetRandom().Shuffle(len(d.cards), func(i, j int) {
+	utils.Random.Shuffle(len(d.cards), func(i, j int) {
 		d.cards[i], d.cards[j] = d.cards[j], d.cards[i]
 	})
 	d.notifyDeckCount(true)

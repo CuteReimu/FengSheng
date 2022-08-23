@@ -4,6 +4,7 @@ import (
 	"github.com/CuteReimu/FengSheng/game"
 	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
+	"github.com/CuteReimu/FengSheng/utils"
 	"time"
 )
 
@@ -12,7 +13,7 @@ func init() {
 }
 
 func shiTan(player interfaces.IPlayer, card interfaces.ICard) bool {
-	chooseHuman := player.GetGame().GetRandom().Intn(2) == 0
+	chooseHuman := utils.Random.Intn(2) == 0
 	var players []interfaces.IPlayer
 	for _, p := range player.GetGame().GetPlayers() {
 		if p.Location() != player.Location() && p.IsAlive() {
@@ -31,9 +32,9 @@ func shiTan(player interfaces.IPlayer, card interfaces.ICard) bool {
 	if len(players) == 0 {
 		return false
 	}
-	p := players[player.GetGame().GetRandom().Intn(len(players))]
+	p := players[utils.Random.Intn(len(players))]
 	time.AfterFunc(time.Second, func() {
-		player.GetGame().Post(func() { card.Execute(player.GetGame(), player, p) })
+		game.Post(func() { card.Execute(player.GetGame(), player, p) })
 	})
 	return true
 }
