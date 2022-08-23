@@ -1,6 +1,16 @@
 syntax = "proto3";
 option go_package = "protos/;protos";
 
+// 获取房间所有人的信息
+message get_room_info_tos {
+}
+
+// 返回房间所有人的信息
+message get_room_info_toc {
+  repeated string names       = 1; // 其它所有人的名字
+  uint32          my_position = 2;
+}
+
 enum phase {
   Draw_Phase       = 0; // 摸牌阶段
   Main_Phase       = 1; // 出牌阶段
