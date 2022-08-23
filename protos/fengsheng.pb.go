@@ -88,7 +88,7 @@ const (
 	CardType_Ping_Heng  CardType = 4 // 平衡
 	CardType_Po_Yi      CardType = 5 // 破译
 	CardType_Jie_Huo    CardType = 6 // 截获
-	CardType_Diao_Bao   CardType = 7 // 掉包
+	CardType_Diao_Bao   CardType = 7 // 调包
 	CardType_Wu_Dao     CardType = 8 // 误导
 )
 
@@ -388,6 +388,149 @@ func (x *GetRoomInfoToc) GetMyPosition() uint32 {
 	return 0
 }
 
+// 请求加一个机器人
+type AddRobotTos struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *AddRobotTos) Reset() {
+	*x = AddRobotTos{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_fengsheng_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *AddRobotTos) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddRobotTos) ProtoMessage() {}
+
+func (x *AddRobotTos) ProtoReflect() protoreflect.Message {
+	mi := &file_fengsheng_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddRobotTos.ProtoReflect.Descriptor instead.
+func (*AddRobotTos) Descriptor() ([]byte, []int) {
+	return file_fengsheng_proto_rawDescGZIP(), []int{2}
+}
+
+// 通知谁加入了房间
+type JoinRoomToc struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name     string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Position uint32 `protobuf:"varint,2,opt,name=position,proto3" json:"position,omitempty"`
+}
+
+func (x *JoinRoomToc) Reset() {
+	*x = JoinRoomToc{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_fengsheng_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *JoinRoomToc) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*JoinRoomToc) ProtoMessage() {}
+
+func (x *JoinRoomToc) ProtoReflect() protoreflect.Message {
+	mi := &file_fengsheng_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use JoinRoomToc.ProtoReflect.Descriptor instead.
+func (*JoinRoomToc) Descriptor() ([]byte, []int) {
+	return file_fengsheng_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *JoinRoomToc) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *JoinRoomToc) GetPosition() uint32 {
+	if x != nil {
+		return x.Position
+	}
+	return 0
+}
+
+// 通知谁离开的房间
+type LeaveRoomToc struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Position uint32 `protobuf:"varint,1,opt,name=position,proto3" json:"position,omitempty"`
+}
+
+func (x *LeaveRoomToc) Reset() {
+	*x = LeaveRoomToc{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_fengsheng_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *LeaveRoomToc) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LeaveRoomToc) ProtoMessage() {}
+
+func (x *LeaveRoomToc) ProtoReflect() protoreflect.Message {
+	mi := &file_fengsheng_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LeaveRoomToc.ProtoReflect.Descriptor instead.
+func (*LeaveRoomToc) Descriptor() ([]byte, []int) {
+	return file_fengsheng_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *LeaveRoomToc) GetPosition() uint32 {
+	if x != nil {
+		return x.Position
+	}
+	return 0
+}
+
 // 卡牌的结构体
 type Card struct {
 	state         protoimpl.MessageState
@@ -405,7 +548,7 @@ type Card struct {
 func (x *Card) Reset() {
 	*x = Card{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[2]
+		mi := &file_fengsheng_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -418,7 +561,7 @@ func (x *Card) String() string {
 func (*Card) ProtoMessage() {}
 
 func (x *Card) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[2]
+	mi := &file_fengsheng_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -431,7 +574,7 @@ func (x *Card) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Card.ProtoReflect.Descriptor instead.
 func (*Card) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{2}
+	return file_fengsheng_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *Card) GetCardId() uint32 {
@@ -490,7 +633,7 @@ type InitToc struct {
 func (x *InitToc) Reset() {
 	*x = InitToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[3]
+		mi := &file_fengsheng_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -503,7 +646,7 @@ func (x *InitToc) String() string {
 func (*InitToc) ProtoMessage() {}
 
 func (x *InitToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[3]
+	mi := &file_fengsheng_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -516,7 +659,7 @@ func (x *InitToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InitToc.ProtoReflect.Descriptor instead.
 func (*InitToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{3}
+	return file_fengsheng_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *InitToc) GetPlayerCount() uint32 {
@@ -554,7 +697,7 @@ type AddCardToc struct {
 func (x *AddCardToc) Reset() {
 	*x = AddCardToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[4]
+		mi := &file_fengsheng_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -567,7 +710,7 @@ func (x *AddCardToc) String() string {
 func (*AddCardToc) ProtoMessage() {}
 
 func (x *AddCardToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[4]
+	mi := &file_fengsheng_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -580,7 +723,7 @@ func (x *AddCardToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddCardToc.ProtoReflect.Descriptor instead.
 func (*AddCardToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{4}
+	return file_fengsheng_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *AddCardToc) GetPlayerId() uint32 {
@@ -618,7 +761,7 @@ type UseShiTanTos struct {
 func (x *UseShiTanTos) Reset() {
 	*x = UseShiTanTos{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[5]
+		mi := &file_fengsheng_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -631,7 +774,7 @@ func (x *UseShiTanTos) String() string {
 func (*UseShiTanTos) ProtoMessage() {}
 
 func (x *UseShiTanTos) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[5]
+	mi := &file_fengsheng_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -644,7 +787,7 @@ func (x *UseShiTanTos) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UseShiTanTos.ProtoReflect.Descriptor instead.
 func (*UseShiTanTos) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{5}
+	return file_fengsheng_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *UseShiTanTos) GetCardId() uint32 {
@@ -682,7 +825,7 @@ type UseShiTanToc struct {
 func (x *UseShiTanToc) Reset() {
 	*x = UseShiTanToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[6]
+		mi := &file_fengsheng_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -695,7 +838,7 @@ func (x *UseShiTanToc) String() string {
 func (*UseShiTanToc) ProtoMessage() {}
 
 func (x *UseShiTanToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[6]
+	mi := &file_fengsheng_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -708,7 +851,7 @@ func (x *UseShiTanToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UseShiTanToc.ProtoReflect.Descriptor instead.
 func (*UseShiTanToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{6}
+	return file_fengsheng_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *UseShiTanToc) GetPlayerId() uint32 {
@@ -748,7 +891,7 @@ type ShowShiTanToc struct {
 func (x *ShowShiTanToc) Reset() {
 	*x = ShowShiTanToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[7]
+		mi := &file_fengsheng_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -761,7 +904,7 @@ func (x *ShowShiTanToc) String() string {
 func (*ShowShiTanToc) ProtoMessage() {}
 
 func (x *ShowShiTanToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[7]
+	mi := &file_fengsheng_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -774,7 +917,7 @@ func (x *ShowShiTanToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ShowShiTanToc.ProtoReflect.Descriptor instead.
 func (*ShowShiTanToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{7}
+	return file_fengsheng_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ShowShiTanToc) GetPlayerId() uint32 {
@@ -825,7 +968,7 @@ type ExecuteShiTanTos struct {
 func (x *ExecuteShiTanTos) Reset() {
 	*x = ExecuteShiTanTos{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[8]
+		mi := &file_fengsheng_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -838,7 +981,7 @@ func (x *ExecuteShiTanTos) String() string {
 func (*ExecuteShiTanTos) ProtoMessage() {}
 
 func (x *ExecuteShiTanTos) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[8]
+	mi := &file_fengsheng_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -851,7 +994,7 @@ func (x *ExecuteShiTanTos) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecuteShiTanTos.ProtoReflect.Descriptor instead.
 func (*ExecuteShiTanTos) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{8}
+	return file_fengsheng_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ExecuteShiTanTos) GetCardId() []uint32 {
@@ -880,7 +1023,7 @@ type ExecuteShiTanToc struct {
 func (x *ExecuteShiTanToc) Reset() {
 	*x = ExecuteShiTanToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[9]
+		mi := &file_fengsheng_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -893,7 +1036,7 @@ func (x *ExecuteShiTanToc) String() string {
 func (*ExecuteShiTanToc) ProtoMessage() {}
 
 func (x *ExecuteShiTanToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[9]
+	mi := &file_fengsheng_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -906,7 +1049,7 @@ func (x *ExecuteShiTanToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecuteShiTanToc.ProtoReflect.Descriptor instead.
 func (*ExecuteShiTanToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{9}
+	return file_fengsheng_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ExecuteShiTanToc) GetPlayerId() uint32 {
@@ -936,7 +1079,7 @@ type SyncDeckNumToc struct {
 func (x *SyncDeckNumToc) Reset() {
 	*x = SyncDeckNumToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[10]
+		mi := &file_fengsheng_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -949,7 +1092,7 @@ func (x *SyncDeckNumToc) String() string {
 func (*SyncDeckNumToc) ProtoMessage() {}
 
 func (x *SyncDeckNumToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[10]
+	mi := &file_fengsheng_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -962,7 +1105,7 @@ func (x *SyncDeckNumToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SyncDeckNumToc.ProtoReflect.Descriptor instead.
 func (*SyncDeckNumToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{10}
+	return file_fengsheng_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *SyncDeckNumToc) GetNum() uint32 {
@@ -992,7 +1135,7 @@ type DiscardCardToc struct {
 func (x *DiscardCardToc) Reset() {
 	*x = DiscardCardToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[11]
+		mi := &file_fengsheng_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1005,7 +1148,7 @@ func (x *DiscardCardToc) String() string {
 func (*DiscardCardToc) ProtoMessage() {}
 
 func (x *DiscardCardToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[11]
+	mi := &file_fengsheng_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1018,7 +1161,7 @@ func (x *DiscardCardToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DiscardCardToc.ProtoReflect.Descriptor instead.
 func (*DiscardCardToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{11}
+	return file_fengsheng_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *DiscardCardToc) GetPlayerId() uint32 {
@@ -1054,7 +1197,7 @@ type NotifyPhaseToc struct {
 func (x *NotifyPhaseToc) Reset() {
 	*x = NotifyPhaseToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[12]
+		mi := &file_fengsheng_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1067,7 +1210,7 @@ func (x *NotifyPhaseToc) String() string {
 func (*NotifyPhaseToc) ProtoMessage() {}
 
 func (x *NotifyPhaseToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[12]
+	mi := &file_fengsheng_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1080,7 +1223,7 @@ func (x *NotifyPhaseToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NotifyPhaseToc.ProtoReflect.Descriptor instead.
 func (*NotifyPhaseToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{12}
+	return file_fengsheng_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *NotifyPhaseToc) GetCurrentPlayerId() uint32 {
@@ -1151,7 +1294,7 @@ type EndMainPhaseTos struct {
 func (x *EndMainPhaseTos) Reset() {
 	*x = EndMainPhaseTos{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[13]
+		mi := &file_fengsheng_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1164,7 +1307,7 @@ func (x *EndMainPhaseTos) String() string {
 func (*EndMainPhaseTos) ProtoMessage() {}
 
 func (x *EndMainPhaseTos) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[13]
+	mi := &file_fengsheng_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1177,7 +1320,7 @@ func (x *EndMainPhaseTos) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EndMainPhaseTos.ProtoReflect.Descriptor instead.
 func (*EndMainPhaseTos) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{13}
+	return file_fengsheng_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *EndMainPhaseTos) GetSeq() uint32 {
@@ -1201,7 +1344,7 @@ type UseLiYouTos struct {
 func (x *UseLiYouTos) Reset() {
 	*x = UseLiYouTos{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[14]
+		mi := &file_fengsheng_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1214,7 +1357,7 @@ func (x *UseLiYouTos) String() string {
 func (*UseLiYouTos) ProtoMessage() {}
 
 func (x *UseLiYouTos) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[14]
+	mi := &file_fengsheng_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1227,7 +1370,7 @@ func (x *UseLiYouTos) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UseLiYouTos.ProtoReflect.Descriptor instead.
 func (*UseLiYouTos) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{14}
+	return file_fengsheng_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *UseLiYouTos) GetCardId() uint32 {
@@ -1267,7 +1410,7 @@ type UseLiYouToc struct {
 func (x *UseLiYouToc) Reset() {
 	*x = UseLiYouToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[15]
+		mi := &file_fengsheng_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1280,7 +1423,7 @@ func (x *UseLiYouToc) String() string {
 func (*UseLiYouToc) ProtoMessage() {}
 
 func (x *UseLiYouToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[15]
+	mi := &file_fengsheng_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1293,7 +1436,7 @@ func (x *UseLiYouToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UseLiYouToc.ProtoReflect.Descriptor instead.
 func (*UseLiYouToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{15}
+	return file_fengsheng_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *UseLiYouToc) GetPlayerId() uint32 {
@@ -1345,7 +1488,7 @@ type UsePingHengTos struct {
 func (x *UsePingHengTos) Reset() {
 	*x = UsePingHengTos{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[16]
+		mi := &file_fengsheng_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1358,7 +1501,7 @@ func (x *UsePingHengTos) String() string {
 func (*UsePingHengTos) ProtoMessage() {}
 
 func (x *UsePingHengTos) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[16]
+	mi := &file_fengsheng_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1371,7 +1514,7 @@ func (x *UsePingHengTos) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UsePingHengTos.ProtoReflect.Descriptor instead.
 func (*UsePingHengTos) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{16}
+	return file_fengsheng_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *UsePingHengTos) GetCardId() uint32 {
@@ -1411,7 +1554,7 @@ type UsePingHengToc struct {
 func (x *UsePingHengToc) Reset() {
 	*x = UsePingHengToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[17]
+		mi := &file_fengsheng_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1424,7 +1567,7 @@ func (x *UsePingHengToc) String() string {
 func (*UsePingHengToc) ProtoMessage() {}
 
 func (x *UsePingHengToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[17]
+	mi := &file_fengsheng_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1437,7 +1580,7 @@ func (x *UsePingHengToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UsePingHengToc.ProtoReflect.Descriptor instead.
 func (*UsePingHengToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{17}
+	return file_fengsheng_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *UsePingHengToc) GetPlayerId() uint32 {
@@ -1490,7 +1633,7 @@ type UseWeiBiTos struct {
 func (x *UseWeiBiTos) Reset() {
 	*x = UseWeiBiTos{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[18]
+		mi := &file_fengsheng_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1503,7 +1646,7 @@ func (x *UseWeiBiTos) String() string {
 func (*UseWeiBiTos) ProtoMessage() {}
 
 func (x *UseWeiBiTos) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[18]
+	mi := &file_fengsheng_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1516,7 +1659,7 @@ func (x *UseWeiBiTos) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UseWeiBiTos.ProtoReflect.Descriptor instead.
 func (*UseWeiBiTos) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{18}
+	return file_fengsheng_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *UseWeiBiTos) GetCardId() uint32 {
@@ -1564,7 +1707,7 @@ type WeiBiWaitForGiveCardToc struct {
 func (x *WeiBiWaitForGiveCardToc) Reset() {
 	*x = WeiBiWaitForGiveCardToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[19]
+		mi := &file_fengsheng_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1577,7 +1720,7 @@ func (x *WeiBiWaitForGiveCardToc) String() string {
 func (*WeiBiWaitForGiveCardToc) ProtoMessage() {}
 
 func (x *WeiBiWaitForGiveCardToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[19]
+	mi := &file_fengsheng_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1590,7 +1733,7 @@ func (x *WeiBiWaitForGiveCardToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WeiBiWaitForGiveCardToc.ProtoReflect.Descriptor instead.
 func (*WeiBiWaitForGiveCardToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{19}
+	return file_fengsheng_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *WeiBiWaitForGiveCardToc) GetCard() *Card {
@@ -1648,7 +1791,7 @@ type WeiBiGiveCardTos struct {
 func (x *WeiBiGiveCardTos) Reset() {
 	*x = WeiBiGiveCardTos{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[20]
+		mi := &file_fengsheng_proto_msgTypes[23]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1661,7 +1804,7 @@ func (x *WeiBiGiveCardTos) String() string {
 func (*WeiBiGiveCardTos) ProtoMessage() {}
 
 func (x *WeiBiGiveCardTos) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[20]
+	mi := &file_fengsheng_proto_msgTypes[23]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1674,7 +1817,7 @@ func (x *WeiBiGiveCardTos) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WeiBiGiveCardTos.ProtoReflect.Descriptor instead.
 func (*WeiBiGiveCardTos) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{20}
+	return file_fengsheng_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *WeiBiGiveCardTos) GetCardId() uint32 {
@@ -1705,7 +1848,7 @@ type WeiBiGiveCardToc struct {
 func (x *WeiBiGiveCardToc) Reset() {
 	*x = WeiBiGiveCardToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[21]
+		mi := &file_fengsheng_proto_msgTypes[24]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1718,7 +1861,7 @@ func (x *WeiBiGiveCardToc) String() string {
 func (*WeiBiGiveCardToc) ProtoMessage() {}
 
 func (x *WeiBiGiveCardToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[21]
+	mi := &file_fengsheng_proto_msgTypes[24]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1731,7 +1874,7 @@ func (x *WeiBiGiveCardToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WeiBiGiveCardToc.ProtoReflect.Descriptor instead.
 func (*WeiBiGiveCardToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{21}
+	return file_fengsheng_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *WeiBiGiveCardToc) GetPlayerId() uint32 {
@@ -1770,7 +1913,7 @@ type WeiBiShowHandCardToc struct {
 func (x *WeiBiShowHandCardToc) Reset() {
 	*x = WeiBiShowHandCardToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[22]
+		mi := &file_fengsheng_proto_msgTypes[25]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1783,7 +1926,7 @@ func (x *WeiBiShowHandCardToc) String() string {
 func (*WeiBiShowHandCardToc) ProtoMessage() {}
 
 func (x *WeiBiShowHandCardToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[22]
+	mi := &file_fengsheng_proto_msgTypes[25]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1796,7 +1939,7 @@ func (x *WeiBiShowHandCardToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WeiBiShowHandCardToc.ProtoReflect.Descriptor instead.
 func (*WeiBiShowHandCardToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{22}
+	return file_fengsheng_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *WeiBiShowHandCardToc) GetCard() *Card {
@@ -1842,7 +1985,7 @@ type UseChengQingTos struct {
 func (x *UseChengQingTos) Reset() {
 	*x = UseChengQingTos{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[23]
+		mi := &file_fengsheng_proto_msgTypes[26]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1855,7 +1998,7 @@ func (x *UseChengQingTos) String() string {
 func (*UseChengQingTos) ProtoMessage() {}
 
 func (x *UseChengQingTos) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[23]
+	mi := &file_fengsheng_proto_msgTypes[26]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1868,7 +2011,7 @@ func (x *UseChengQingTos) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UseChengQingTos.ProtoReflect.Descriptor instead.
 func (*UseChengQingTos) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{23}
+	return file_fengsheng_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *UseChengQingTos) GetCardId() uint32 {
@@ -1914,7 +2057,7 @@ type UseChengQingToc struct {
 func (x *UseChengQingToc) Reset() {
 	*x = UseChengQingToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[24]
+		mi := &file_fengsheng_proto_msgTypes[27]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1927,7 +2070,7 @@ func (x *UseChengQingToc) String() string {
 func (*UseChengQingToc) ProtoMessage() {}
 
 func (x *UseChengQingToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[24]
+	mi := &file_fengsheng_proto_msgTypes[27]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1940,7 +2083,7 @@ func (x *UseChengQingToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UseChengQingToc.ProtoReflect.Descriptor instead.
 func (*UseChengQingToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{24}
+	return file_fengsheng_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *UseChengQingToc) GetCard() *Card {
@@ -1987,7 +2130,7 @@ type SendMessageCardTos struct {
 func (x *SendMessageCardTos) Reset() {
 	*x = SendMessageCardTos{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[25]
+		mi := &file_fengsheng_proto_msgTypes[28]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2000,7 +2143,7 @@ func (x *SendMessageCardTos) String() string {
 func (*SendMessageCardTos) ProtoMessage() {}
 
 func (x *SendMessageCardTos) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[25]
+	mi := &file_fengsheng_proto_msgTypes[28]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2013,7 +2156,7 @@ func (x *SendMessageCardTos) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendMessageCardTos.ProtoReflect.Descriptor instead.
 func (*SendMessageCardTos) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{25}
+	return file_fengsheng_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *SendMessageCardTos) GetCardId() uint32 {
@@ -2067,7 +2210,7 @@ type SendMessageCardToc struct {
 func (x *SendMessageCardToc) Reset() {
 	*x = SendMessageCardToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[26]
+		mi := &file_fengsheng_proto_msgTypes[29]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2080,7 +2223,7 @@ func (x *SendMessageCardToc) String() string {
 func (*SendMessageCardToc) ProtoMessage() {}
 
 func (x *SendMessageCardToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[26]
+	mi := &file_fengsheng_proto_msgTypes[29]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2093,7 +2236,7 @@ func (x *SendMessageCardToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendMessageCardToc.ProtoReflect.Descriptor instead.
 func (*SendMessageCardToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{26}
+	return file_fengsheng_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *SendMessageCardToc) GetCardId() uint32 {
@@ -2144,7 +2287,7 @@ type ChooseWhetherReceiveTos struct {
 func (x *ChooseWhetherReceiveTos) Reset() {
 	*x = ChooseWhetherReceiveTos{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[27]
+		mi := &file_fengsheng_proto_msgTypes[30]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2157,7 +2300,7 @@ func (x *ChooseWhetherReceiveTos) String() string {
 func (*ChooseWhetherReceiveTos) ProtoMessage() {}
 
 func (x *ChooseWhetherReceiveTos) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[27]
+	mi := &file_fengsheng_proto_msgTypes[30]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2170,7 +2313,7 @@ func (x *ChooseWhetherReceiveTos) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChooseWhetherReceiveTos.ProtoReflect.Descriptor instead.
 func (*ChooseWhetherReceiveTos) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{27}
+	return file_fengsheng_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *ChooseWhetherReceiveTos) GetReceive() bool {
@@ -2199,7 +2342,7 @@ type ChooseReceiveToc struct {
 func (x *ChooseReceiveToc) Reset() {
 	*x = ChooseReceiveToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[28]
+		mi := &file_fengsheng_proto_msgTypes[31]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2212,7 +2355,7 @@ func (x *ChooseReceiveToc) String() string {
 func (*ChooseReceiveToc) ProtoMessage() {}
 
 func (x *ChooseReceiveToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[28]
+	mi := &file_fengsheng_proto_msgTypes[31]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2225,7 +2368,7 @@ func (x *ChooseReceiveToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChooseReceiveToc.ProtoReflect.Descriptor instead.
 func (*ChooseReceiveToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{28}
+	return file_fengsheng_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *ChooseReceiveToc) GetPlayerId() uint32 {
@@ -2247,7 +2390,7 @@ type EndFightPhaseTos struct {
 func (x *EndFightPhaseTos) Reset() {
 	*x = EndFightPhaseTos{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[29]
+		mi := &file_fengsheng_proto_msgTypes[32]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2260,7 +2403,7 @@ func (x *EndFightPhaseTos) String() string {
 func (*EndFightPhaseTos) ProtoMessage() {}
 
 func (x *EndFightPhaseTos) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[29]
+	mi := &file_fengsheng_proto_msgTypes[32]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2273,7 +2416,7 @@ func (x *EndFightPhaseTos) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EndFightPhaseTos.ProtoReflect.Descriptor instead.
 func (*EndFightPhaseTos) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{29}
+	return file_fengsheng_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *EndFightPhaseTos) GetSeq() uint32 {
@@ -2296,7 +2439,7 @@ type NotifyDieToc struct {
 func (x *NotifyDieToc) Reset() {
 	*x = NotifyDieToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[30]
+		mi := &file_fengsheng_proto_msgTypes[33]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2309,7 +2452,7 @@ func (x *NotifyDieToc) String() string {
 func (*NotifyDieToc) ProtoMessage() {}
 
 func (x *NotifyDieToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[30]
+	mi := &file_fengsheng_proto_msgTypes[33]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2322,7 +2465,7 @@ func (x *NotifyDieToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NotifyDieToc.ProtoReflect.Descriptor instead.
 func (*NotifyDieToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{30}
+	return file_fengsheng_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *NotifyDieToc) GetPlayerId() uint32 {
@@ -2354,7 +2497,7 @@ type NotifyWinnerToc struct {
 func (x *NotifyWinnerToc) Reset() {
 	*x = NotifyWinnerToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[31]
+		mi := &file_fengsheng_proto_msgTypes[34]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2367,7 +2510,7 @@ func (x *NotifyWinnerToc) String() string {
 func (*NotifyWinnerToc) ProtoMessage() {}
 
 func (x *NotifyWinnerToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[31]
+	mi := &file_fengsheng_proto_msgTypes[34]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2380,7 +2523,7 @@ func (x *NotifyWinnerToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NotifyWinnerToc.ProtoReflect.Descriptor instead.
 func (*NotifyWinnerToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{31}
+	return file_fengsheng_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *NotifyWinnerToc) GetDeclarePlayerId() uint32 {
@@ -2426,7 +2569,7 @@ type WaitForChengQingToc struct {
 func (x *WaitForChengQingToc) Reset() {
 	*x = WaitForChengQingToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[32]
+		mi := &file_fengsheng_proto_msgTypes[35]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2439,7 +2582,7 @@ func (x *WaitForChengQingToc) String() string {
 func (*WaitForChengQingToc) ProtoMessage() {}
 
 func (x *WaitForChengQingToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[32]
+	mi := &file_fengsheng_proto_msgTypes[35]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2452,7 +2595,7 @@ func (x *WaitForChengQingToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WaitForChengQingToc.ProtoReflect.Descriptor instead.
 func (*WaitForChengQingToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{32}
+	return file_fengsheng_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *WaitForChengQingToc) GetDiePlayerId() uint32 {
@@ -2498,7 +2641,7 @@ type ChengQingSaveDieTos struct {
 func (x *ChengQingSaveDieTos) Reset() {
 	*x = ChengQingSaveDieTos{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[33]
+		mi := &file_fengsheng_proto_msgTypes[36]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2511,7 +2654,7 @@ func (x *ChengQingSaveDieTos) String() string {
 func (*ChengQingSaveDieTos) ProtoMessage() {}
 
 func (x *ChengQingSaveDieTos) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[33]
+	mi := &file_fengsheng_proto_msgTypes[36]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2524,7 +2667,7 @@ func (x *ChengQingSaveDieTos) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChengQingSaveDieTos.ProtoReflect.Descriptor instead.
 func (*ChengQingSaveDieTos) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{33}
+	return file_fengsheng_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *ChengQingSaveDieTos) GetUse() bool {
@@ -2569,7 +2712,7 @@ type WaitForDieGiveCardToc struct {
 func (x *WaitForDieGiveCardToc) Reset() {
 	*x = WaitForDieGiveCardToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[34]
+		mi := &file_fengsheng_proto_msgTypes[37]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2582,7 +2725,7 @@ func (x *WaitForDieGiveCardToc) String() string {
 func (*WaitForDieGiveCardToc) ProtoMessage() {}
 
 func (x *WaitForDieGiveCardToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[34]
+	mi := &file_fengsheng_proto_msgTypes[37]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2595,7 +2738,7 @@ func (x *WaitForDieGiveCardToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WaitForDieGiveCardToc.ProtoReflect.Descriptor instead.
 func (*WaitForDieGiveCardToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{34}
+	return file_fengsheng_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *WaitForDieGiveCardToc) GetPlayerId() uint32 {
@@ -2632,7 +2775,7 @@ type DieGiveCardTos struct {
 func (x *DieGiveCardTos) Reset() {
 	*x = DieGiveCardTos{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[35]
+		mi := &file_fengsheng_proto_msgTypes[38]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2645,7 +2788,7 @@ func (x *DieGiveCardTos) String() string {
 func (*DieGiveCardTos) ProtoMessage() {}
 
 func (x *DieGiveCardTos) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[35]
+	mi := &file_fengsheng_proto_msgTypes[38]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2658,7 +2801,7 @@ func (x *DieGiveCardTos) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DieGiveCardTos.ProtoReflect.Descriptor instead.
 func (*DieGiveCardTos) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{35}
+	return file_fengsheng_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *DieGiveCardTos) GetTargetPlayerId() uint32 {
@@ -2695,7 +2838,7 @@ type NotifyDieGiveCardToc struct {
 func (x *NotifyDieGiveCardToc) Reset() {
 	*x = NotifyDieGiveCardToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[36]
+		mi := &file_fengsheng_proto_msgTypes[39]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2708,7 +2851,7 @@ func (x *NotifyDieGiveCardToc) String() string {
 func (*NotifyDieGiveCardToc) ProtoMessage() {}
 
 func (x *NotifyDieGiveCardToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[36]
+	mi := &file_fengsheng_proto_msgTypes[39]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2721,7 +2864,7 @@ func (x *NotifyDieGiveCardToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NotifyDieGiveCardToc.ProtoReflect.Descriptor instead.
 func (*NotifyDieGiveCardToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{36}
+	return file_fengsheng_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *NotifyDieGiveCardToc) GetPlayerId() uint32 {
@@ -2758,7 +2901,7 @@ type UsePoYiTos struct {
 func (x *UsePoYiTos) Reset() {
 	*x = UsePoYiTos{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[37]
+		mi := &file_fengsheng_proto_msgTypes[40]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2771,7 +2914,7 @@ func (x *UsePoYiTos) String() string {
 func (*UsePoYiTos) ProtoMessage() {}
 
 func (x *UsePoYiTos) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[37]
+	mi := &file_fengsheng_proto_msgTypes[40]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2784,7 +2927,7 @@ func (x *UsePoYiTos) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UsePoYiTos.ProtoReflect.Descriptor instead.
 func (*UsePoYiTos) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{37}
+	return file_fengsheng_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *UsePoYiTos) GetCardId() uint32 {
@@ -2817,7 +2960,7 @@ type UsePoYiToc struct {
 func (x *UsePoYiToc) Reset() {
 	*x = UsePoYiToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[38]
+		mi := &file_fengsheng_proto_msgTypes[41]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2830,7 +2973,7 @@ func (x *UsePoYiToc) String() string {
 func (*UsePoYiToc) ProtoMessage() {}
 
 func (x *UsePoYiToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[38]
+	mi := &file_fengsheng_proto_msgTypes[41]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2843,7 +2986,7 @@ func (x *UsePoYiToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UsePoYiToc.ProtoReflect.Descriptor instead.
 func (*UsePoYiToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{38}
+	return file_fengsheng_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *UsePoYiToc) GetCard() *Card {
@@ -2893,7 +3036,7 @@ type PoYiShowTos struct {
 func (x *PoYiShowTos) Reset() {
 	*x = PoYiShowTos{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[39]
+		mi := &file_fengsheng_proto_msgTypes[42]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2906,7 +3049,7 @@ func (x *PoYiShowTos) String() string {
 func (*PoYiShowTos) ProtoMessage() {}
 
 func (x *PoYiShowTos) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[39]
+	mi := &file_fengsheng_proto_msgTypes[42]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2919,7 +3062,7 @@ func (x *PoYiShowTos) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PoYiShowTos.ProtoReflect.Descriptor instead.
 func (*PoYiShowTos) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{39}
+	return file_fengsheng_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *PoYiShowTos) GetShow() bool {
@@ -2949,7 +3092,7 @@ type PoYiShowToc struct {
 func (x *PoYiShowToc) Reset() {
 	*x = PoYiShowToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[40]
+		mi := &file_fengsheng_proto_msgTypes[43]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2962,7 +3105,7 @@ func (x *PoYiShowToc) String() string {
 func (*PoYiShowToc) ProtoMessage() {}
 
 func (x *PoYiShowToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[40]
+	mi := &file_fengsheng_proto_msgTypes[43]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2975,7 +3118,7 @@ func (x *PoYiShowToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PoYiShowToc.ProtoReflect.Descriptor instead.
 func (*PoYiShowToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{40}
+	return file_fengsheng_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *PoYiShowToc) GetPlayerId() uint32 {
@@ -3012,7 +3155,7 @@ type UseJieHuoTos struct {
 func (x *UseJieHuoTos) Reset() {
 	*x = UseJieHuoTos{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[41]
+		mi := &file_fengsheng_proto_msgTypes[44]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3025,7 +3168,7 @@ func (x *UseJieHuoTos) String() string {
 func (*UseJieHuoTos) ProtoMessage() {}
 
 func (x *UseJieHuoTos) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[41]
+	mi := &file_fengsheng_proto_msgTypes[44]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3038,7 +3181,7 @@ func (x *UseJieHuoTos) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UseJieHuoTos.ProtoReflect.Descriptor instead.
 func (*UseJieHuoTos) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{41}
+	return file_fengsheng_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *UseJieHuoTos) GetCardId() uint32 {
@@ -3068,7 +3211,7 @@ type UseJieHuoToc struct {
 func (x *UseJieHuoToc) Reset() {
 	*x = UseJieHuoToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[42]
+		mi := &file_fengsheng_proto_msgTypes[45]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3081,7 +3224,7 @@ func (x *UseJieHuoToc) String() string {
 func (*UseJieHuoToc) ProtoMessage() {}
 
 func (x *UseJieHuoToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[42]
+	mi := &file_fengsheng_proto_msgTypes[45]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3094,7 +3237,7 @@ func (x *UseJieHuoToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UseJieHuoToc.ProtoReflect.Descriptor instead.
 func (*UseJieHuoToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{42}
+	return file_fengsheng_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *UseJieHuoToc) GetCard() *Card {
@@ -3124,7 +3267,7 @@ type UseDiaoBaoTos struct {
 func (x *UseDiaoBaoTos) Reset() {
 	*x = UseDiaoBaoTos{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[43]
+		mi := &file_fengsheng_proto_msgTypes[46]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3137,7 +3280,7 @@ func (x *UseDiaoBaoTos) String() string {
 func (*UseDiaoBaoTos) ProtoMessage() {}
 
 func (x *UseDiaoBaoTos) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[43]
+	mi := &file_fengsheng_proto_msgTypes[46]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3150,7 +3293,7 @@ func (x *UseDiaoBaoTos) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UseDiaoBaoTos.ProtoReflect.Descriptor instead.
 func (*UseDiaoBaoTos) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{43}
+	return file_fengsheng_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *UseDiaoBaoTos) GetCardId() uint32 {
@@ -3181,7 +3324,7 @@ type UseDiaoBaoToc struct {
 func (x *UseDiaoBaoToc) Reset() {
 	*x = UseDiaoBaoToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[44]
+		mi := &file_fengsheng_proto_msgTypes[47]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3194,7 +3337,7 @@ func (x *UseDiaoBaoToc) String() string {
 func (*UseDiaoBaoToc) ProtoMessage() {}
 
 func (x *UseDiaoBaoToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[44]
+	mi := &file_fengsheng_proto_msgTypes[47]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3207,7 +3350,7 @@ func (x *UseDiaoBaoToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UseDiaoBaoToc.ProtoReflect.Descriptor instead.
 func (*UseDiaoBaoToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{44}
+	return file_fengsheng_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *UseDiaoBaoToc) GetCardId() uint32 {
@@ -3245,7 +3388,7 @@ type UseWuDaoTos struct {
 func (x *UseWuDaoTos) Reset() {
 	*x = UseWuDaoTos{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[45]
+		mi := &file_fengsheng_proto_msgTypes[48]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3258,7 +3401,7 @@ func (x *UseWuDaoTos) String() string {
 func (*UseWuDaoTos) ProtoMessage() {}
 
 func (x *UseWuDaoTos) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[45]
+	mi := &file_fengsheng_proto_msgTypes[48]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3271,7 +3414,7 @@ func (x *UseWuDaoTos) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UseWuDaoTos.ProtoReflect.Descriptor instead.
 func (*UseWuDaoTos) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{45}
+	return file_fengsheng_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *UseWuDaoTos) GetCardId() uint32 {
@@ -3309,7 +3452,7 @@ type UseWuDaoToc struct {
 func (x *UseWuDaoToc) Reset() {
 	*x = UseWuDaoToc{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_fengsheng_proto_msgTypes[46]
+		mi := &file_fengsheng_proto_msgTypes[49]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3322,7 +3465,7 @@ func (x *UseWuDaoToc) String() string {
 func (*UseWuDaoToc) ProtoMessage() {}
 
 func (x *UseWuDaoToc) ProtoReflect() protoreflect.Message {
-	mi := &file_fengsheng_proto_msgTypes[46]
+	mi := &file_fengsheng_proto_msgTypes[49]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3335,7 +3478,7 @@ func (x *UseWuDaoToc) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UseWuDaoToc.ProtoReflect.Descriptor instead.
 func (*UseWuDaoToc) Descriptor() ([]byte, []int) {
-	return file_fengsheng_proto_rawDescGZIP(), []int{46}
+	return file_fengsheng_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *UseWuDaoToc) GetCard() *Card {
@@ -3369,6 +3512,14 @@ var file_fengsheng_proto_rawDesc = []byte{
 	0x61, 0x6d, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09, 0x52, 0x05, 0x6e, 0x61, 0x6d, 0x65,
 	0x73, 0x12, 0x1f, 0x0a, 0x0b, 0x6d, 0x79, 0x5f, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e,
 	0x18, 0x02, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x0a, 0x6d, 0x79, 0x50, 0x6f, 0x73, 0x69, 0x74, 0x69,
+	0x6f, 0x6e, 0x22, 0x0f, 0x0a, 0x0d, 0x61, 0x64, 0x64, 0x5f, 0x72, 0x6f, 0x62, 0x6f, 0x74, 0x5f,
+	0x74, 0x6f, 0x73, 0x22, 0x3f, 0x0a, 0x0d, 0x6a, 0x6f, 0x69, 0x6e, 0x5f, 0x72, 0x6f, 0x6f, 0x6d,
+	0x5f, 0x74, 0x6f, 0x63, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x70, 0x6f, 0x73, 0x69,
+	0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x08, 0x70, 0x6f, 0x73, 0x69,
+	0x74, 0x69, 0x6f, 0x6e, 0x22, 0x2c, 0x0a, 0x0e, 0x6c, 0x65, 0x61, 0x76, 0x65, 0x5f, 0x72, 0x6f,
+	0x6f, 0x6d, 0x5f, 0x74, 0x6f, 0x63, 0x12, 0x1a, 0x0a, 0x08, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69,
+	0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x08, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69,
 	0x6f, 0x6e, 0x22, 0xdd, 0x01, 0x0a, 0x04, 0x63, 0x61, 0x72, 0x64, 0x12, 0x17, 0x0a, 0x07, 0x63,
 	0x61, 0x72, 0x64, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x06, 0x63, 0x61,
 	0x72, 0x64, 0x49, 0x64, 0x12, 0x25, 0x0a, 0x0a, 0x63, 0x61, 0x72, 0x64, 0x5f, 0x63, 0x6f, 0x6c,
@@ -3759,7 +3910,7 @@ func file_fengsheng_proto_rawDescGZIP() []byte {
 }
 
 var file_fengsheng_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
-var file_fengsheng_proto_msgTypes = make([]protoimpl.MessageInfo, 47)
+var file_fengsheng_proto_msgTypes = make([]protoimpl.MessageInfo, 50)
 var file_fengsheng_proto_goTypes = []interface{}{
 	(Phase)(0),                      // 0: phase
 	(CardType)(0),                   // 1: card_type
@@ -3768,51 +3919,54 @@ var file_fengsheng_proto_goTypes = []interface{}{
 	(Direction)(0),                  // 4: direction
 	(*GetRoomInfoTos)(nil),          // 5: get_room_info_tos
 	(*GetRoomInfoToc)(nil),          // 6: get_room_info_toc
-	(*Card)(nil),                    // 7: card
-	(*InitToc)(nil),                 // 8: init_toc
-	(*AddCardToc)(nil),              // 9: add_card_toc
-	(*UseShiTanTos)(nil),            // 10: use_shi_tan_tos
-	(*UseShiTanToc)(nil),            // 11: use_shi_tan_toc
-	(*ShowShiTanToc)(nil),           // 12: show_shi_tan_toc
-	(*ExecuteShiTanTos)(nil),        // 13: execute_shi_tan_tos
-	(*ExecuteShiTanToc)(nil),        // 14: execute_shi_tan_toc
-	(*SyncDeckNumToc)(nil),          // 15: sync_deck_num_toc
-	(*DiscardCardToc)(nil),          // 16: discard_card_toc
-	(*NotifyPhaseToc)(nil),          // 17: notify_phase_toc
-	(*EndMainPhaseTos)(nil),         // 18: end_main_phase_tos
-	(*UseLiYouTos)(nil),             // 19: use_li_you_tos
-	(*UseLiYouToc)(nil),             // 20: use_li_you_toc
-	(*UsePingHengTos)(nil),          // 21: use_ping_heng_tos
-	(*UsePingHengToc)(nil),          // 22: use_ping_heng_toc
-	(*UseWeiBiTos)(nil),             // 23: use_wei_bi_tos
-	(*WeiBiWaitForGiveCardToc)(nil), // 24: wei_bi_wait_for_give_card_toc
-	(*WeiBiGiveCardTos)(nil),        // 25: wei_bi_give_card_tos
-	(*WeiBiGiveCardToc)(nil),        // 26: wei_bi_give_card_toc
-	(*WeiBiShowHandCardToc)(nil),    // 27: wei_bi_show_hand_card_toc
-	(*UseChengQingTos)(nil),         // 28: use_cheng_qing_tos
-	(*UseChengQingToc)(nil),         // 29: use_cheng_qing_toc
-	(*SendMessageCardTos)(nil),      // 30: send_message_card_tos
-	(*SendMessageCardToc)(nil),      // 31: send_message_card_toc
-	(*ChooseWhetherReceiveTos)(nil), // 32: choose_whether_receive_tos
-	(*ChooseReceiveToc)(nil),        // 33: choose_receive_toc
-	(*EndFightPhaseTos)(nil),        // 34: end_fight_phase_tos
-	(*NotifyDieToc)(nil),            // 35: notify_die_toc
-	(*NotifyWinnerToc)(nil),         // 36: notify_winner_toc
-	(*WaitForChengQingToc)(nil),     // 37: wait_for_cheng_qing_toc
-	(*ChengQingSaveDieTos)(nil),     // 38: cheng_qing_save_die_tos
-	(*WaitForDieGiveCardToc)(nil),   // 39: wait_for_die_give_card_toc
-	(*DieGiveCardTos)(nil),          // 40: die_give_card_tos
-	(*NotifyDieGiveCardToc)(nil),    // 41: notify_die_give_card_toc
-	(*UsePoYiTos)(nil),              // 42: use_po_yi_tos
-	(*UsePoYiToc)(nil),              // 43: use_po_yi_toc
-	(*PoYiShowTos)(nil),             // 44: po_yi_show_tos
-	(*PoYiShowToc)(nil),             // 45: po_yi_show_toc
-	(*UseJieHuoTos)(nil),            // 46: use_jie_huo_tos
-	(*UseJieHuoToc)(nil),            // 47: use_jie_huo_toc
-	(*UseDiaoBaoTos)(nil),           // 48: use_diao_bao_tos
-	(*UseDiaoBaoToc)(nil),           // 49: use_diao_bao_toc
-	(*UseWuDaoTos)(nil),             // 50: use_wu_dao_tos
-	(*UseWuDaoToc)(nil),             // 51: use_wu_dao_toc
+	(*AddRobotTos)(nil),             // 7: add_robot_tos
+	(*JoinRoomToc)(nil),             // 8: join_room_toc
+	(*LeaveRoomToc)(nil),            // 9: leave_room_toc
+	(*Card)(nil),                    // 10: card
+	(*InitToc)(nil),                 // 11: init_toc
+	(*AddCardToc)(nil),              // 12: add_card_toc
+	(*UseShiTanTos)(nil),            // 13: use_shi_tan_tos
+	(*UseShiTanToc)(nil),            // 14: use_shi_tan_toc
+	(*ShowShiTanToc)(nil),           // 15: show_shi_tan_toc
+	(*ExecuteShiTanTos)(nil),        // 16: execute_shi_tan_tos
+	(*ExecuteShiTanToc)(nil),        // 17: execute_shi_tan_toc
+	(*SyncDeckNumToc)(nil),          // 18: sync_deck_num_toc
+	(*DiscardCardToc)(nil),          // 19: discard_card_toc
+	(*NotifyPhaseToc)(nil),          // 20: notify_phase_toc
+	(*EndMainPhaseTos)(nil),         // 21: end_main_phase_tos
+	(*UseLiYouTos)(nil),             // 22: use_li_you_tos
+	(*UseLiYouToc)(nil),             // 23: use_li_you_toc
+	(*UsePingHengTos)(nil),          // 24: use_ping_heng_tos
+	(*UsePingHengToc)(nil),          // 25: use_ping_heng_toc
+	(*UseWeiBiTos)(nil),             // 26: use_wei_bi_tos
+	(*WeiBiWaitForGiveCardToc)(nil), // 27: wei_bi_wait_for_give_card_toc
+	(*WeiBiGiveCardTos)(nil),        // 28: wei_bi_give_card_tos
+	(*WeiBiGiveCardToc)(nil),        // 29: wei_bi_give_card_toc
+	(*WeiBiShowHandCardToc)(nil),    // 30: wei_bi_show_hand_card_toc
+	(*UseChengQingTos)(nil),         // 31: use_cheng_qing_tos
+	(*UseChengQingToc)(nil),         // 32: use_cheng_qing_toc
+	(*SendMessageCardTos)(nil),      // 33: send_message_card_tos
+	(*SendMessageCardToc)(nil),      // 34: send_message_card_toc
+	(*ChooseWhetherReceiveTos)(nil), // 35: choose_whether_receive_tos
+	(*ChooseReceiveToc)(nil),        // 36: choose_receive_toc
+	(*EndFightPhaseTos)(nil),        // 37: end_fight_phase_tos
+	(*NotifyDieToc)(nil),            // 38: notify_die_toc
+	(*NotifyWinnerToc)(nil),         // 39: notify_winner_toc
+	(*WaitForChengQingToc)(nil),     // 40: wait_for_cheng_qing_toc
+	(*ChengQingSaveDieTos)(nil),     // 41: cheng_qing_save_die_tos
+	(*WaitForDieGiveCardToc)(nil),   // 42: wait_for_die_give_card_toc
+	(*DieGiveCardTos)(nil),          // 43: die_give_card_tos
+	(*NotifyDieGiveCardToc)(nil),    // 44: notify_die_give_card_toc
+	(*UsePoYiTos)(nil),              // 45: use_po_yi_tos
+	(*UsePoYiToc)(nil),              // 46: use_po_yi_toc
+	(*PoYiShowTos)(nil),             // 47: po_yi_show_tos
+	(*PoYiShowToc)(nil),             // 48: po_yi_show_toc
+	(*UseJieHuoTos)(nil),            // 49: use_jie_huo_tos
+	(*UseJieHuoToc)(nil),            // 50: use_jie_huo_toc
+	(*UseDiaoBaoTos)(nil),           // 51: use_diao_bao_tos
+	(*UseDiaoBaoToc)(nil),           // 52: use_diao_bao_toc
+	(*UseWuDaoTos)(nil),             // 53: use_wu_dao_tos
+	(*UseWuDaoToc)(nil),             // 54: use_wu_dao_toc
 }
 var file_fengsheng_proto_depIdxs = []int32{
 	2,  // 0: card.card_color:type_name -> color
@@ -3821,35 +3975,35 @@ var file_fengsheng_proto_depIdxs = []int32{
 	2,  // 3: card.who_draw_card:type_name -> color
 	2,  // 4: init_toc.identity:type_name -> color
 	3,  // 5: init_toc.secret_task:type_name -> secret_task
-	7,  // 6: add_card_toc.cards:type_name -> card
-	7,  // 7: show_shi_tan_toc.card:type_name -> card
-	7,  // 8: discard_card_toc.cards:type_name -> card
+	10, // 6: add_card_toc.cards:type_name -> card
+	10, // 7: show_shi_tan_toc.card:type_name -> card
+	10, // 8: discard_card_toc.cards:type_name -> card
 	0,  // 9: notify_phase_toc.current_phase:type_name -> phase
 	4,  // 10: notify_phase_toc.message_card_dir:type_name -> direction
-	7,  // 11: notify_phase_toc.message_card:type_name -> card
-	7,  // 12: use_li_you_toc.li_you_card:type_name -> card
-	7,  // 13: use_li_you_toc.message_card:type_name -> card
-	7,  // 14: use_ping_heng_toc.ping_heng_card:type_name -> card
-	7,  // 15: use_ping_heng_toc.discard_cards:type_name -> card
-	7,  // 16: use_ping_heng_toc.target_discard_cards:type_name -> card
+	10, // 11: notify_phase_toc.message_card:type_name -> card
+	10, // 12: use_li_you_toc.li_you_card:type_name -> card
+	10, // 13: use_li_you_toc.message_card:type_name -> card
+	10, // 14: use_ping_heng_toc.ping_heng_card:type_name -> card
+	10, // 15: use_ping_heng_toc.discard_cards:type_name -> card
+	10, // 16: use_ping_heng_toc.target_discard_cards:type_name -> card
 	1,  // 17: use_wei_bi_tos.want_type:type_name -> card_type
-	7,  // 18: wei_bi_wait_for_give_card_toc.card:type_name -> card
+	10, // 18: wei_bi_wait_for_give_card_toc.card:type_name -> card
 	1,  // 19: wei_bi_wait_for_give_card_toc.want_type:type_name -> card_type
-	7,  // 20: wei_bi_give_card_toc.card:type_name -> card
-	7,  // 21: wei_bi_show_hand_card_toc.card:type_name -> card
-	7,  // 22: wei_bi_show_hand_card_toc.cards:type_name -> card
-	7,  // 23: use_cheng_qing_toc.card:type_name -> card
+	10, // 20: wei_bi_give_card_toc.card:type_name -> card
+	10, // 21: wei_bi_show_hand_card_toc.card:type_name -> card
+	10, // 22: wei_bi_show_hand_card_toc.cards:type_name -> card
+	10, // 23: use_cheng_qing_toc.card:type_name -> card
 	4,  // 24: send_message_card_tos.card_dir:type_name -> direction
 	4,  // 25: send_message_card_toc.card_dir:type_name -> direction
 	2,  // 26: notify_winner_toc.identity:type_name -> color
 	3,  // 27: notify_winner_toc.secret_tasks:type_name -> secret_task
-	7,  // 28: notify_die_give_card_toc.card_id:type_name -> card
-	7,  // 29: use_po_yi_toc.card:type_name -> card
-	7,  // 30: use_po_yi_toc.message_card:type_name -> card
-	7,  // 31: po_yi_show_toc.message_card:type_name -> card
-	7,  // 32: use_jie_huo_toc.card:type_name -> card
-	7,  // 33: use_diao_bao_toc.old_message_card:type_name -> card
-	7,  // 34: use_wu_dao_toc.card:type_name -> card
+	10, // 28: notify_die_give_card_toc.card_id:type_name -> card
+	10, // 29: use_po_yi_toc.card:type_name -> card
+	10, // 30: use_po_yi_toc.message_card:type_name -> card
+	10, // 31: po_yi_show_toc.message_card:type_name -> card
+	10, // 32: use_jie_huo_toc.card:type_name -> card
+	10, // 33: use_diao_bao_toc.old_message_card:type_name -> card
+	10, // 34: use_wu_dao_toc.card:type_name -> card
 	35, // [35:35] is the sub-list for method output_type
 	35, // [35:35] is the sub-list for method input_type
 	35, // [35:35] is the sub-list for extension type_name
@@ -3888,7 +4042,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Card); i {
+			switch v := v.(*AddRobotTos); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3900,7 +4054,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*InitToc); i {
+			switch v := v.(*JoinRoomToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3912,7 +4066,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AddCardToc); i {
+			switch v := v.(*LeaveRoomToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3924,7 +4078,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UseShiTanTos); i {
+			switch v := v.(*Card); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3936,7 +4090,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UseShiTanToc); i {
+			switch v := v.(*InitToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3948,7 +4102,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ShowShiTanToc); i {
+			switch v := v.(*AddCardToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3960,7 +4114,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ExecuteShiTanTos); i {
+			switch v := v.(*UseShiTanTos); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3972,7 +4126,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ExecuteShiTanToc); i {
+			switch v := v.(*UseShiTanToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3984,7 +4138,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SyncDeckNumToc); i {
+			switch v := v.(*ShowShiTanToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3996,7 +4150,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DiscardCardToc); i {
+			switch v := v.(*ExecuteShiTanTos); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4008,7 +4162,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NotifyPhaseToc); i {
+			switch v := v.(*ExecuteShiTanToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4020,7 +4174,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EndMainPhaseTos); i {
+			switch v := v.(*SyncDeckNumToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4032,7 +4186,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UseLiYouTos); i {
+			switch v := v.(*DiscardCardToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4044,7 +4198,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UseLiYouToc); i {
+			switch v := v.(*NotifyPhaseToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4056,7 +4210,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UsePingHengTos); i {
+			switch v := v.(*EndMainPhaseTos); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4068,7 +4222,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UsePingHengToc); i {
+			switch v := v.(*UseLiYouTos); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4080,7 +4234,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UseWeiBiTos); i {
+			switch v := v.(*UseLiYouToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4092,7 +4246,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*WeiBiWaitForGiveCardToc); i {
+			switch v := v.(*UsePingHengTos); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4104,7 +4258,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*WeiBiGiveCardTos); i {
+			switch v := v.(*UsePingHengToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4116,7 +4270,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*WeiBiGiveCardToc); i {
+			switch v := v.(*UseWeiBiTos); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4128,7 +4282,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*WeiBiShowHandCardToc); i {
+			switch v := v.(*WeiBiWaitForGiveCardToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4140,7 +4294,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UseChengQingTos); i {
+			switch v := v.(*WeiBiGiveCardTos); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4152,7 +4306,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UseChengQingToc); i {
+			switch v := v.(*WeiBiGiveCardToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4164,7 +4318,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SendMessageCardTos); i {
+			switch v := v.(*WeiBiShowHandCardToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4176,7 +4330,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SendMessageCardToc); i {
+			switch v := v.(*UseChengQingTos); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4188,7 +4342,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ChooseWhetherReceiveTos); i {
+			switch v := v.(*UseChengQingToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4200,7 +4354,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ChooseReceiveToc); i {
+			switch v := v.(*SendMessageCardTos); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4212,7 +4366,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EndFightPhaseTos); i {
+			switch v := v.(*SendMessageCardToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4224,7 +4378,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NotifyDieToc); i {
+			switch v := v.(*ChooseWhetherReceiveTos); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4236,7 +4390,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NotifyWinnerToc); i {
+			switch v := v.(*ChooseReceiveToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4248,7 +4402,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*WaitForChengQingToc); i {
+			switch v := v.(*EndFightPhaseTos); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4260,7 +4414,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[33].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ChengQingSaveDieTos); i {
+			switch v := v.(*NotifyDieToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4272,7 +4426,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*WaitForDieGiveCardToc); i {
+			switch v := v.(*NotifyWinnerToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4284,7 +4438,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[35].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DieGiveCardTos); i {
+			switch v := v.(*WaitForChengQingToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4296,7 +4450,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[36].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NotifyDieGiveCardToc); i {
+			switch v := v.(*ChengQingSaveDieTos); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4308,7 +4462,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[37].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UsePoYiTos); i {
+			switch v := v.(*WaitForDieGiveCardToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4320,7 +4474,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[38].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UsePoYiToc); i {
+			switch v := v.(*DieGiveCardTos); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4332,7 +4486,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[39].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PoYiShowTos); i {
+			switch v := v.(*NotifyDieGiveCardToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4344,7 +4498,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[40].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PoYiShowToc); i {
+			switch v := v.(*UsePoYiTos); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4356,7 +4510,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[41].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UseJieHuoTos); i {
+			switch v := v.(*UsePoYiToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4368,7 +4522,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[42].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UseJieHuoToc); i {
+			switch v := v.(*PoYiShowTos); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4380,7 +4534,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[43].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UseDiaoBaoTos); i {
+			switch v := v.(*PoYiShowToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4392,7 +4546,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[44].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UseDiaoBaoToc); i {
+			switch v := v.(*UseJieHuoTos); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4404,7 +4558,7 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[45].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UseWuDaoTos); i {
+			switch v := v.(*UseJieHuoToc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4416,6 +4570,42 @@ func file_fengsheng_proto_init() {
 			}
 		}
 		file_fengsheng_proto_msgTypes[46].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UseDiaoBaoTos); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_fengsheng_proto_msgTypes[47].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UseDiaoBaoToc); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_fengsheng_proto_msgTypes[48].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UseWuDaoTos); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_fengsheng_proto_msgTypes[49].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UseWuDaoToc); i {
 			case 0:
 				return &v.state
@@ -4434,7 +4624,7 @@ func file_fengsheng_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_fengsheng_proto_rawDesc,
 			NumEnums:      5,
-			NumMessages:   47,
+			NumMessages:   50,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

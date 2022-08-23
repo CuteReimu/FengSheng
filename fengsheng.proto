@@ -11,6 +11,21 @@ message get_room_info_toc {
   uint32          my_position = 2;
 }
 
+// 请求加一个机器人
+message add_robot_tos {
+}
+
+// 通知谁加入了房间
+message join_room_toc {
+  string name     = 1;
+  uint32 position = 2;
+}
+
+// 通知谁离开的房间
+message leave_room_toc {
+  uint32 position = 1;
+}
+
 enum phase {
   Draw_Phase       = 0; // 摸牌阶段
   Main_Phase       = 1; // 出牌阶段
