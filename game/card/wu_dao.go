@@ -37,6 +37,7 @@ func (card *WuDao) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...int
 	target := args[0].(interfaces.IPlayer)
 	r.DeleteCard(card.GetId())
 	g.SetWhoseSendTurn(target.Location())
+	g.SetWhoseFightTurn(g.GetWhoseSendTurn())
 	for _, player := range g.GetPlayers() {
 		if p, ok := player.(*game.HumanPlayer); ok {
 			msg := &protos.UseWuDaoToc{

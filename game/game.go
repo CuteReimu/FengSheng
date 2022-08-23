@@ -367,6 +367,10 @@ func (game *Game) GetWhoseFightTurn() int {
 	return game.WhoseFightTurn
 }
 
+func (game *Game) SetWhoseFightTurn(WhoseFightTurn int) {
+	game.WhoseFightTurn = WhoseFightTurn
+}
+
 func (game *Game) GetMessageCardDirection() protos.Direction {
 	return game.CardDirection
 }

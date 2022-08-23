@@ -33,6 +33,7 @@ func (card *DiaoBao) Execute(g interfaces.IGame, r interfaces.IPlayer, _ ...inte
 	oldCard := g.GetCurrentMessageCard()
 	g.GetDeck().Discard(oldCard)
 	g.SetCurrentMessageCard(card)
+	g.SetWhoseFightTurn(g.GetWhoseSendTurn())
 	for _, player := range g.GetPlayers() {
 		if p, ok := player.(*game.HumanPlayer); ok {
 			msg := &protos.UseDiaoBaoToc{
