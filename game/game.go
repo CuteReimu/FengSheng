@@ -67,7 +67,7 @@ func Start(totalCount int) {
 		}
 		msg := &protos.JoinRoomToc{Name: player.String(), Position: uint32(playerIndex)}
 		for i := range game.Players {
-			if player, ok := game.Players[i].(*HumanPlayer); ok {
+			if player, ok := game.Players[i].(*HumanPlayer); ok && i != playerIndex {
 				player.Send(msg)
 			}
 		}
