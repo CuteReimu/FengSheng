@@ -77,7 +77,7 @@ func (card *ShiTan) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...in
 				seq := player.Seq
 				msg.Seq = player.Seq
 				player.Timer = time.AfterFunc(time.Second*time.Duration(msg.WaitingSecond), func() {
-					g.Post(func() {
+					game.Post(func() {
 						if player.Seq == seq {
 							player.Seq++
 							card.autoSelect(g, player)
@@ -93,7 +93,7 @@ func (card *ShiTan) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...in
 	}
 	if _, ok := target.(*game.RobotPlayer); ok {
 		time.AfterFunc(time.Second, func() {
-			g.Post(func() { card.autoSelect(g, target) })
+			game.Post(func() { card.autoSelect(g, target) })
 		})
 	}
 }
@@ -132,7 +132,7 @@ func (card *ShiTan) Execute2(g interfaces.IGame, r interfaces.IPlayer, args ...i
 		}
 	}
 	g.SetCurrentCard(nil)
-	g.Post(g.MainPhase)
+	game.Post(g.MainPhase)
 }
 
 func (card *ShiTan) notifyResult(g interfaces.IGame, target interfaces.IPlayer, draw bool) {

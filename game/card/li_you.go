@@ -64,7 +64,7 @@ func (card *LiYou) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...int
 		}
 	}
 	g.GetDeck().Discard(card)
-	g.Post(g.MainPhase)
+	game.Post(g.MainPhase)
 }
 
 func (card *LiYou) CanUse2(interfaces.IGame, interfaces.IPlayer, ...interface{}) bool {

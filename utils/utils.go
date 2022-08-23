@@ -5,9 +5,12 @@ import (
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
+	"math/rand"
 	"path"
 	"time"
 )
+
+var Random = rand.New(rand.NewSource(time.Now().Unix()))
 
 func GetLogger(module string) logrus.FieldLogger {
 	return &errorEntryWithStack{logrus.WithField("module", module)}

@@ -4,6 +4,7 @@ import (
 	"github.com/CuteReimu/FengSheng/game"
 	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
+	"github.com/CuteReimu/FengSheng/utils"
 	"time"
 )
 
@@ -13,10 +14,10 @@ func init() {
 
 func liYou(player interfaces.IPlayer, card interfaces.ICard) bool {
 	var chooseHuman bool
-	n := player.GetGame().GetRandom().Intn(3)
+	n := utils.Random.Intn(3)
 	if n == 0 {
 		time.AfterFunc(time.Second, func() {
-			player.GetGame().Post(func() { card.Execute(player.GetGame(), player, player) })
+			game.Post(func() { card.Execute(player.GetGame(), player, player) })
 		})
 		return true
 	} else {
@@ -36,9 +37,9 @@ func liYou(player interfaces.IPlayer, card interfaces.ICard) bool {
 	if len(players) == 0 {
 		return false
 	}
-	p := players[player.GetGame().GetRandom().Intn(len(players))]
+	p := players[utils.Random.Intn(len(players))]
 	time.AfterFunc(time.Second, func() {
-		player.GetGame().Post(func() { card.Execute(player.GetGame(), player, p) })
+		game.Post(func() { card.Execute(player.GetGame(), player, p) })
 	})
 	return true
 }

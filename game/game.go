@@ -12,16 +12,19 @@ import (
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/proc"
 	_ "github.com/davyxu/cellnet/proc/tcp"
-	"math/rand"
-	"os"
-	"time"
 )
 
 var logger = utils.GetLogger("game")
 
+var eventQueue cellnet.EventQueue
+
+func Post(callback func()) {
+	eventQueue.Post(callback)
+}
+
 type Game struct {
+	AlreadyStart       bool
 	Players            []interfaces.IPlayer
-	TotalPlayerCount   int
 	Deck               interfaces.IDeck
 	CurrentCard        *interfaces.CurrentCard
 	WhoseTurn          int
@@ -34,54 +37,86 @@ type Game struct {
 	CardDirection      protos.Direction
 	WhoIsLocked        []int
 	CurrentPhase       protos.Phase
-	Random             *rand.Rand
 	afterChengQing     func()
-	cellnet.EventQueue
 }
 
-func (game *Game) Start(totalCount, robotCount int) {
-	game.Random = rand.New(rand.NewSource(time.Now().Unix()))
-	humanCount := totalCount - robotCount
-	game.TotalPlayerCount = totalCount
-	index := 0
-	for ; index < robotCount; index++ {
-		game.Players = append(game.Players, new(RobotPlayer))
-	}
-	logger.Info("已加入", robotCount, "个机器人，等待", humanCount, "人加入。。。")
+func Start(totalCount int) {
+	game := &Game{Players: make([]interfaces.IPlayer, totalCount)}
 
 	if !config.IsTcpDebugLogOpen() {
 		msglog.SetCurrMsgLogMode(msglog.MsgLogMode_Mute)
 	}
 	// 创建一个事件处理队列，整个服务器只有这一个队列处理事件，服务器属于单线程服务器
-	game.EventQueue = cellnet.NewEventQueue()
+	eventQueue = cellnet.NewEventQueue()
 
 	// 创建一个tcp的侦听器，名称为server，所有连接将事件投递到queue队列,单线程的处理
-	p := peer.NewGenericPeer("tcp.Acceptor", "server", config.GetListenAddress(), game.EventQueue)
+	p := peer.NewGenericPeer("tcp.Acceptor", "server", config.GetListenAddress(), eventQueue)
 
 	humanMap := make(map[int64]*HumanPlayer)
+
+	onAdd := func(player interfaces.IPlayer) int {
+		playerIndex, unready := 0, -1
+		for index := range game.Players {
+			if game.Players[index] == nil {
+				unready++
+				if unready == 0 {
+					game.Players[index] = player
+					playerIndex = index
+				}
+			}
+		}
+		msg := &protos.JoinRoomToc{Name: player.String(), Position: uint32(playerIndex)}
+		for i := range game.Players {
+			if player, ok := game.Players[i].(*HumanPlayer); ok {
+				player.Send(msg)
+			}
+		}
+		if unready == 0 {
+			logger.Info(player, "加入了。已加入", totalCount, "个人，游戏开始。。。")
+			Post(game.start)
+			game = &Game{Players: make([]interfaces.IPlayer, totalCount)}
+		} else {
+			logger.Info(player, "加入了。已加入", totalCount-unready, "个人，等待", unready, "人加入。。。")
+		}
+		return playerIndex
+	}
+
 	proc.BindProcessorHandler(p, "tcp.ltv", func(ev cellnet.Event) {
 		switch pb := ev.Message().(type) {
 		case *cellnet.SessionAccepted:
-			if index < totalCount {
-				player := &HumanPlayer{Session: ev.Session()}
-				game.Players = append(game.Players, player)
-				humanMap[player.Session.ID()] = player
-				index++
-				logger.Info("server accepted", player.Session)
-				if index == totalCount {
-					game.Post(game.start)
-				}
-			} else {
-				ev.Session().Close()
-				logger.Info("房间人数已满")
+			player := &HumanPlayer{Session: ev.Session()}
+			humanMap[player.Session.ID()] = player
+			index := onAdd(player)
+			msg := &protos.GetRoomInfoToc{MyPosition: uint32(index)}
+			for i := range game.Players {
+				msg.Names = append(msg.Names, game.Players[i].String())
 			}
+			player.Send(msg)
 		case *cellnet.SessionClosed:
 			logger.Info("session closed: ", ev.Session().ID())
-			if _, ok := humanMap[ev.Session().ID()]; ok {
-				logger.Info("目前不支持断线重连，程序将在3秒后关闭")
-				time.Sleep(time.Second * 3)
-				os.Exit(1)
+			if player, ok := humanMap[ev.Session().ID()]; ok {
+				game := player.GetGame().(*Game)
+				if game.AlreadyStart {
+					game.Players[player.Location()] = &RobotPlayer{BasePlayer: player.BasePlayer}
+				} else {
+					msg := &protos.LeaveRoomToc{}
+					for i := range game.Players {
+						if player == game.Players[i] {
+							msg.Position = uint32(i)
+							game.Players[i] = nil
+							break
+						}
+					}
+					for i := range game.Players {
+						if player, ok := game.Players[i].(*HumanPlayer); ok {
+							player.Send(msg)
+						}
+					}
+				}
+				delete(humanMap, ev.Session().ID())
 			}
+		case *protos.AddRobotTos:
+			onAdd(&RobotPlayer{})
 		case *protos.EndMainPhaseTos:
 			humanMap[ev.Session().ID()].onEndMainPhase(pb)
 		case *protos.UseShiTanTos:
@@ -121,14 +156,12 @@ func (game *Game) Start(totalCount, robotCount int) {
 		}
 	})
 	p.Start()
-	game.StartLoop()
-	if humanCount == 0 {
-		game.Post(game.start)
-	}
-	game.Wait()
+	eventQueue.StartLoop()
+	eventQueue.Wait()
 }
 
 func (game *Game) start() {
+	game.AlreadyStart = true
 	idTask := make([]struct {
 		id   protos.Color
 		task protos.SecretTask
@@ -140,17 +173,17 @@ func (game *Game) start() {
 	for i := 0; i < 3; i++ {
 		idTask[len(idTask)-3+i].task = protos.SecretTask(i)
 	}
-	game.Random.Shuffle(3, func(i, j int) {
+	utils.Random.Shuffle(3, func(i, j int) {
 		idTask[len(idTask)-3+i], idTask[len(idTask)-3+j] = idTask[len(idTask)-3+j], idTask[len(idTask)-3+i]
 	})
-	game.Random.Shuffle(len(game.Players), func(i, j int) {
+	utils.Random.Shuffle(len(game.Players), func(i, j int) {
 		idTask[i], idTask[j] = idTask[j], idTask[i]
 	})
 	for location, player := range game.Players {
 		player.Init(game, location, idTask[location].id, idTask[location].task)
 	}
 	game.Deck = NewDeck(game)
-	game.WhoseTurn = game.Random.Intn(len(game.Players))
+	game.WhoseTurn = utils.Random.Intn(len(game.Players))
 	for i := 0; i < len(game.Players); i++ {
 		game.Players[(game.WhoseTurn+i)%len(game.Players)].Draw(config.GetHandCardCountBegin())
 	}
@@ -160,7 +193,7 @@ func (game *Game) start() {
 func (game *Game) DrawPhase() {
 	player := game.Players[game.WhoseTurn]
 	if !player.IsAlive() {
-		game.Post(game.NextTurn)
+		Post(game.NextTurn)
 		return
 	}
 	logger.Info(player, "的回合开始了")
@@ -168,14 +201,14 @@ func (game *Game) DrawPhase() {
 	for _, p := range game.Players {
 		p.NotifyDrawPhase()
 	}
-	player.Draw(3)
-	game.Post(game.MainPhase)
+	player.Draw(config.GetHandCardCountEachTurn())
+	Post(game.MainPhase)
 }
 
 func (game *Game) MainPhase() {
 	player := game.Players[game.WhoseTurn]
 	if !player.IsAlive() {
-		game.Post(game.NextTurn)
+		Post(game.NextTurn)
 		return
 	}
 	game.CurrentPhase = protos.Phase_Main_Phase
@@ -198,7 +231,7 @@ func (game *Game) SendPhaseStart() {
 		}
 	}
 	if !player.IsAlive() {
-		game.Post(game.NextTurn)
+		Post(game.NextTurn)
 		return
 	}
 	game.CurrentPhase = protos.Phase_Send_Start_Phase
@@ -227,7 +260,7 @@ func (game *Game) MessageMoveNext() {
 		if game.Players[game.WhoseTurn].IsAlive() {
 			game.WhoseSendTurn = game.WhoseTurn
 		} else {
-			game.Post(game.NextTurn)
+			Post(game.NextTurn)
 			return
 		}
 	} else {
@@ -240,7 +273,7 @@ func (game *Game) MessageMoveNext() {
 			if game.Players[game.WhoseSendTurn].IsAlive() {
 				break
 			} else if game.WhoseTurn == game.WhoseSendTurn {
-				game.Post(game.NextTurn)
+				Post(game.NextTurn)
 				return
 			}
 		}
@@ -265,7 +298,7 @@ func (game *Game) FightPhaseNext() {
 	for {
 		game.WhoseFightTurn = (game.WhoseFightTurn + 1) % len(game.Players)
 		if game.WhoseFightTurn == game.WhoseSendTurn {
-			game.Post(game.ReceivePhase)
+			Post(game.ReceivePhase)
 			return
 		} else if game.Players[game.WhoseFightTurn].IsAlive() {
 			break
@@ -289,7 +322,7 @@ func (game *Game) ReceivePhase() {
 			return
 		}
 	}
-	game.Post(game.NextTurn)
+	Post(game.NextTurn)
 }
 
 func (game *Game) NextTurn() {
@@ -301,7 +334,7 @@ func (game *Game) NextTurn() {
 			break
 		}
 	}
-	game.Post(game.DrawPhase)
+	Post(game.DrawPhase)
 }
 
 func (game *Game) GetPlayers() []interfaces.IPlayer {
@@ -374,10 +407,6 @@ func (game *Game) GetCurrentPhase() protos.Phase {
 
 func (game *Game) GetDieState() interfaces.DieState {
 	return game.DieState
-}
-
-func (game *Game) GetRandom() *rand.Rand {
-	return game.Random
 }
 
 func (game *Game) PlayerDiscardCard(player interfaces.IPlayer, cards ...interfaces.ICard) {
@@ -480,7 +509,7 @@ func (game *Game) checkWinOrDie() bool {
 				}
 				return
 			}
-			game.Post(game.NextTurn)
+			Post(game.NextTurn)
 		}
 		return true
 	}
@@ -535,7 +564,7 @@ func (game *Game) AfterChengQing() {
 	} else {
 		game.DieState = interfaces.DieStateNone
 		if game.afterChengQing != nil {
-			game.Post(game.afterChengQing)
+			Post(game.afterChengQing)
 			game.afterChengQing = nil
 		}
 	}

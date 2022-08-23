@@ -1,10 +1,6 @@
 syntax = "proto3";
 option go_package = "protos/;protos";
 
-// 获取房间所有人的信息
-message get_room_info_tos {
-}
-
 // 返回房间所有人的信息
 message get_room_info_toc {
   repeated string names       = 1; // 其它所有人的名字
