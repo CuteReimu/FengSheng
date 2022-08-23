@@ -501,9 +501,14 @@ func (r *HumanPlayer) onSendMessageCard(pb *protos.SendMessageCardTos) {
 		if len(pb.LockPlayerId) > 1 {
 			r.logger.Error("最多锁定一个目标")
 			return
-		} else if len(pb.LockPlayerId) == 1 && pb.LockPlayerId[0] >= uint32(len(r.GetGame().GetPlayers())) {
-			r.logger.Error("锁定目标错误: ", pb.LockPlayerId[0])
-			return
+		} else if len(pb.LockPlayerId) == 1 {
+			if pb.LockPlayerId[0] >= uint32(len(r.GetGame().GetPlayers())) {
+				r.logger.Error("锁定目标错误: ", pb.LockPlayerId[0])
+				return
+			} else if pb.LockPlayerId[0] == 0 {
+				r.logger.Error("不能锁定自己")
+				return
+			}
 		}
 	} else {
 		if len(pb.LockPlayerId) > 0 {
