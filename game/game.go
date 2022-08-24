@@ -431,6 +431,9 @@ func (game *Game) GetDieState() interfaces.DieState {
 }
 
 func (game *Game) PlayerDiscardCard(player interfaces.IPlayer, cards ...interfaces.ICard) {
+	if len(cards) == 0 {
+		return
+	}
 	for _, card := range cards {
 		player.DeleteCard(card.GetId())
 	}
