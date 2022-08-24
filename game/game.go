@@ -520,10 +520,10 @@ func (game *Game) checkWinOrDie() bool {
 		if red+blue < 2 {
 			killer = nil
 		}
-		logger.Info(game.Players[game.WhoDie], "濒死")
 		game.WhoDie = game.WhoseSendTurn
 		game.DieState = interfaces.DieStateWaitForChengQing
 		game.WhoseFightTurn = game.WhoseTurn
+		logger.Info(game.Players[game.WhoDie], "濒死")
 		game.AskForChengQing()
 		game.afterChengQing = func() {
 			if !game.Players[game.WhoDie].IsAlive() && killer != nil && game.WhoseTurn == killer.Location() {
