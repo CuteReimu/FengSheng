@@ -13,7 +13,6 @@ var globalConfig *viper.Viper
 const (
 	listenAddress      = "listen_address"
 	totalPlayerCount   = "player.total_count"
-	robotPlayerCount   = "player.robot_count"
 	tcpDebugLogOpen    = "log.tcp_debug_log"
 	beginHandCardCount = "rule.hand_card_count_begin"
 	turnHandCardCount  = "rule.hand_card_count_each_turn"
@@ -28,7 +27,6 @@ func Init() {
 	var newConfig []string
 	initSingleConfig(&newConfig, listenAddress, "127.0.0.1:9091")
 	initSingleConfig(&newConfig, totalPlayerCount, 5)
-	initSingleConfig(&newConfig, robotPlayerCount, 4)
 	initSingleConfig(&newConfig, tcpDebugLogOpen, true)
 	initSingleConfig(&newConfig, beginHandCardCount, 3)
 	initSingleConfig(&newConfig, turnHandCardCount, 3)
