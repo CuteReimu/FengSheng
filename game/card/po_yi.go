@@ -88,7 +88,7 @@ func (card *PoYi) showAndDrawCard(g interfaces.IGame, r interfaces.IPlayer, show
 				Show:     show,
 			}
 			if show {
-				msg.MessageCard = card.ToPbCard()
+				msg.MessageCard = g.GetCurrentMessageCard().ToPbCard()
 			}
 			p.Send(msg)
 		}
