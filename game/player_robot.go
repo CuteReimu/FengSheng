@@ -83,6 +83,7 @@ func (r *RobotPlayer) NotifyReceivePhase() {
 }
 
 func (r *RobotPlayer) NotifyDie(int, bool) {
+	Post(r.GetGame().AfterChengQing)
 }
 
 func (r *RobotPlayer) NotifyWin(interfaces.IPlayer, []interfaces.IPlayer) {

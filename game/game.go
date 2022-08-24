@@ -560,7 +560,7 @@ func (game *Game) AskNextForChengQing() {
 			}
 			logger.Info("无人拯救，", player, "已死亡")
 			game.DieState = interfaces.DieStateDying
-			break
+			return
 		}
 		if game.Players[game.WhoseFightTurn].IsAlive() {
 			break
