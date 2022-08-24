@@ -86,6 +86,12 @@ func (r *RobotPlayer) NotifyDie(int, bool) {
 	if r.Location() != r.GetGame().GetWhoDie() {
 		return
 	}
+	var cards []interfaces.ICard
+	for _, card := range r.GetCards() {
+		cards = append(cards, card)
+	}
+	r.GetGame().PlayerDiscardCard(r, cards...)
+	r.GetGame().GetDeck().Discard(r.DeleteAllMessageCards()...)
 	Post(r.GetGame().AfterChengQing)
 }
 

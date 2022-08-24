@@ -612,9 +612,18 @@ func (r *HumanPlayer) onDieGiveCard(pb *protos.DieGiveCardTos) {
 		r.logger.Error("时机不对")
 		return
 	}
-	if pb.TargetPlayerId == 0 {
-		pb.Seq++
+	discardAllCards := func(r *HumanPlayer) {
+		r.Seq++
+		var cards []interfaces.ICard
+		for _, card := range r.GetCards() {
+			cards = append(cards, card)
+		}
+		r.GetGame().PlayerDiscardCard(r, cards...)
+		r.GetGame().GetDeck().Discard(r.DeleteAllMessageCards()...)
 		Post(r.GetGame().AfterChengQing)
+	}
+	if pb.TargetPlayerId == 0 {
+		discardAllCards(r)
 		return
 	} else if pb.TargetPlayerId >= uint32(len(r.GetGame().GetPlayers())) {
 		r.logger.Error("目标错误: ", pb.TargetPlayerId)
@@ -622,6 +631,7 @@ func (r *HumanPlayer) onDieGiveCard(pb *protos.DieGiveCardTos) {
 	}
 	if len(pb.CardId) == 0 {
 		r.logger.Warn("参数似乎有些不对，姑且认为不给牌吧")
+		discardAllCards(r)
 		return
 	}
 	var cards []interfaces.ICard
@@ -654,7 +664,7 @@ func (r *HumanPlayer) onDieGiveCard(pb *protos.DieGiveCardTos) {
 			player.Send(msg)
 		}
 	}
-	Post(r.GetGame().AfterChengQing)
+	discardAllCards(r)
 }
 
 func (r *HumanPlayer) onUsePoYi(pb *protos.UsePoYiTos) {
