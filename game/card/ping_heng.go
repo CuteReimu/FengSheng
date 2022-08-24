@@ -40,12 +40,6 @@ func (card *PingHeng) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...
 	target := args[0].(interfaces.IPlayer)
 	logger.Info(r, "对", target, "使用了", card)
 	r.DeleteCard(card.GetId())
-	discardCards := r.DeleteAllCards()
-	logger.Info(r, "弃掉了", discardCards)
-	g.GetDeck().Discard(discardCards...)
-	targetDiscardCards := target.DeleteAllCards()
-	logger.Info(target, "弃掉了", targetDiscardCards)
-	g.GetDeck().Discard(targetDiscardCards...)
 	for _, p := range g.GetPlayers() {
 		if player, ok := p.(*game.HumanPlayer); ok {
 			msg := &protos.UsePingHengToc{
@@ -53,15 +47,20 @@ func (card *PingHeng) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...
 				TargetPlayerId: p.GetAlternativeLocation(target.Location()),
 				PingHengCard:   card.ToPbCard(),
 			}
-			for _, c := range discardCards {
-				msg.DiscardCards = append(msg.DiscardCards, c.ToPbCard())
-			}
-			for _, c := range targetDiscardCards {
-				msg.TargetDiscardCards = append(msg.TargetDiscardCards, c.ToPbCard())
-			}
 			player.Send(msg)
 		}
 	}
+	var discardCards, targetDiscardCards []interfaces.ICard
+	for _, c := range r.GetCards() {
+		discardCards = append(discardCards, c)
+	}
+	logger.Info(r, "弃掉了", discardCards)
+	g.PlayerDiscardCard(r, discardCards...)
+	for _, c := range target.GetCards() {
+		targetDiscardCards = append(targetDiscardCards, c)
+	}
+	logger.Info(target, "弃掉了", targetDiscardCards)
+	g.PlayerDiscardCard(target, targetDiscardCards...)
 	r.Draw(3)
 	target.Draw(3)
 	g.GetDeck().Discard(card)
