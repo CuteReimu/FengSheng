@@ -23,7 +23,6 @@ func Post(callback func()) {
 }
 
 type Game struct {
-	AlreadyStart       bool
 	Players            []interfaces.IPlayer
 	Deck               interfaces.IDeck
 	CurrentCard        *interfaces.CurrentCard
@@ -97,8 +96,8 @@ func Start(totalCount int) {
 		case *cellnet.SessionClosed:
 			logger.Info("session closed: ", ev.Session().ID())
 			if player, ok := humanMap[ev.Session().ID()]; ok {
-				game := player.GetGame().(*Game)
-				if game.AlreadyStart {
+				if player.GetGame() != nil {
+					game := player.GetGame().(*Game)
 					game.Players[player.Location()] = nil
 					if func(players []interfaces.IPlayer) bool {
 						for i := range players {
@@ -177,7 +176,6 @@ func Start(totalCount int) {
 }
 
 func (game *Game) start() {
-	game.AlreadyStart = true
 	idTask := make([]struct {
 		id   protos.Color
 		task protos.SecretTask
