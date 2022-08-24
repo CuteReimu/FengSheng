@@ -28,11 +28,13 @@ func (r *RobotPlayer) NotifyMainPhase(uint32) {
 		return
 	}
 	cards := r.GetCards()
-	for cardId := range cards {
-		card := cards[cardId]
-		ai := AIMainPhase[card.GetType()]
-		if ai != nil && ai(r, card) {
-			return
+	if len(cards) > 1 {
+		for cardId := range cards {
+			card := cards[cardId]
+			ai := AIMainPhase[card.GetType()]
+			if ai != nil && ai(r, card) {
+				return
+			}
 		}
 	}
 	time.AfterFunc(time.Second, func() {
