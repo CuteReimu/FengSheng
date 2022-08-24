@@ -342,6 +342,7 @@ func (game *Game) ReceivePhase() {
 }
 
 func (game *Game) NextTurn() {
+	game.MessageCardFaceUp = false
 	game.CurrentMessageCard = nil
 	game.WhoIsLocked = nil
 	for {
