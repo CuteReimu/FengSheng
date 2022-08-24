@@ -83,6 +83,9 @@ func (r *RobotPlayer) NotifyReceivePhase() {
 }
 
 func (r *RobotPlayer) NotifyDie(int, bool) {
+	if r.Location() != r.GetGame().GetWhoDie() {
+		return
+	}
 	Post(r.GetGame().AfterChengQing)
 }
 
