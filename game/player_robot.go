@@ -214,7 +214,7 @@ func autoSendMessageCard(r interfaces.IPlayer, lock bool) {
 	case protos.Direction_Right:
 		targetLocation = (r.Location() + 1) % len(r.GetGame().GetPlayers())
 		for !r.GetGame().GetPlayers()[targetLocation].IsAlive() {
-			targetLocation++
+			targetLocation = (targetLocation + 1) % len(r.GetGame().GetPlayers())
 		}
 	}
 	Post(func() { r.GetGame().OnSendCard(card, dir, targetLocation, lockLocation) })
