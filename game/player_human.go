@@ -639,6 +639,21 @@ func (r *HumanPlayer) onDieGiveCard(pb *protos.DieGiveCardTos) {
 	target := r.GetGame().GetPlayers()[r.GetAbstractLocation(int(pb.TargetPlayerId))]
 	target.AddCards(cards...)
 	logger.Info(r, "给了", target, cards)
+	for _, p := range r.GetGame().GetPlayers() {
+		if player, ok := p.(*HumanPlayer); ok {
+			msg := &protos.NotifyDieGiveCardToc{
+				PlayerId:       p.GetAlternativeLocation(r.Location()),
+				TargetPlayerId: p.GetAlternativeLocation(target.Location()),
+				CardCount:      uint32(len(cards)),
+			}
+			if p.Location() == r.Location() || p.Location() == target.Location() {
+				for _, card := range cards {
+					msg.Card = append(msg.Card, card.ToPbCard())
+				}
+			}
+			player.Send(msg)
+		}
+	}
 	Post(r.GetGame().AfterChengQing)
 }
 
