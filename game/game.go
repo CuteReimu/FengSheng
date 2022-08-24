@@ -569,6 +569,7 @@ func (game *Game) AskNextForChengQing() {
 			break
 		}
 	}
+	logger.Info("正在询问", game.Players[game.WhoseFightTurn], "是否使用澄清")
 	for _, p := range game.GetPlayers() {
 		p.NotifyAskForChengQing(game.Players[game.WhoseSendTurn], game.Players[game.WhoseFightTurn])
 	}
