@@ -99,7 +99,21 @@ func Start(totalCount int) {
 			if player, ok := humanMap[ev.Session().ID()]; ok {
 				game := player.GetGame().(*Game)
 				if game.AlreadyStart {
-					game.Players[player.Location()] = &RobotPlayer{BasePlayer: player.BasePlayer}
+					game.Players[player.Location()] = nil
+					if func(players []interfaces.IPlayer) bool {
+						for i := range players {
+							if _, ok := players[i].(*HumanPlayer); ok {
+								return true
+							}
+						}
+						return false
+					}(player.GetGame().GetPlayers()) {
+						game.Players[player.Location()] = &RobotPlayer{BasePlayer: player.BasePlayer}
+					} else {
+						for i := range player.GetGame().GetPlayers() {
+							game.Players[i] = &IdlePlayer{BasePlayer: player.BasePlayer}
+						}
+					}
 				} else {
 					msg := &protos.LeaveRoomToc{}
 					for i := range game.Players {

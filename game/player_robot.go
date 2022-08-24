@@ -148,3 +148,44 @@ func autoSendMessageCard(r interfaces.IPlayer, lock bool) {
 	}
 	Post(func() { r.GetGame().OnSendCard(card, dir, targetLocation, lockLocation) })
 }
+
+type IdlePlayer struct {
+	interfaces.BasePlayer
+}
+
+func (p *IdlePlayer) NotifyDrawPhase() {
+}
+
+func (p *IdlePlayer) NotifyMainPhase(uint32) {
+}
+
+func (p *IdlePlayer) NotifySendPhaseStart(uint32) {
+}
+
+func (p *IdlePlayer) NotifySendPhase(uint32, bool) {
+}
+
+func (p *IdlePlayer) NotifyChooseReceiveCard() {
+}
+
+func (p *IdlePlayer) NotifyFightPhase(uint32) {
+}
+
+func (p *IdlePlayer) NotifyReceivePhase() {
+}
+
+func (p *IdlePlayer) NotifyDie(int, bool) {
+}
+
+func (p *IdlePlayer) NotifyWin(interfaces.IPlayer, []interfaces.IPlayer) {
+}
+
+func (p *IdlePlayer) NotifyAskForChengQing(interfaces.IPlayer, interfaces.IPlayer) {
+}
+
+func (p *IdlePlayer) WaitForDieGiveCard(interfaces.IPlayer) {
+}
+
+func (p *IdlePlayer) String() string {
+	return ""
+}
