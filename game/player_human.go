@@ -68,8 +68,11 @@ func (r *HumanPlayer) NotifyMainPhase(waitSecond uint32) {
 		r.Timer = time.AfterFunc(time.Second*time.Duration(waitSecond), func() {
 			Post(func() {
 				if seq == r.Seq {
-					Post(r.GetGame().SendPhaseStart)
 					r.Seq++
+					if r.Timer != nil {
+						r.Timer.Stop()
+					}
+					Post(r.GetGame().SendPhaseStart)
 				}
 			})
 		})
@@ -92,6 +95,9 @@ func (r *HumanPlayer) NotifySendPhaseStart(waitSecond uint32) {
 			Post(func() {
 				if seq == r.Seq {
 					r.Seq++
+					if r.Timer != nil {
+						r.Timer.Stop()
+					}
 					autoSendMessageCard(r, false)
 				}
 			})
@@ -134,6 +140,9 @@ func (r *HumanPlayer) NotifySendPhase(waitSecond uint32, isFirstTime bool) {
 			Post(func() {
 				if seq == r.Seq {
 					r.Seq++
+					if r.Timer != nil {
+						r.Timer.Stop()
+					}
 					if func(r interfaces.IPlayer) bool {
 						for _, p := range r.GetGame().GetLockPlayers() {
 							if r.Location() == p {
@@ -177,6 +186,9 @@ func (r *HumanPlayer) NotifyFightPhase(waitSecond uint32) {
 			Post(func() {
 				if seq == r.Seq {
 					r.Seq++
+					if r.Timer != nil {
+						r.Timer.Stop()
+					}
 					Post(r.GetGame().FightPhaseNext)
 				}
 			})
@@ -232,6 +244,9 @@ func (r *HumanPlayer) NotifyAskForChengQing(whoDie interfaces.IPlayer, askWhom i
 			Post(func() {
 				if r.Seq == seq {
 					r.Seq++
+					if r.Timer != nil {
+						r.Timer.Stop()
+					}
 					Post(r.GetGame().AskNextForChengQing)
 				}
 			})
@@ -253,6 +268,9 @@ func (r *HumanPlayer) WaitForDieGiveCard(whoDie interfaces.IPlayer) {
 			Post(func() {
 				if r.Seq == seq {
 					r.Seq++
+					if r.Timer != nil {
+						r.Timer.Stop()
+					}
 					Post(r.GetGame().AfterChengQing)
 				}
 			})
@@ -526,6 +544,9 @@ func (r *HumanPlayer) onSendMessageCard(pb *protos.SendMessageCardTos) {
 		lockLocation = append(lockLocation, r.GetAbstractLocation(int(lockPlayerId)))
 	}
 	r.Seq++
+	if r.Timer != nil {
+		r.Timer.Stop()
+	}
 	Post(func() { r.GetGame().OnSendCard(card, pb.CardDir, targetLocation, lockLocation) })
 }
 
@@ -540,6 +561,9 @@ func (r *HumanPlayer) onChooseWhetherReceive(pb *protos.ChooseWhetherReceiveTos)
 	}
 	if pb.Receive {
 		r.Seq++
+		if r.Timer != nil {
+			r.Timer.Stop()
+		}
 		Post(r.GetGame().OnChooseReceiveCard)
 	} else {
 		if r.Location() == r.GetGame().GetWhoseTurn() {
@@ -558,6 +582,9 @@ func (r *HumanPlayer) onChooseWhetherReceive(pb *protos.ChooseWhetherReceiveTos)
 			return
 		}
 		r.Seq++
+		if r.Timer != nil {
+			r.Timer.Stop()
+		}
 		Post(r.GetGame().MessageMoveNext)
 	}
 }
@@ -572,6 +599,9 @@ func (r *HumanPlayer) onEndFightPhase(pb *protos.EndFightPhaseTos) {
 		return
 	}
 	r.Seq++
+	if r.Timer != nil {
+		r.Timer.Stop()
+	}
 	Post(r.GetGame().FightPhaseNext)
 }
 
@@ -582,6 +612,14 @@ func (r *HumanPlayer) onChengQingSaveDie(pb *protos.ChengQingSaveDieTos) {
 	}
 	if r.GetGame().GetDieState() != interfaces.DieStateWaitForChengQing {
 		r.logger.Error("现在不是使用澄清的时候")
+		return
+	}
+	if !pb.Use {
+		r.Seq++
+		if r.Timer != nil {
+			r.Timer.Stop()
+		}
+		Post(r.GetGame().AskNextForChengQing)
 		return
 	}
 	card := r.FindCard(pb.CardId)
@@ -614,6 +652,9 @@ func (r *HumanPlayer) onDieGiveCard(pb *protos.DieGiveCardTos) {
 	}
 	discardAllCards := func(r *HumanPlayer) {
 		r.Seq++
+		if r.Timer != nil {
+			r.Timer.Stop()
+		}
 		var cards []interfaces.ICard
 		for _, card := range r.GetCards() {
 			cards = append(cards, card)

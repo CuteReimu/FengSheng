@@ -73,6 +73,9 @@ func (card *WeiBi) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...int
 						game.Post(func() {
 							if player.Seq == seq {
 								player.Seq++
+								if player.Timer != nil {
+									player.Timer.Stop()
+								}
 								card.autoSelect(g, r, player, wantType)
 							}
 						})
