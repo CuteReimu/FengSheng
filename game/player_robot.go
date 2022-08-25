@@ -105,55 +105,16 @@ func (r *RobotPlayer) NotifyFightPhase(uint32) {
 func (r *RobotPlayer) NotifyReceivePhase() {
 }
 
-func (r *RobotPlayer) NotifyDie(int, bool) {
-	if r.Location() != r.GetGame().GetWhoDie() {
-		return
-	}
-	identity1, _ := r.GetIdentity()
-	if identity1 != protos.Color_Black {
-		for _, p := range r.GetGame().GetPlayers() {
-			if identity2, _ := r.GetIdentity(); identity1 == identity2 && p.Location() != r.Location() {
-				var cards []interfaces.ICard
-				for _, card := range r.GetCards() {
-					cards = append(cards, card)
-					if len(cards) >= 3 {
-						break
-					}
-				}
-				if len(cards) > 0 {
-					for _, card := range cards {
-						r.DeleteCard(card.GetId())
-					}
-					target := r.GetGame().GetPlayers()[p.Location()]
-					target.AddCards(cards...)
-					logger.Info(r, "给了", target, cards)
-					for _, p := range r.GetGame().GetPlayers() {
-						if player, ok := p.(*HumanPlayer); ok {
-							msg := &protos.NotifyDieGiveCardToc{
-								PlayerId:       p.GetAlternativeLocation(r.Location()),
-								TargetPlayerId: p.GetAlternativeLocation(target.Location()),
-								CardCount:      uint32(len(cards)),
-							}
-							if p.Location() == r.Location() || p.Location() == target.Location() {
-								for _, card := range cards {
-									msg.Card = append(msg.Card, card.ToPbCard())
-								}
-							}
-							player.Send(msg)
-						}
-					}
-				}
-				break
-			}
+func (r *RobotPlayer) NotifyDie(location int, _ bool) {
+	if location == r.Location() {
+		r.SetAlive(false)
+		var cards []interfaces.ICard
+		for _, card := range r.GetCards() {
+			cards = append(cards, card)
 		}
+		r.GetGame().PlayerDiscardCard(r, cards...)
+		r.GetGame().GetDeck().Discard(r.DeleteAllMessageCards()...)
 	}
-	var cards []interfaces.ICard
-	for _, card := range r.GetCards() {
-		cards = append(cards, card)
-	}
-	r.GetGame().PlayerDiscardCard(r, cards...)
-	r.GetGame().GetDeck().Discard(r.DeleteAllMessageCards()...)
-	Post(r.GetGame().AfterChengQing)
 }
 
 func (r *RobotPlayer) NotifyWin(interfaces.IPlayer, []interfaces.IPlayer) {
@@ -174,8 +135,53 @@ func (r *RobotPlayer) WaitForDieGiveCard(whoDie interfaces.IPlayer) {
 	if whoDie.Location() != r.Location() {
 		return
 	}
+
 	time.AfterFunc(time.Second, func() {
 		Post(func() {
+			if r.Location() != r.GetGame().GetWhoDie() {
+				return
+			}
+			identity1, _ := r.GetIdentity()
+			if identity1 != protos.Color_Black {
+				for _, p := range r.GetGame().GetPlayers() {
+					if identity2, _ := r.GetIdentity(); identity1 == identity2 && p.Location() != r.Location() {
+						var cards []interfaces.ICard
+						for _, card := range r.GetCards() {
+							cards = append(cards, card)
+							if len(cards) >= 3 {
+								break
+							}
+						}
+						if len(cards) > 0 {
+							for _, card := range cards {
+								r.DeleteCard(card.GetId())
+							}
+							target := r.GetGame().GetPlayers()[p.Location()]
+							target.AddCards(cards...)
+							logger.Info(r, "给了", target, cards)
+							for _, p := range r.GetGame().GetPlayers() {
+								if player, ok := p.(*HumanPlayer); ok {
+									msg := &protos.NotifyDieGiveCardToc{
+										PlayerId:       p.GetAlternativeLocation(r.Location()),
+										TargetPlayerId: p.GetAlternativeLocation(target.Location()),
+										CardCount:      uint32(len(cards)),
+									}
+									if p.Location() == r.Location() || p.Location() == target.Location() {
+										for _, card := range cards {
+											msg.Card = append(msg.Card, card.ToPbCard())
+										}
+									}
+									player.Send(msg)
+								}
+							}
+						}
+						break
+					}
+				}
+			}
+			for _, p := range r.GetGame().GetPlayers() {
+				p.NotifyDie(whoDie.Location(), false)
+			}
 			Post(r.GetGame().AfterChengQing)
 		})
 	})
