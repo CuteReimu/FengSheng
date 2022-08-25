@@ -46,6 +46,7 @@ func (card *ChengQing) Execute(g interfaces.IGame, r interfaces.IPlayer, args ..
 	target := args[0].(interfaces.IPlayer)
 	targetCardId := args[1].(uint32)
 	logger.Info(r, "对", target, "使用了", card)
+	r.DeleteCard(card.GetId())
 	targetCard := target.FindMessageCard(targetCardId)
 	logger.Info(target, "面前的", targetCard, "被置入弃牌堆")
 	target.DeleteMessageCard(targetCardId)

@@ -88,6 +88,7 @@ func (card *WeiBi) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...int
 		}
 	} else {
 		logger.Info(target, "向", r, "展示了所有手牌")
+		g.GetDeck().Discard(card)
 		for _, p := range g.GetPlayers() {
 			if player, ok := p.(*game.HumanPlayer); ok {
 				msg := &protos.WeiBiShowHandCardToc{
