@@ -554,7 +554,11 @@ func (game *Game) AskNextForChengQing() {
 		if game.WhoseFightTurn == game.WhoseTurn {
 			player := game.Players[game.WhoDie]
 			player.SetAlive(false)
-			game.GetDeck().Discard(player.DeleteAllCards()...)
+			var cards []interfaces.ICard
+			for _, card := range player.GetCards() {
+				cards = append(cards, card)
+			}
+			game.PlayerDiscardCard(player, cards...)
 			game.GetDeck().Discard(player.DeleteAllMessageCards()...)
 			for _, p := range game.GetPlayers() {
 				p.NotifyDie(game.WhoDie, false)
