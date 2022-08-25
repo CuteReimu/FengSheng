@@ -189,7 +189,9 @@ type NextTurn struct {
 
 func (n *NextTurn) Resolve() (finished bool) {
 	game := n.player.GetGame()
+	game.SetMessageCardFaceUp(false)
 	game.SetCurrentMessageCard(nil)
+	game.SetLockPlayers(nil)
 	whoseTurn := n.player.Location()
 	for {
 		whoseTurn = (whoseTurn + 1) % len(game.GetPlayers())

@@ -25,6 +25,7 @@ type IGame interface {
 	SetCurrentMessageCard(currentMessageCard ICard)
 	IsMessageCardFaceUp() bool
 	SetMessageCardFaceUp(messageCardFaceUp bool)
+	SetLockPlayers(locations []int)
 	GetLockPlayers() []int
 	IsIdleTimePoint() bool
 	DrawPhase()

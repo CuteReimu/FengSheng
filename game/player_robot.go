@@ -236,7 +236,10 @@ func (p *IdlePlayer) NotifyMainPhase(uint32) {
 func (p *IdlePlayer) NotifySendPhaseStart(uint32) {
 }
 
-func (p *IdlePlayer) NotifySendPhase(uint32, bool) {
+func (p *IdlePlayer) NotifySendMessageCard() {
+}
+
+func (p *IdlePlayer) NotifySendPhase(uint32) {
 }
 
 func (p *IdlePlayer) NotifyChooseReceiveCard() {

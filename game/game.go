@@ -418,6 +418,10 @@ func (game *Game) GetLockPlayers() []int {
 	return game.WhoIsLocked
 }
 
+func (game *Game) SetLockPlayers(locations []int) {
+	game.WhoIsLocked = locations
+}
+
 func (game *Game) IsIdleTimePoint() bool {
 	return game.CurrentCard == nil
 }
