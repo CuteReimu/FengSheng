@@ -22,7 +22,7 @@ func (card *ChengQing) GetType() protos.CardType {
 func (card *ChengQing) CanUse(game interfaces.IGame, r interfaces.IPlayer, args ...interface{}) bool {
 	target := args[0].(interfaces.IPlayer)
 	targetCardId := args[1].(uint32)
-	if game.GetCurrentPhase() != protos.Phase_Main_Phase || game.GetWhoseTurn() != r.Location() || !game.IsIdleTimePoint() {
+	if game.GetDieState() != interfaces.DieStateWaitForChengQing && (game.GetCurrentPhase() != protos.Phase_Main_Phase || game.GetWhoseTurn() != r.Location() || !game.IsIdleTimePoint()) {
 		logger.Error("澄清的使用时机不对")
 		return false
 	}
