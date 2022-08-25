@@ -502,9 +502,14 @@ func (r *HumanPlayer) onSendMessageCard(pb *protos.SendMessageCardTos) {
 		if len(pb.LockPlayerId) > 1 {
 			r.logger.Error("最多锁定一个目标")
 			return
-		} else if len(pb.LockPlayerId) == 1 && pb.LockPlayerId[0] >= uint32(len(r.GetGame().GetPlayers())) {
-			r.logger.Error("锁定目标错误: ", pb.LockPlayerId[0])
-			return
+		} else if len(pb.LockPlayerId) == 1 {
+			if pb.LockPlayerId[0] >= uint32(len(r.GetGame().GetPlayers())) {
+				r.logger.Error("锁定目标错误: ", pb.LockPlayerId[0])
+				return
+			} else if pb.LockPlayerId[0] == 0 {
+				r.logger.Error("不能锁定自己")
+				return
+			}
 		}
 	} else {
 		if len(pb.LockPlayerId) > 0 {
@@ -608,9 +613,18 @@ func (r *HumanPlayer) onDieGiveCard(pb *protos.DieGiveCardTos) {
 		r.logger.Error("时机不对")
 		return
 	}
-	if pb.TargetPlayerId == 0 {
-		pb.Seq++
+	discardAllCards := func(r *HumanPlayer) {
+		r.Seq++
+		var cards []interfaces.ICard
+		for _, card := range r.GetCards() {
+			cards = append(cards, card)
+		}
+		r.GetGame().PlayerDiscardCard(r, cards...)
+		r.GetGame().GetDeck().Discard(r.DeleteAllMessageCards()...)
 		Post(r.GetGame().AfterChengQing)
+	}
+	if pb.TargetPlayerId == 0 {
+		discardAllCards(r)
 		return
 	} else if pb.TargetPlayerId >= uint32(len(r.GetGame().GetPlayers())) {
 		r.logger.Error("目标错误: ", pb.TargetPlayerId)
@@ -618,6 +632,7 @@ func (r *HumanPlayer) onDieGiveCard(pb *protos.DieGiveCardTos) {
 	}
 	if len(pb.CardId) == 0 {
 		r.logger.Warn("参数似乎有些不对，姑且认为不给牌吧")
+		discardAllCards(r)
 		return
 	}
 	var cards []interfaces.ICard
@@ -635,7 +650,22 @@ func (r *HumanPlayer) onDieGiveCard(pb *protos.DieGiveCardTos) {
 	target := r.GetGame().GetPlayers()[r.GetAbstractLocation(int(pb.TargetPlayerId))]
 	target.AddCards(cards...)
 	logger.Info(r, "给了", target, cards)
-	Post(r.GetGame().AfterChengQing)
+	for _, p := range r.GetGame().GetPlayers() {
+		if player, ok := p.(*HumanPlayer); ok {
+			msg := &protos.NotifyDieGiveCardToc{
+				PlayerId:       p.GetAlternativeLocation(r.Location()),
+				TargetPlayerId: p.GetAlternativeLocation(target.Location()),
+				CardCount:      uint32(len(cards)),
+			}
+			if p.Location() == r.Location() || p.Location() == target.Location() {
+				for _, card := range cards {
+					msg.Card = append(msg.Card, card.ToPbCard())
+				}
+			}
+			player.Send(msg)
+		}
+	}
+	discardAllCards(r)
 }
 
 func (r *HumanPlayer) onUsePoYi(pb *protos.UsePoYiTos) {

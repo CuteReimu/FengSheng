@@ -26,7 +26,24 @@ func (card *WuDao) CanUse(game interfaces.IGame, r interfaces.IPlayer, args ...i
 		logger.Error("误导的使用时机不对")
 		return false
 	}
-	if target.Location() != (game.GetWhoseSendTurn()+1)%len(game.GetPlayers()) && game.GetWhoseSendTurn() != (target.Location()+1)%len(game.GetPlayers()) {
+	var left, right int
+	for left = game.GetWhoseSendTurn() - 1; left != game.GetWhoseSendTurn(); left-- {
+		if left < 0 {
+			left += len(game.GetPlayers())
+		}
+		if game.GetPlayers()[left].IsAlive() {
+			break
+		}
+	}
+	for right = game.GetWhoseSendTurn() + 1; right != game.GetWhoseSendTurn(); right++ {
+		if right >= len(game.GetPlayers()) {
+			right -= len(game.GetPlayers())
+		}
+		if game.GetPlayers()[right].IsAlive() {
+			break
+		}
+	}
+	if target.Location() == game.GetWhoseSendTurn() || target.Location() != left && target.Location() != right {
 		logger.Error("误导只能选择情报当前人左右两边的人作为目标")
 		return false
 	}
@@ -37,6 +54,7 @@ func (card *WuDao) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...int
 	target := args[0].(interfaces.IPlayer)
 	r.DeleteCard(card.GetId())
 	g.SetWhoseSendTurn(target.Location())
+	g.SetWhoseFightTurn(g.GetWhoseSendTurn())
 	for _, player := range g.GetPlayers() {
 		if p, ok := player.(*game.HumanPlayer); ok {
 			msg := &protos.UseWuDaoToc{

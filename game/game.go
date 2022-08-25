@@ -23,7 +23,6 @@ func Post(callback func()) {
 }
 
 type Game struct {
-	AlreadyStart       bool
 	Players            []interfaces.IPlayer
 	Deck               interfaces.IDeck
 	CurrentCard        *interfaces.CurrentCard
@@ -98,9 +97,23 @@ func Start(totalCount int) {
 		case *cellnet.SessionClosed:
 			logger.Info("session closed: ", ev.Session().ID())
 			if player, ok := humanMap[ev.Session().ID()]; ok {
-				game := player.GetGame().(*Game)
-				if game.AlreadyStart {
-					game.Players[player.Location()] = &RobotPlayer{BasePlayer: player.BasePlayer}
+				if player.GetGame() != nil {
+					game := player.GetGame().(*Game)
+					game.Players[player.Location()] = nil
+					if func(players []interfaces.IPlayer) bool {
+						for i := range players {
+							if _, ok := players[i].(*HumanPlayer); ok {
+								return true
+							}
+						}
+						return false
+					}(player.GetGame().GetPlayers()) {
+						game.Players[player.Location()] = &RobotPlayer{BasePlayer: player.BasePlayer}
+					} else {
+						for i := range player.GetGame().GetPlayers() {
+							game.Players[i] = &IdlePlayer{BasePlayer: player.BasePlayer}
+						}
+					}
 				} else {
 					msg := &protos.LeaveRoomToc{}
 					for i := range game.Players {
@@ -164,7 +177,6 @@ func Start(totalCount int) {
 }
 
 func (game *Game) start() {
-	game.AlreadyStart = true
 	idTask := make([]struct {
 		id   protos.Color
 		task protos.SecretTask
@@ -330,6 +342,7 @@ func (game *Game) ReceivePhase() {
 }
 
 func (game *Game) NextTurn() {
+	game.MessageCardFaceUp = false
 	game.CurrentMessageCard = nil
 	game.WhoIsLocked = nil
 	for {
@@ -367,6 +380,10 @@ func (game *Game) SetWhoseSendTurn(whoseSendTurn int) {
 
 func (game *Game) GetWhoseFightTurn() int {
 	return game.WhoseFightTurn
+}
+
+func (game *Game) SetWhoseFightTurn(WhoseFightTurn int) {
+	game.WhoseFightTurn = WhoseFightTurn
 }
 
 func (game *Game) GetMessageCardDirection() protos.Direction {
@@ -414,6 +431,9 @@ func (game *Game) GetDieState() interfaces.DieState {
 }
 
 func (game *Game) PlayerDiscardCard(player interfaces.IPlayer, cards ...interfaces.ICard) {
+	if len(cards) == 0 {
+		return
+	}
 	for _, card := range cards {
 		player.DeleteCard(card.GetId())
 	}
@@ -500,10 +520,10 @@ func (game *Game) checkWinOrDie() bool {
 		if red+blue < 2 {
 			killer = nil
 		}
-		logger.Info(game.Players[game.WhoDie], "濒死")
 		game.WhoDie = game.WhoseSendTurn
 		game.DieState = interfaces.DieStateWaitForChengQing
 		game.WhoseFightTurn = game.WhoseTurn
+		logger.Info(game.Players[game.WhoDie], "濒死")
 		game.AskForChengQing()
 		game.afterChengQing = func() {
 			if !game.Players[game.WhoDie].IsAlive() && killer != nil && game.WhoseTurn == killer.Location() {
@@ -543,12 +563,13 @@ func (game *Game) AskNextForChengQing() {
 			}
 			logger.Info("无人拯救，", player, "已死亡")
 			game.DieState = interfaces.DieStateDying
-			break
+			return
 		}
 		if game.Players[game.WhoseFightTurn].IsAlive() {
 			break
 		}
 	}
+	logger.Info("正在询问", game.Players[game.WhoseFightTurn], "是否使用澄清")
 	for _, p := range game.GetPlayers() {
 		p.NotifyAskForChengQing(game.Players[game.WhoseSendTurn], game.Players[game.WhoseFightTurn])
 	}

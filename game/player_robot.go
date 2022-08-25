@@ -9,6 +9,8 @@ import (
 )
 
 var AIMainPhase = make(map[protos.CardType]func(player interfaces.IPlayer, card interfaces.ICard) bool)
+var AISendPhase = make(map[protos.CardType]func(player interfaces.IPlayer, card interfaces.ICard) bool)
+var AIFightPhase = make(map[protos.CardType]func(player interfaces.IPlayer, card interfaces.ICard) bool)
 
 type RobotPlayer struct {
 	interfaces.BasePlayer
@@ -26,11 +28,13 @@ func (r *RobotPlayer) NotifyMainPhase(uint32) {
 		return
 	}
 	cards := r.GetCards()
-	for cardId := range cards {
-		card := cards[cardId]
-		ai := AIMainPhase[card.GetType()]
-		if ai != nil && ai(r, card) {
-			return
+	if len(cards) > 1 {
+		for cardId := range cards {
+			card := cards[cardId]
+			ai := AIMainPhase[card.GetType()]
+			if ai != nil && ai(r, card) {
+				return
+			}
 		}
 	}
 	time.AfterFunc(time.Second, func() {
@@ -54,15 +58,26 @@ func (r *RobotPlayer) NotifySendPhase(uint32) {
 	if r.Location() != r.GetGame().GetWhoseSendTurn() {
 		return
 	}
+	cards := r.GetCards()
+	for cardId := range cards {
+		card := cards[cardId]
+		ai := AISendPhase[card.GetType()]
+		if ai != nil && ai(r, card) {
+			return
+		}
+	}
 	time.AfterFunc(time.Second, func() {
-		if func(e int, arr []int) bool {
+		colors := r.GetGame().GetCurrentMessageCard().GetColor()
+		certainlyReceive := r.GetGame().IsMessageCardFaceUp() && len(colors) == 1 && colors[0] != protos.Color_Black
+		certainlyReject := r.GetGame().IsMessageCardFaceUp() && len(colors) == 1 && colors[0] == protos.Color_Black
+		if certainlyReceive || func(e int, arr []int) bool {
 			for _, a := range arr {
 				if a == e {
 					return true
 				}
 			}
 			return false
-		}(r.Location(), r.GetGame().GetLockPlayers()) || r.Location() == r.GetGame().GetWhoseTurn() || utils.Random.Intn((len(r.GetGame().GetPlayers())-1)*2) == 0 {
+		}(r.Location(), r.GetGame().GetLockPlayers()) || r.Location() == r.GetGame().GetWhoseTurn() || (!certainlyReject && utils.Random.Intn((len(r.GetGame().GetPlayers())-1)*2) == 0) {
 			Post(r.GetGame().OnChooseReceiveCard)
 		} else {
 			Post(r.GetGame().MessageMoveNext)
@@ -77,6 +92,14 @@ func (r *RobotPlayer) NotifyFightPhase(uint32) {
 	if r.Location() != r.GetGame().GetWhoseFightTurn() {
 		return
 	}
+	cards := r.GetCards()
+	for cardId := range cards {
+		card := cards[cardId]
+		ai := AIFightPhase[card.GetType()]
+		if ai != nil && ai(r, card) {
+			return
+		}
+	}
 	time.AfterFunc(time.Second, func() {
 		Post(r.GetGame().FightPhaseNext)
 	})
@@ -86,6 +109,54 @@ func (r *RobotPlayer) NotifyReceivePhase() {
 }
 
 func (r *RobotPlayer) NotifyDie(int, bool) {
+	if r.Location() != r.GetGame().GetWhoDie() {
+		return
+	}
+	identity1, _ := r.GetIdentity()
+	if identity1 != protos.Color_Black {
+		for _, p := range r.GetGame().GetPlayers() {
+			if identity2, _ := r.GetIdentity(); identity1 == identity2 && p.Location() != r.Location() {
+				var cards []interfaces.ICard
+				for _, card := range r.GetCards() {
+					cards = append(cards, card)
+					if len(cards) >= 3 {
+						break
+					}
+				}
+				if len(cards) > 0 {
+					for _, card := range cards {
+						r.DeleteCard(card.GetId())
+					}
+					target := r.GetGame().GetPlayers()[p.Location()]
+					target.AddCards(cards...)
+					logger.Info(r, "给了", target, cards)
+					for _, p := range r.GetGame().GetPlayers() {
+						if player, ok := p.(*HumanPlayer); ok {
+							msg := &protos.NotifyDieGiveCardToc{
+								PlayerId:       p.GetAlternativeLocation(r.Location()),
+								TargetPlayerId: p.GetAlternativeLocation(target.Location()),
+								CardCount:      uint32(len(cards)),
+							}
+							if p.Location() == r.Location() || p.Location() == target.Location() {
+								for _, card := range cards {
+									msg.Card = append(msg.Card, card.ToPbCard())
+								}
+							}
+							player.Send(msg)
+						}
+					}
+				}
+				break
+			}
+		}
+	}
+	var cards []interfaces.ICard
+	for _, card := range r.GetCards() {
+		cards = append(cards, card)
+	}
+	r.GetGame().PlayerDiscardCard(r, cards...)
+	r.GetGame().GetDeck().Discard(r.DeleteAllMessageCards()...)
+	Post(r.GetGame().AfterChengQing)
 }
 
 func (r *RobotPlayer) NotifyWin(interfaces.IPlayer, []interfaces.IPlayer) {
@@ -146,8 +217,49 @@ func autoSendMessageCard(r interfaces.IPlayer, lock bool) {
 	case protos.Direction_Right:
 		targetLocation = (r.Location() + 1) % len(r.GetGame().GetPlayers())
 		for !r.GetGame().GetPlayers()[targetLocation].IsAlive() {
-			targetLocation++
+			targetLocation = (targetLocation + 1) % len(r.GetGame().GetPlayers())
 		}
 	}
 	Post(func() { r.GetGame().OnSendCard(card, dir, targetLocation, lockLocation) })
+}
+
+type IdlePlayer struct {
+	interfaces.BasePlayer
+}
+
+func (p *IdlePlayer) NotifyDrawPhase() {
+}
+
+func (p *IdlePlayer) NotifyMainPhase(uint32) {
+}
+
+func (p *IdlePlayer) NotifySendPhaseStart(uint32) {
+}
+
+func (p *IdlePlayer) NotifySendPhase(uint32, bool) {
+}
+
+func (p *IdlePlayer) NotifyChooseReceiveCard() {
+}
+
+func (p *IdlePlayer) NotifyFightPhase(uint32) {
+}
+
+func (p *IdlePlayer) NotifyReceivePhase() {
+}
+
+func (p *IdlePlayer) NotifyDie(int, bool) {
+}
+
+func (p *IdlePlayer) NotifyWin(interfaces.IPlayer, []interfaces.IPlayer) {
+}
+
+func (p *IdlePlayer) NotifyAskForChengQing(interfaces.IPlayer, interfaces.IPlayer) {
+}
+
+func (p *IdlePlayer) WaitForDieGiveCard(interfaces.IPlayer) {
+}
+
+func (p *IdlePlayer) String() string {
+	return ""
 }

@@ -35,6 +35,7 @@ func (card *JieHuo) Execute(g interfaces.IGame, r interfaces.IPlayer, _ ...inter
 	logger.Info(r, "使用了", card)
 	r.DeleteCard(card.GetId())
 	g.SetWhoseSendTurn(r.Location())
+	g.SetWhoseFightTurn(g.GetWhoseSendTurn())
 	for _, player := range g.GetPlayers() {
 		if p, ok := player.(*game.HumanPlayer); ok {
 			msg := &protos.UseJieHuoToc{

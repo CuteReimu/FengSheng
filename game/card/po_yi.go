@@ -57,7 +57,7 @@ func (card *PoYi) Execute(g interfaces.IGame, r interfaces.IPlayer, _ ...interfa
 
 func (card *PoYi) CanUse2(g interfaces.IGame, _ interfaces.IPlayer, args ...interface{}) bool {
 	show := args[0].(bool)
-	if show && !utils.IsColorIn(protos.Color_Black, g.GetCurrentCard().Card.GetColor()) {
+	if show && !utils.IsColorIn(protos.Color_Black, g.GetCurrentMessageCard().GetColor()) {
 		logger.Error("非黑牌不能翻开：", show)
 		return false
 	}
@@ -88,7 +88,7 @@ func (card *PoYi) showAndDrawCard(g interfaces.IGame, r interfaces.IPlayer, show
 				Show:     show,
 			}
 			if show {
-				msg.MessageCard = card.ToPbCard()
+				msg.MessageCard = g.GetCurrentMessageCard().ToPbCard()
 			}
 			p.Send(msg)
 		}
