@@ -54,12 +54,10 @@ func (card *PingHeng) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...
 	for _, c := range r.GetCards() {
 		discardCards = append(discardCards, c)
 	}
-	logger.Info(r, "弃掉了", discardCards)
 	g.PlayerDiscardCard(r, discardCards...)
 	for _, c := range target.GetCards() {
 		targetDiscardCards = append(targetDiscardCards, c)
 	}
-	logger.Info(target, "弃掉了", targetDiscardCards)
 	g.PlayerDiscardCard(target, targetDiscardCards...)
 	r.Draw(3)
 	target.Draw(3)
