@@ -52,6 +52,7 @@ func (card *WuDao) CanUse(game interfaces.IGame, r interfaces.IPlayer, args ...i
 
 func (card *WuDao) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...interface{}) {
 	target := args[0].(interfaces.IPlayer)
+	logger.Info(r, "对", target, "使用了", card)
 	r.DeleteCard(card.GetId())
 	g.SetWhoseSendTurn(target.Location())
 	g.SetWhoseFightTurn(g.GetWhoseSendTurn())
