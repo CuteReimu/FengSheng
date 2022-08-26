@@ -80,6 +80,9 @@ func (card *ShiTan) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...in
 					game.Post(func() {
 						if player.Seq == seq {
 							player.Seq++
+							if player.Timer != nil {
+								player.Timer.Stop()
+							}
 							card.autoSelect(g, player)
 						}
 					})

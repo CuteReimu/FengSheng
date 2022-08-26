@@ -22,7 +22,7 @@ func (card *ChengQing) GetType() protos.CardType {
 func (card *ChengQing) CanUse(game interfaces.IGame, r interfaces.IPlayer, args ...interface{}) bool {
 	target := args[0].(interfaces.IPlayer)
 	targetCardId := args[1].(uint32)
-	if game.GetCurrentPhase() != protos.Phase_Main_Phase || game.GetWhoseTurn() != r.Location() || !game.IsIdleTimePoint() {
+	if game.GetDieState() != interfaces.DieStateWaitForChengQing && (game.GetCurrentPhase() != protos.Phase_Main_Phase || game.GetWhoseTurn() != r.Location() || !game.IsIdleTimePoint()) {
 		logger.Error("澄清的使用时机不对")
 		return false
 	}
@@ -46,6 +46,7 @@ func (card *ChengQing) Execute(g interfaces.IGame, r interfaces.IPlayer, args ..
 	target := args[0].(interfaces.IPlayer)
 	targetCardId := args[1].(uint32)
 	logger.Info(r, "对", target, "使用了", card)
+	r.DeleteCard(card.GetId())
 	targetCard := target.FindMessageCard(targetCardId)
 	logger.Info(target, "面前的", targetCard, "被置入弃牌堆")
 	target.DeleteMessageCard(targetCardId)
@@ -63,7 +64,7 @@ func (card *ChengQing) Execute(g interfaces.IGame, r interfaces.IPlayer, args ..
 	}
 	g.GetDeck().Discard(card)
 	if g.GetDieState() == interfaces.DieStateWaitForChengQing {
-		g.AfterChengQing()
+		game.Post(g.AfterChengQing)
 	} else {
 		game.Post(g.MainPhase)
 	}

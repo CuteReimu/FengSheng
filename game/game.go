@@ -239,7 +239,6 @@ func (game *Game) SendPhaseStart() {
 			logger.Info(player, "没有情报可传，输掉了游戏")
 			game.GetDeck().Discard(player.DeleteAllMessageCards()...)
 			player.SetLose(true)
-			player.SetAlive(false)
 			for _, p := range game.GetPlayers() {
 				p.NotifyDie(game.WhoseTurn, true)
 			}
@@ -559,11 +558,8 @@ func (game *Game) AskNextForChengQing() {
 		game.WhoseFightTurn = (game.WhoseFightTurn + 1) % len(game.Players)
 		if game.WhoseFightTurn == game.WhoseTurn {
 			player := game.Players[game.WhoDie]
-			player.SetAlive(false)
-			game.GetDeck().Discard(player.DeleteAllCards()...)
-			game.GetDeck().Discard(player.DeleteAllMessageCards()...)
 			for _, p := range game.GetPlayers() {
-				p.NotifyDie(game.WhoDie, false)
+				p.WaitForDieGiveCard(player)
 			}
 			logger.Info("无人拯救，", player, "已死亡")
 			game.DieState = interfaces.DieStateDying
