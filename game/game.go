@@ -36,7 +36,7 @@ type Game struct {
 	CardDirection      protos.Direction
 	WhoIsLocked        []int
 	CurrentPhase       protos.Phase
-	resolveStack       []interfaces.ResolveStackNode
+	fsm                interfaces.Fsm
 	afterChengQing     func()
 }
 
@@ -595,25 +595,10 @@ func (game *Game) AfterChengQing() {
 	}
 }
 
-func (game *Game) PushResolveStackNode(node interfaces.ResolveStackNode) {
-	Post(func() { game.resolveStack = append(game.resolveStack, node) })
-}
-
-func (game *Game) PeekResolveStackNode() interfaces.ResolveStackNode {
-	return game.resolveStack[len(game.resolveStack)-1]
-}
-
-func (game *Game) PopResolveStackNode() {
-	game.resolveStack = game.resolveStack[:len(game.resolveStack)-1]
-}
-
 func (game *Game) ContinueResolve() {
-	if game.resolveStack[len(game.resolveStack)-1].Resolve() {
-		game.PopResolveStackNode()
-		Post(func() {
-			if len(game.resolveStack) > 0 {
-				game.ContinueResolve()
-			}
-		})
+	var continueResolve bool
+	game.fsm, continueResolve = game.fsm.Resolve()
+	if continueResolve {
+		Post(game.ContinueResolve)
 	}
 }

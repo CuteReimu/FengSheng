@@ -4,8 +4,8 @@ import (
 	"github.com/CuteReimu/FengSheng/protos"
 )
 
-type ResolveStackNode interface {
-	Resolve() (finished bool)
+type Fsm interface {
+	Resolve() (next Fsm, continueResolve bool)
 }
 
 type IGame interface {
@@ -42,9 +42,6 @@ type IGame interface {
 	NextTurn()
 	PlayerDiscardCard(player IPlayer, cards ...ICard)
 	GetDieState() DieState
-	PushResolveStackNode(node ResolveStackNode)
-	PeekResolveStackNode() ResolveStackNode
-	PopResolveStackNode()
 	ContinueResolve()
 }
 

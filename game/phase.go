@@ -9,26 +9,24 @@ type DrawPhase struct {
 	player interfaces.IPlayer
 }
 
-func (dp *DrawPhase) Resolve() (finished bool) {
+func (dp *DrawPhase) Resolve() (next interfaces.Fsm, continueResolve bool) {
 	game := dp.player.GetGame()
 	if !dp.player.IsAlive() {
-		Post(game.NextTurn)
-		return
+		return &NextTurn{player: dp.player}, true
 	}
 	logger.Info(dp.player, "的回合开始了")
 	for _, p := range game.GetPlayers() {
 		p.NotifyDrawPhase()
 	}
 	dp.player.Draw(3)
-	game.PushResolveStackNode(&MainPhaseIdle{player: dp.player})
-	return true
+	return &MainPhaseIdle{player: dp.player}, true
 }
 
 type MainPhaseIdle struct {
 	player interfaces.IPlayer
 }
 
-func (mp *MainPhaseIdle) Resolve() (finished bool) {
+func (mp *MainPhaseIdle) Resolve() (next interfaces.Fsm, continueResolve bool) {
 	game := mp.player.GetGame()
 	if !mp.player.IsAlive() {
 		Post(game.NextTurn)
@@ -37,34 +35,32 @@ func (mp *MainPhaseIdle) Resolve() (finished bool) {
 	for _, p := range game.GetPlayers() {
 		p.NotifyMainPhase(30)
 	}
-	return false
+	return mp, false
 }
 
 type SendPhaseStart struct {
 	player interfaces.IPlayer
 }
 
-func (sp *SendPhaseStart) Resolve() (finished bool) {
+func (sp *SendPhaseStart) Resolve() (next interfaces.Fsm, continueResolve bool) {
 	game := sp.player.GetGame()
 	if sp.player.IsAlive() {
 		if len(sp.player.GetCards()) == 0 {
 			logger.Info(sp.player, "没有情报可传，输掉了游戏")
 			game.GetDeck().Discard(sp.player.DeleteAllMessageCards()...)
 			sp.player.SetLose(true)
-			sp.player.SetAlive(false)
 			for _, p := range game.GetPlayers() {
 				p.NotifyDie(sp.player.Location(), true)
 			}
 		}
 	}
 	if !sp.player.IsAlive() {
-		game.PushResolveStackNode(&NextTurn{player: sp.player})
-		return true
+		return &NextTurn{player: sp.player}, true
 	}
 	for _, p := range game.GetPlayers() {
 		p.NotifySendPhaseStart(20)
 	}
-	return false
+	return sp, false
 }
 
 type OnSendCard struct {
@@ -75,21 +71,20 @@ type OnSendCard struct {
 	LockedPlayers []interfaces.IPlayer
 }
 
-func (sc *OnSendCard) Resolve() (finished bool) {
+func (sc *OnSendCard) Resolve() (next interfaces.Fsm, continueResolve bool) {
 	game := sc.WhoseTurn.GetGame()
 	logger.Info(sc.WhoseTurn, "传出了", sc.MessageCard, "，方向是", protos.Direction_name[int32(sc.Dir)], "传给了", sc.TargetPlayer)
 	sc.WhoseTurn.DeleteCard(sc.MessageCard.GetId())
-	game.PushResolveStackNode(&SendPhaseIdle{
+	for _, p := range game.GetPlayers() {
+		p.NotifySendMessageCard()
+	}
+	return &SendPhaseIdle{
 		WhoseTurn:     sc.WhoseTurn,
 		MessageCard:   sc.MessageCard,
 		Dir:           sc.Dir,
 		InFrontOfWhom: sc.TargetPlayer,
 		LockedPlayers: sc.LockedPlayers,
-	})
-	for _, p := range game.GetPlayers() {
-		p.NotifySendMessageCard()
-	}
-	return true
+	}, true
 }
 
 type SendPhaseIdle struct {
@@ -101,27 +96,27 @@ type SendPhaseIdle struct {
 	IsMessageCardFaceUp bool
 }
 
-func (sp *SendPhaseIdle) Resolve() (finished bool) {
+func (sp *SendPhaseIdle) Resolve() (next interfaces.Fsm, continueResolve bool) {
 	game := sp.WhoseTurn.GetGame()
 	logger.Info("情报到达", sp.InFrontOfWhom, "面前")
 	for _, p := range game.GetPlayers() {
 		p.NotifySendPhase(20)
 	}
-	return false
+	return sp, false
 }
 
 type MessageMoveNext struct {
 	SendPhase *SendPhaseIdle
 }
 
-func (mm *MessageMoveNext) Resolve() (finished bool) {
+func (mm *MessageMoveNext) Resolve() (next interfaces.Fsm, continueResolve bool) {
 	game := mm.SendPhase.WhoseTurn.GetGame()
 	if mm.SendPhase.Dir == protos.Direction_Up {
 		if mm.SendPhase.WhoseTurn.IsAlive() {
 			mm.SendPhase.InFrontOfWhom = mm.SendPhase.WhoseTurn
-			game.PushResolveStackNode(mm.SendPhase)
+			return mm.SendPhase, true
 		} else {
-			game.PushResolveStackNode(&NextTurn{player: mm.SendPhase.WhoseTurn})
+			return &NextTurn{player: mm.SendPhase.WhoseTurn}, true
 		}
 	} else {
 		inFrontOfWhom := mm.SendPhase.InFrontOfWhom.Location()
@@ -133,15 +128,12 @@ func (mm *MessageMoveNext) Resolve() (finished bool) {
 			}
 			mm.SendPhase.InFrontOfWhom = game.GetPlayers()[inFrontOfWhom]
 			if mm.SendPhase.InFrontOfWhom.IsAlive() {
-				game.PushResolveStackNode(mm.SendPhase)
-				break
+				return mm.SendPhase, true
 			} else if mm.SendPhase.WhoseTurn == mm.SendPhase.InFrontOfWhom {
-				game.PushResolveStackNode(&NextTurn{player: mm.SendPhase.WhoseTurn})
-				break
+				return &NextTurn{player: mm.SendPhase.WhoseTurn}, true
 			}
 		}
 	}
-	return true
 }
 
 type OnChooseReceiveCard struct {
@@ -151,20 +143,19 @@ type OnChooseReceiveCard struct {
 	IsMessageCardFaceUp bool
 }
 
-func (cr *OnChooseReceiveCard) Resolve() (finished bool) {
+func (cr *OnChooseReceiveCard) Resolve() (next interfaces.Fsm, continueResolve bool) {
 	game := cr.WhoseTurn.GetGame()
 	logger.Info(cr.InFrontOfWhom, "选择接收情报")
-	game.PushResolveStackNode(&FightPhaseIdle{
+	for _, p := range game.GetPlayers() {
+		p.NotifyChooseReceiveCard()
+	}
+	return &FightPhaseIdle{
 		WhoseTurn:           cr.WhoseTurn,
 		MessageCard:         cr.MessageCard,
 		InFrontOfWhom:       cr.InFrontOfWhom,
 		WhoseFightTurn:      cr.InFrontOfWhom,
 		IsMessageCardFaceUp: cr.IsMessageCardFaceUp,
-	})
-	for _, p := range game.GetPlayers() {
-		p.NotifyChooseReceiveCard()
-	}
-	return true
+	}, true
 }
 
 type FightPhaseIdle struct {
@@ -175,30 +166,29 @@ type FightPhaseIdle struct {
 	IsMessageCardFaceUp bool
 }
 
-func (cr *FightPhaseIdle) Resolve() (finished bool) {
-	game := cr.WhoseTurn.GetGame()
+func (fp *FightPhaseIdle) Resolve() (next interfaces.Fsm, continueResolve bool) {
+	game := fp.WhoseTurn.GetGame()
 	for _, p := range game.GetPlayers() {
 		p.NotifyFightPhase(20)
 	}
-	return false
+	return fp, false
 }
 
 type NextTurn struct {
 	player interfaces.IPlayer
 }
 
-func (n *NextTurn) Resolve() (finished bool) {
-	game := n.player.GetGame()
+func (nt *NextTurn) Resolve() (next interfaces.Fsm, continueResolve bool) {
+	game := nt.player.GetGame()
 	game.SetMessageCardFaceUp(false)
 	game.SetCurrentMessageCard(nil)
 	game.SetLockPlayers(nil)
-	whoseTurn := n.player.Location()
+	whoseTurn := nt.player.Location()
 	for {
 		whoseTurn = (whoseTurn + 1) % len(game.GetPlayers())
 		player := game.GetPlayers()[whoseTurn]
 		if player.IsAlive() {
-			game.PushResolveStackNode(&DrawPhase{player: player})
-			return true
+			return &DrawPhase{player: player}, true
 		}
 	}
 }
