@@ -451,7 +451,7 @@ func (game *Game) checkWinOrDie() bool {
 	var killer, stealer interfaces.IPlayer
 	var redPlayers, bluePlayers []interfaces.IPlayer
 	for _, p := range game.GetPlayers() {
-		if p.IsAlive() {
+		if p.IsAlive() && !p.HasNoIdentity() && !p.IsLose() {
 			identity, secretTask := p.GetIdentity()
 			switch identity {
 			case protos.Color_Black:
@@ -524,13 +524,35 @@ func (game *Game) checkWinOrDie() bool {
 		game.AskForChengQing()
 		game.afterChengQing = func() {
 			if !game.Players[game.WhoDie].IsAlive() && killer != nil && game.WhoseTurn == killer.Location() {
-				logger.Info(declareWinner, "宣告胜利，胜利者有", winner)
+				logger.Info(declareWinner, "宣告胜利，胜利者有", []interfaces.IPlayer{killer})
 				for _, p := range game.GetPlayers() {
 					p.NotifyWin(killer, []interfaces.IPlayer{killer})
 				}
 				return
 			}
-			Post(game.NextTurn)
+			var alivePlayer interfaces.IPlayer
+			for _, p := range game.Players {
+				if p.IsAlive() {
+					if alivePlayer == nil {
+						alivePlayer = p
+					} else {
+						Post(game.NextTurn)
+						return
+					}
+				}
+			}
+			winner := []interfaces.IPlayer{alivePlayer}
+			if identity1, _ := alivePlayer.GetIdentity(); identity1 != protos.Color_Black {
+				for _, p := range game.Players {
+					if identity2, _ := p.GetIdentity(); identity2 == identity1 && p.Location() != alivePlayer.Location() {
+						winner = append(winner, p)
+					}
+				}
+			}
+			logger.Info(declareWinner, "只剩下", []interfaces.IPlayer{alivePlayer}, "存活，胜利者有", winner)
+			for _, p := range game.GetPlayers() {
+				p.NotifyWin(alivePlayer, winner)
+			}
 		}
 		return true
 	}
