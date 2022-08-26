@@ -37,7 +37,7 @@ func (r *RobotPlayer) NotifyMainPhase(uint32) {
 			}
 		}
 	}
-	time.AfterFunc(time.Second, func() {
+	time.AfterFunc(2*time.Second, func() {
 		Post(r.GetGame().SendPhaseStart)
 	})
 }
@@ -46,7 +46,7 @@ func (r *RobotPlayer) NotifySendPhaseStart(uint32) {
 	if r.Location() != r.GetGame().GetWhoseTurn() {
 		return
 	}
-	time.AfterFunc(time.Second, func() {
+	time.AfterFunc(2*time.Second, func() {
 		autoSendMessageCard(r, true)
 	})
 }
@@ -63,7 +63,7 @@ func (r *RobotPlayer) NotifySendPhase(uint32, bool) {
 			return
 		}
 	}
-	time.AfterFunc(time.Second, func() {
+	time.AfterFunc(2*time.Second, func() {
 		colors := r.GetGame().GetCurrentMessageCard().GetColor()
 		certainlyReceive := r.GetGame().IsMessageCardFaceUp() && len(colors) == 1 && colors[0] != protos.Color_Black
 		certainlyReject := r.GetGame().IsMessageCardFaceUp() && len(colors) == 1 && colors[0] == protos.Color_Black
@@ -97,7 +97,7 @@ func (r *RobotPlayer) NotifyFightPhase(uint32) {
 			return
 		}
 	}
-	time.AfterFunc(time.Second, func() {
+	time.AfterFunc(2*time.Second, func() {
 		Post(r.GetGame().FightPhaseNext)
 	})
 }
@@ -124,7 +124,7 @@ func (r *RobotPlayer) NotifyAskForChengQing(_ interfaces.IPlayer, askWhom interf
 	if askWhom.Location() != r.Location() {
 		return
 	}
-	time.AfterFunc(time.Second, func() {
+	time.AfterFunc(2*time.Second, func() {
 		Post(func() {
 			Post(r.GetGame().AskNextForChengQing)
 		})
@@ -136,7 +136,7 @@ func (r *RobotPlayer) WaitForDieGiveCard(whoDie interfaces.IPlayer) {
 		return
 	}
 
-	time.AfterFunc(time.Second, func() {
+	time.AfterFunc(2*time.Second, func() {
 		Post(func() {
 			if r.Location() != r.GetGame().GetWhoDie() {
 				return

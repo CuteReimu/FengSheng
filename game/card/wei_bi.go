@@ -85,7 +85,7 @@ func (card *WeiBi) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...int
 			}
 		}
 		if _, ok := target.(*game.RobotPlayer); ok {
-			time.AfterFunc(time.Second, func() {
+			time.AfterFunc(2*time.Second, func() {
 				game.Post(func() { card.autoSelect(g, r, target, wantType) })
 			})
 		}

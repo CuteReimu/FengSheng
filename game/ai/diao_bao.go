@@ -20,7 +20,7 @@ func diaoBao(player interfaces.IPlayer, card interfaces.ICard) bool {
 	if utils.Random.Intn(4) != 0 {
 		return false
 	}
-	time.AfterFunc(time.Second, func() {
+	time.AfterFunc(2*time.Second, func() {
 		game.Post(func() { card.Execute(player.GetGame(), player) })
 	})
 	return true

@@ -46,7 +46,7 @@ func wuDao(player interfaces.IPlayer, card interfaces.ICard) bool {
 	if target == nil {
 		return false
 	}
-	time.AfterFunc(time.Second, func() {
+	time.AfterFunc(2*time.Second, func() {
 		game.Post(func() { card.Execute(player.GetGame(), player, target) })
 	})
 	return true
