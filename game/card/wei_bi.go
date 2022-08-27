@@ -64,7 +64,7 @@ func (card *WeiBi) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...int
 					PlayerId:       p.GetAlternativeLocation(r.Location()),
 					TargetPlayerId: p.GetAlternativeLocation(target.Location()),
 					WantType:       wantType,
-					WaitingSecond:  10,
+					WaitingSecond:  20,
 				}
 				if p.Location() == target.Location() {
 					seq := player.Seq
@@ -108,7 +108,13 @@ func (card *WeiBi) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...int
 				player.Send(msg)
 			}
 		}
-		game.Post(g.MainPhase)
+		if _, ok := r.(*game.RobotPlayer); ok {
+			time.AfterFunc(2*time.Second, func() {
+				game.Post(g.MainPhase)
+			})
+		} else {
+			game.Post(g.MainPhase)
+		}
 	}
 }
 

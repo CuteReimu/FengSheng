@@ -70,7 +70,7 @@ func (card *ShiTan) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...in
 			msg := &protos.ShowShiTanToc{
 				PlayerId:       p.GetAlternativeLocation(r.Location()),
 				TargetPlayerId: p.GetAlternativeLocation(target.Location()),
-				WaitingSecond:  10,
+				WaitingSecond:  20,
 			}
 			switch p.Location() {
 			case target.Location():
@@ -95,7 +95,7 @@ func (card *ShiTan) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...in
 		}
 	}
 	if _, ok := target.(*game.RobotPlayer); ok {
-		time.AfterFunc(2*time.Second, func() {
+		time.AfterFunc(4*time.Second, func() {
 			game.Post(func() { card.autoSelect(g, target) })
 		})
 	}
