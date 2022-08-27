@@ -121,6 +121,7 @@ func Start(totalCount int) {
 						for i := range player.GetGame().GetPlayers() {
 							game.Players[i] = &IdlePlayer{BasePlayer: player.BasePlayer}
 						}
+						game.end()
 					}
 				} else {
 					msg := &protos.LeaveRoomToc{}
