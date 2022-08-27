@@ -97,6 +97,7 @@ func (card *WeiBi) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...int
 				msg := &protos.WeiBiShowHandCardToc{
 					Card:           card.ToPbCard(),
 					PlayerId:       p.GetAlternativeLocation(r.Location()),
+					WantType:       wantType,
 					TargetPlayerId: p.GetAlternativeLocation(target.Location()),
 				}
 				if p.Location() == r.Location() {

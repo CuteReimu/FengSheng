@@ -214,8 +214,9 @@ message wei_bi_give_card_toc {
 message wei_bi_show_hand_card_toc {
   card          card             = 1; // 使用的那张威逼卡牌
   uint32        player_id        = 2;
-  uint32        target_player_id = 3;
-  repeated card cards            = 4; // 展示所有手牌，只有使用者能看到，其他人收到的都是空数组
+  card_type     want_type        = 3; // 声明的卡牌类型（截获/误导/调包/澄清）
+  uint32        target_player_id = 4;
+  repeated card cards            = 5; // 展示所有手牌，只有使用者能看到，其他人收到的都是空数组
 }
 
 // 请求使用澄清
