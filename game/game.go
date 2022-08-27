@@ -524,7 +524,7 @@ func (game *Game) checkWinOrDie() bool {
 		game.AskForChengQing()
 		game.afterChengQing = func() {
 			if !game.Players[game.WhoDie].IsAlive() && killer != nil && game.WhoseTurn == killer.Location() {
-				logger.Info(declareWinner, "宣告胜利，胜利者有", []interfaces.IPlayer{killer})
+				logger.Info(killer, "宣告胜利，胜利者有", []interfaces.IPlayer{killer})
 				for _, p := range game.GetPlayers() {
 					p.NotifyWin(killer, []interfaces.IPlayer{killer})
 				}
