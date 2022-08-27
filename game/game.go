@@ -23,6 +23,7 @@ func Post(callback func()) {
 }
 
 type Game struct {
+	Id                 uint32
 	Players            []interfaces.IPlayer
 	Deck               interfaces.IDeck
 	CurrentCard        *interfaces.CurrentCard
@@ -39,8 +40,15 @@ type Game struct {
 	afterChengQing     func()
 }
 
+func (game *Game) end() {
+	delete(Cache, game.Id)
+}
+
+var Cache = make(map[uint32]*Game)
+
 func Start(totalCount int) {
-	game := &Game{Players: make([]interfaces.IPlayer, totalCount)}
+	gameId := uint32(1)
+	game := &Game{Id: gameId, Players: make([]interfaces.IPlayer, totalCount)}
 
 	if !config.IsTcpDebugLogOpen() {
 		msglog.SetCurrMsgLogMode(msglog.MsgLogMode_Mute)
@@ -73,7 +81,8 @@ func Start(totalCount int) {
 		if unready == 0 {
 			logger.Info(player, "加入了。已加入", totalCount, "个人，游戏开始。。。")
 			Post(game.start)
-			game = &Game{Players: make([]interfaces.IPlayer, totalCount)}
+			gameId++
+			game = &Game{Id: gameId, Players: make([]interfaces.IPlayer, totalCount)}
 		} else {
 			logger.Info(player, "加入了。已加入", totalCount-unready, "个人，等待", unready, "人加入。。。")
 		}
@@ -196,6 +205,7 @@ func (game *Game) start() {
 	for location, player := range game.Players {
 		player.Init(game, location, idTask[location].id, idTask[location].task)
 	}
+	Cache[game.Id] = game
 	game.Deck = NewDeck(game)
 	game.WhoseTurn = utils.Random.Intn(len(game.Players))
 	for i := 0; i < len(game.Players); i++ {
@@ -511,6 +521,7 @@ func (game *Game) checkWinOrDie() bool {
 		for _, p := range game.GetPlayers() {
 			p.NotifyWin(declareWinner, winner)
 		}
+		game.end()
 		return true
 	}
 	if black >= 3 {
@@ -528,6 +539,7 @@ func (game *Game) checkWinOrDie() bool {
 				for _, p := range game.GetPlayers() {
 					p.NotifyWin(killer, []interfaces.IPlayer{killer})
 				}
+				game.end()
 				return
 			}
 			var alivePlayer interfaces.IPlayer
@@ -553,6 +565,7 @@ func (game *Game) checkWinOrDie() bool {
 			for _, p := range game.GetPlayers() {
 				p.NotifyWin(alivePlayer, winner)
 			}
+			game.end()
 		}
 		return true
 	}

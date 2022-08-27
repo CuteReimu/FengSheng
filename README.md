@@ -12,14 +12,17 @@
 ## 配置
 
 ```yaml
+gm:
+    enable: false
+    listen_address: 127.0.0.1:9092
 listen_address: 127.0.0.1:9091  # 服务端监听端口
 log:
     tcp_debug_log: true # 是否开启tcp调试日志
 player:
     total_count: 5  # 玩家总人数
 rule:
-  hand_card_count_begin: 3      # 游戏开始时摸牌数
-  hand_card_count_each_turn: 3  # 每回合摸牌数
+    hand_card_count_begin: 3      # 游戏开始时摸牌数
+    hand_card_count_each_turn: 3  # 每回合摸牌数
 ```
 
 ## 游戏步骤
