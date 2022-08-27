@@ -549,7 +549,7 @@ func (game *Game) checkWinOrDie() bool {
 					}
 				}
 			}
-			logger.Info(declareWinner, "只剩下", []interfaces.IPlayer{alivePlayer}, "存活，胜利者有", winner)
+			logger.Info("只剩下", []interfaces.IPlayer{alivePlayer}, "存活，胜利者有", winner)
 			for _, p := range game.GetPlayers() {
 				p.NotifyWin(alivePlayer, winner)
 			}
