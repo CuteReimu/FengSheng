@@ -25,6 +25,10 @@ func (card *PoYi) CanUse(game interfaces.IGame, r interfaces.IPlayer, _ ...inter
 		logger.Error("破译的使用时机不对")
 		return false
 	}
+	if game.IsMessageCardFaceUp() {
+		logger.Error("破译不能对已翻开的情报使用")
+		return false
+	}
 	return true
 }
 
