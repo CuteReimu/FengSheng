@@ -12,6 +12,7 @@ import (
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/proc"
 	_ "github.com/davyxu/cellnet/proc/tcp"
+	"time"
 )
 
 var logger = utils.GetLogger("game")
@@ -212,7 +213,9 @@ func (game *Game) start() {
 	for i := 0; i < len(game.Players); i++ {
 		game.Players[(game.WhoseTurn+i)%len(game.Players)].Draw(config.GetHandCardCountBegin())
 	}
-	game.DrawPhase()
+	time.AfterFunc(time.Second, func() {
+		Post(game.DrawPhase)
+	})
 }
 
 func (game *Game) DrawPhase() {

@@ -65,7 +65,7 @@ func (r *HumanPlayer) NotifyMainPhase(waitSecond uint32) {
 	if r.Location() == r.GetGame().GetWhoseTurn() {
 		msg.Seq = r.Seq
 		seq := r.Seq
-		r.Timer = time.AfterFunc(time.Second*time.Duration(waitSecond), func() {
+		r.Timer = time.AfterFunc(time.Second*time.Duration(waitSecond+2), func() {
 			Post(func() {
 				if seq == r.Seq {
 					r.Seq++
@@ -91,7 +91,7 @@ func (r *HumanPlayer) NotifySendPhaseStart(waitSecond uint32) {
 	if r.Location() == r.GetGame().GetWhoseTurn() {
 		msg.Seq = r.Seq
 		seq := r.Seq
-		r.Timer = time.AfterFunc(time.Second*time.Duration(waitSecond), func() {
+		r.Timer = time.AfterFunc(time.Second*time.Duration(waitSecond+2), func() {
 			Post(func() {
 				if seq == r.Seq {
 					r.Seq++
@@ -136,7 +136,7 @@ func (r *HumanPlayer) NotifySendPhase(waitSecond uint32, isFirstTime bool) {
 	if r.Location() == r.GetGame().GetWhoseSendTurn() {
 		msg.Seq = r.Seq
 		seq := r.Seq
-		r.Timer = time.AfterFunc(time.Second*time.Duration(waitSecond), func() {
+		r.Timer = time.AfterFunc(time.Second*time.Duration(waitSecond+2), func() {
 			Post(func() {
 				if seq == r.Seq {
 					r.Seq++
@@ -182,7 +182,7 @@ func (r *HumanPlayer) NotifyFightPhase(waitSecond uint32) {
 	if r.Location() == r.GetGame().GetWhoseFightTurn() {
 		msg.Seq = r.Seq
 		seq := r.Seq
-		r.Timer = time.AfterFunc(time.Second*time.Duration(waitSecond), func() {
+		r.Timer = time.AfterFunc(time.Second*time.Duration(waitSecond+2), func() {
 			Post(func() {
 				if seq == r.Seq {
 					r.Seq++
@@ -249,7 +249,7 @@ func (r *HumanPlayer) NotifyAskForChengQing(whoDie interfaces.IPlayer, askWhom i
 	if askWhom.Location() == r.Location() {
 		msg.Seq = r.Seq
 		seq := r.Seq
-		time.AfterFunc(time.Duration(msg.WaitingSecond)*time.Second, func() {
+		time.AfterFunc(time.Duration(msg.WaitingSecond+2)*time.Second, func() {
 			Post(func() {
 				if r.Seq == seq {
 					r.Seq++
@@ -273,7 +273,7 @@ func (r *HumanPlayer) WaitForDieGiveCard(whoDie interfaces.IPlayer) {
 	if whoDie.Location() == r.Location() {
 		msg.Seq = r.Seq
 		seq := r.Seq
-		time.AfterFunc(time.Duration(msg.WaitingSecond)*time.Second, func() {
+		time.AfterFunc(time.Duration(msg.WaitingSecond+2)*time.Second, func() {
 			Post(func() {
 				if r.Seq == seq {
 					r.Seq++

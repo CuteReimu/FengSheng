@@ -76,7 +76,7 @@ func (card *ShiTan) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...in
 			case target.Location():
 				seq := player.Seq
 				msg.Seq = player.Seq
-				player.Timer = time.AfterFunc(time.Second*time.Duration(msg.WaitingSecond), func() {
+				player.Timer = time.AfterFunc(time.Second*time.Duration(msg.WaitingSecond+2), func() {
 					game.Post(func() {
 						if player.Seq == seq {
 							player.Seq++
