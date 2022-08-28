@@ -200,7 +200,7 @@ func autoSendMessageCard(r interfaces.IPlayer, lock bool) {
 			availableLocations = append(availableLocations, p.Location())
 		}
 	}
-	if lock && card.CanLock() && utils.Random.Intn(3) != 0 {
+	if dir != protos.Direction_Up && lock && card.CanLock() && utils.Random.Intn(3) != 0 {
 		location := availableLocations[utils.Random.Intn(len(availableLocations))]
 		if r.GetGame().GetPlayers()[location].IsAlive() {
 			lockLocation = append(lockLocation, location)
@@ -209,8 +209,8 @@ func autoSendMessageCard(r interfaces.IPlayer, lock bool) {
 	switch dir {
 	case protos.Direction_Up:
 		targetLocation = availableLocations[utils.Random.Intn(len(availableLocations))]
-		for !r.GetGame().GetPlayers()[targetLocation].IsAlive() {
-			targetLocation = availableLocations[utils.Random.Intn(len(availableLocations))]
+		if lock && card.CanLock() && utils.Random.Intn(2) != 0 {
+			lockLocation = append(lockLocation, targetLocation)
 		}
 	case protos.Direction_Left:
 		targetLocation = (r.Location() + len(r.GetGame().GetPlayers()) - 1) % len(r.GetGame().GetPlayers())
