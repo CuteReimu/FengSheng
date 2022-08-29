@@ -296,6 +296,10 @@ func (r *HumanPlayer) onEndMainPhase(pb *protos.EndMainPhaseTos) {
 		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
 		return
 	}
+	if r.Location() != r.GetGame().GetWhoseTurn() || r.GetGame().GetCurrentPhase() != protos.Phase_Main_Phase || !r.GetGame().IsIdleTimePoint() {
+		r.logger.Error("不是你的回合的出牌阶段")
+		return
+	}
 	r.Seq++
 	if r.Timer != nil {
 		r.Timer.Stop()
@@ -493,7 +497,7 @@ func (r *HumanPlayer) onSendMessageCard(pb *protos.SendMessageCardTos) {
 		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
 		return
 	}
-	if r.GetGame().GetWhoseTurn() != r.Location() || r.GetGame().GetCurrentPhase() != protos.Phase_Send_Start_Phase {
+	if r.GetGame().GetWhoseTurn() != r.Location() || r.GetGame().GetCurrentPhase() != protos.Phase_Send_Start_Phase || !r.GetGame().IsIdleTimePoint() {
 		r.logger.Error("不是传递情报的时机")
 		return
 	}
@@ -567,7 +571,7 @@ func (r *HumanPlayer) onChooseWhetherReceive(pb *protos.ChooseWhetherReceiveTos)
 		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
 		return
 	}
-	if r.GetGame().GetWhoseSendTurn() != r.Location() || r.GetGame().GetCurrentPhase() != protos.Phase_Send_Phase {
+	if r.GetGame().GetWhoseSendTurn() != r.Location() || r.GetGame().GetCurrentPhase() != protos.Phase_Send_Phase || !r.GetGame().IsIdleTimePoint() {
 		r.logger.Error("不是选择是否接收情报的时机")
 		return
 	}
@@ -659,7 +663,7 @@ func (r *HumanPlayer) onDieGiveCard(pb *protos.DieGiveCardTos) {
 		return
 	}
 	if r.GetGame().GetDieState() != interfaces.DieStateDying {
-		r.logger.Error("时机不对")
+		r.logger.Error("你没有死亡")
 		return
 	}
 	if pb.TargetPlayerId == 0 {
