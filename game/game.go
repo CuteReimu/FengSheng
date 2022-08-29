@@ -108,7 +108,6 @@ func Start(totalCount int) {
 			if player, ok := humanMap[ev.Session().ID()]; ok {
 				if player.GetGame() != nil {
 					game := player.GetGame().(*Game)
-					game.Players[player.Location()] = nil
 					if func(players []interfaces.IPlayer) bool {
 						for i := range players {
 							if _, ok := players[i].(*HumanPlayer); ok {
