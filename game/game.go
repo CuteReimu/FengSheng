@@ -346,7 +346,7 @@ func (game *Game) ReceivePhase() {
 	if player.IsAlive() {
 		game.CurrentPhase = protos.Phase_Receive_Phase
 		player.AddMessageCards(game.CurrentMessageCard)
-		logger.Info(player, "成功接收情报")
+		logger.Info(player, "成功接收情报", game.CurrentMessageCard)
 		for _, p := range game.Players {
 			p.NotifyReceivePhase()
 		}
