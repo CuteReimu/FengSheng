@@ -93,6 +93,7 @@ func Start(totalCount int) {
 	proc.BindProcessorHandler(p, "tcp.ltv", func(ev cellnet.Event) {
 		switch pb := ev.Message().(type) {
 		case *cellnet.SessionAccepted:
+			logger.Info("session connected: ", ev.Session().ID())
 			player := &HumanPlayer{Session: ev.Session()}
 			humanMap[player.Session.ID()] = player
 			index := onAdd(player)
