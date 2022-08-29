@@ -116,11 +116,16 @@ func Start(totalCount int) {
 							}
 						}
 						return false
-					}(player.GetGame().GetPlayers()) {
+					}(game.GetPlayers()) {
 						game.Players[player.Location()] = &RobotPlayer{BasePlayer: player.BasePlayer}
 					} else {
-						for i := range player.GetGame().GetPlayers() {
-							game.Players[i] = &IdlePlayer{BasePlayer: player.BasePlayer}
+						for i := range game.GetPlayers() {
+							switch p := game.Players[i].(type) {
+							case *HumanPlayer:
+								game.Players[i] = &IdlePlayer{BasePlayer: p.BasePlayer}
+							case *RobotPlayer:
+								game.Players[i] = &IdlePlayer{BasePlayer: p.BasePlayer}
+							}
 						}
 						game.end()
 					}
