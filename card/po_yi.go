@@ -69,6 +69,7 @@ func (e *executePoYi) Resolve() (next game.Fsm, continueResolve bool) {
 		time.AfterFunc(2*time.Second, func() {
 			game.Post(func() {
 				e.showAndDrawCard(utils.IsColorIn(protos.Color_Black, e.sendPhase.MessageCard.GetColors()))
+				g.Resolve(e.sendPhase)
 			})
 		})
 	}

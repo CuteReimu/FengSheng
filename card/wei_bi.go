@@ -125,7 +125,10 @@ func (e *executeWeiBi) Resolve() (next game.Fsm, continueResolve bool) {
 	}
 	if _, ok := target.(*game.RobotPlayer); ok {
 		time.AfterFunc(2*time.Second, func() {
-			game.Post(func() { e.autoSelect() })
+			game.Post(func() {
+				e.autoSelect()
+				g.Resolve(&game.MainPhaseIdle{Player: e.player})
+			})
 		})
 	}
 	return e, false

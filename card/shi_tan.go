@@ -112,7 +112,10 @@ func (e *executeShiTan) Resolve() (next game.Fsm, continueResolve bool) {
 	}
 	if _, ok := target.(*game.RobotPlayer); ok {
 		time.AfterFunc(4*time.Second, func() {
-			game.Post(func() { e.autoSelect() })
+			game.Post(func() {
+				e.autoSelect()
+				g.Resolve(&game.MainPhaseIdle{Player: r})
+			})
 		})
 	}
 	return e, false
@@ -191,7 +194,7 @@ func (e *executeShiTan) autoSelect() {
 			break
 		}
 	}
-	e.ResolveProtocol(e.target, &protos.ExecuteShiTanTos{})
+	e.ResolveProtocol(e.target, &protos.ExecuteShiTanTos{CardId: discardCardIds})
 }
 
 func (card *ShiTan) ToPbCard() *protos.Card {
