@@ -121,5 +121,4 @@ func (e *executePoYi) showAndDrawCard(show bool) {
 		}
 	}
 	r.GetGame().GetDeck().Discard(card)
-	r.GetGame().Resolve(e.sendPhase)
 }
