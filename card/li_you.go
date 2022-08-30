@@ -2,13 +2,12 @@ package card
 
 import (
 	"github.com/CuteReimu/FengSheng/game"
-	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
 	"github.com/CuteReimu/FengSheng/utils"
 )
 
 type LiYou struct {
-	interfaces.BaseCard
+	game.BaseCard
 }
 
 func (card *LiYou) String() string {
@@ -19,12 +18,13 @@ func (card *LiYou) GetType() protos.CardType {
 	return protos.CardType_Li_You
 }
 
-func (card *LiYou) CanUse(game interfaces.IGame, r interfaces.IPlayer, args ...interface{}) bool {
-	if game.GetCurrentPhase() != protos.Phase_Main_Phase || game.GetWhoseTurn() != r.Location() || !game.IsIdleTimePoint() {
+func (card *LiYou) CanUse(g *game.Game, r game.IPlayer, args ...interface{}) bool {
+	fsm, ok := g.GetFsm().(*game.MainPhaseIdle)
+	if !ok || r.Location() != fsm.Player.Location() {
 		logger.Error("利诱的使用时机不对")
 		return false
 	}
-	target := args[0].(interfaces.IPlayer)
+	target := args[0].(game.IPlayer)
 	if !target.IsAlive() {
 		logger.Error("目标已死亡")
 		return false
@@ -32,15 +32,15 @@ func (card *LiYou) CanUse(game interfaces.IGame, r interfaces.IPlayer, args ...i
 	return true
 }
 
-func (card *LiYou) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...interface{}) {
-	target := args[0].(interfaces.IPlayer)
+func (card *LiYou) Execute(g *game.Game, r game.IPlayer, args ...interface{}) {
+	target := args[0].(game.IPlayer)
 	logger.Info(r, "对", target, "使用了", card)
 	r.DeleteCard(card.GetId())
 	deckCards := g.GetDeck().Draw(1)
 	var joinIntoHand bool
 	if len(deckCards) > 0 {
 		target.AddMessageCards(deckCards...)
-		if target.CheckThreeSameMessageCard(deckCards[0].GetColor()...) {
+		if target.CheckThreeSameMessageCard(deckCards[0].GetColors()...) {
 			target.DeleteMessageCard(deckCards[0].GetId())
 			joinIntoHand = true
 			r.AddCards(deckCards...)
@@ -64,15 +64,7 @@ func (card *LiYou) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...int
 		}
 	}
 	g.GetDeck().Discard(card)
-	game.Post(g.MainPhase)
-}
-
-func (card *LiYou) CanUse2(interfaces.IGame, interfaces.IPlayer, ...interface{}) bool {
-	panic("unreachable code")
-}
-
-func (card *LiYou) Execute2(interfaces.IGame, interfaces.IPlayer, ...interface{}) {
-	panic("unreachable code")
+	g.Resolve(&game.MainPhaseIdle{Player: r})
 }
 
 func (card *LiYou) ToPbCard() *protos.Card {

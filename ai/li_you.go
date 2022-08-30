@@ -2,7 +2,6 @@ package ai
 
 import (
 	"github.com/CuteReimu/FengSheng/game"
-	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
 	"github.com/CuteReimu/FengSheng/utils"
 	"time"
@@ -12,7 +11,8 @@ func init() {
 	game.AIMainPhase[protos.CardType_Li_You] = liYou
 }
 
-func liYou(player interfaces.IPlayer, card interfaces.ICard) bool {
+func liYou(e *game.MainPhaseIdle, card game.ICard) bool {
+	player := e.Player
 	var chooseHuman bool
 	n := utils.Random.Intn(3)
 	if n == 0 {
@@ -23,7 +23,7 @@ func liYou(player interfaces.IPlayer, card interfaces.ICard) bool {
 	} else {
 		chooseHuman = n == 1
 	}
-	var players []interfaces.IPlayer
+	var players []game.IPlayer
 	for _, p := range player.GetGame().GetPlayers() {
 		if p.IsAlive() {
 			if _, ok := p.(*game.HumanPlayer); ok == chooseHuman {

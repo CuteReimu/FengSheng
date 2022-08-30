@@ -2,7 +2,6 @@ package ai
 
 import (
 	"github.com/CuteReimu/FengSheng/game"
-	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
 	"github.com/CuteReimu/FengSheng/utils"
 	"time"
@@ -12,11 +11,12 @@ func init() {
 	game.AISendPhase[protos.CardType_Po_Yi] = poYi
 }
 
-func poYi(player interfaces.IPlayer, card interfaces.ICard) bool {
-	if player.Location() == player.GetGame().GetWhoseTurn() {
+func poYi(e *game.SendPhaseIdle, card game.ICard) bool {
+	player := e.InFrontOfWhom
+	if player.Location() == e.WhoseTurn.Location() {
 		return false
 	}
-	if player.GetGame().IsMessageCardFaceUp() {
+	if e.IsMessageCardFaceUp {
 		return false
 	}
 	if utils.Random.Intn(2) == 0 {

@@ -1,23 +1,21 @@
 package game
 
 import (
-	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
 	"github.com/CuteReimu/FengSheng/utils"
-	"github.com/davyxu/cellnet"
 )
 
-var DefaultDeck []interfaces.ICard
+var DefaultDeck []ICard
 
 type Deck struct {
 	nextId      uint32
-	game        interfaces.IGame
-	cards       []interfaces.ICard
-	discardPile []interfaces.ICard
+	game        *Game
+	cards       []ICard
+	discardPile []ICard
 }
 
-func NewDeck(game interfaces.IGame) *Deck {
-	d := &Deck{game: game, cards: append(make([]interfaces.ICard, 0), DefaultDeck...)}
+func NewDeck(game *Game) *Deck {
+	d := &Deck{game: game, cards: append(make([]ICard, 0), DefaultDeck...)}
 	d.nextId = uint32(len(d.cards)) - 1
 	d.Shuffle()
 	return d
@@ -32,7 +30,7 @@ func (d *Deck) Shuffle() {
 	d.notifyDeckCount(true)
 }
 
-func (d *Deck) Draw(n int) []interfaces.ICard {
+func (d *Deck) Draw(n int) []ICard {
 	if n > len(d.cards) {
 		d.Shuffle()
 	}
@@ -45,7 +43,7 @@ func (d *Deck) Draw(n int) []interfaces.ICard {
 	return result
 }
 
-func (d *Deck) Discard(cards ...interfaces.ICard) {
+func (d *Deck) Discard(cards ...ICard) {
 	d.discardPile = append(d.discardPile, cards...)
 }
 
@@ -55,7 +53,7 @@ func (d *Deck) GetDeckCount() int {
 
 func (d *Deck) notifyDeckCount(shuffled bool) {
 	for _, player := range d.game.GetPlayers() {
-		if s, ok := player.(cellnet.Session); ok {
+		if s, ok := player.(*HumanPlayer); ok {
 			s.Send(&protos.SyncDeckNumToc{
 				Num:      uint32(len(d.cards)),
 				Shuffled: shuffled,

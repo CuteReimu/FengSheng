@@ -1,30 +1,30 @@
 package game
 
 import (
-	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
 	"github.com/CuteReimu/FengSheng/utils"
 	"strconv"
 	"time"
 )
 
-var AIMainPhase = make(map[protos.CardType]func(player interfaces.IPlayer, card interfaces.ICard) bool)
-var AISendPhase = make(map[protos.CardType]func(player interfaces.IPlayer, card interfaces.ICard) bool)
-var AIFightPhase = make(map[protos.CardType]func(player interfaces.IPlayer, card interfaces.ICard) bool)
+var AIMainPhase = make(map[protos.CardType]func(e *MainPhaseIdle, card ICard) bool)
+var AISendPhase = make(map[protos.CardType]func(e *SendPhaseIdle, card ICard) bool)
+var AIFightPhase = make(map[protos.CardType]func(e *FightPhaseIdle, card ICard) bool)
 
 type RobotPlayer struct {
-	interfaces.BasePlayer
+	BasePlayer
 }
 
 func (r *RobotPlayer) String() string {
 	return strconv.Itoa(r.Location()) + "号[机器人]"
 }
 
-func (r *RobotPlayer) NotifyDrawPhase() {
+func (r *RobotPlayer) NotifyDrawPhase(IPlayer) {
 }
 
-func (r *RobotPlayer) NotifyMainPhase(uint32) {
-	if r.Location() != r.GetGame().GetWhoseTurn() {
+func (r *RobotPlayer) NotifyMainPhase(player IPlayer, _ uint32) {
+	fsm := r.GetGame().GetFsm().(*MainPhaseIdle)
+	if r.Location() != player.Location() {
 		return
 	}
 	cards := r.GetCards()
@@ -32,18 +32,19 @@ func (r *RobotPlayer) NotifyMainPhase(uint32) {
 		for cardId := range cards {
 			card := cards[cardId]
 			ai := AIMainPhase[card.GetType()]
-			if ai != nil && ai(r, card) {
+			if ai != nil && ai(fsm, card) {
 				return
 			}
 		}
 	}
 	time.AfterFunc(2*time.Second, func() {
-		Post(r.GetGame().SendPhaseStart)
+		r.GetGame().Resolve(&SendPhaseStart{Player: r})
 	})
 }
 
-func (r *RobotPlayer) NotifySendPhaseStart(uint32) {
-	if r.Location() != r.GetGame().GetWhoseTurn() {
+func (r *RobotPlayer) NotifySendPhaseStart(IPlayer, uint32) {
+	fsm := r.GetGame().GetFsm().(*SendPhaseStart)
+	if r.Location() != fsm.Player.Location() {
 		return
 	}
 	time.AfterFunc(2*time.Second, func() {
@@ -51,67 +52,73 @@ func (r *RobotPlayer) NotifySendPhaseStart(uint32) {
 	})
 }
 
-func (r *RobotPlayer) NotifySendMessageCard() {
+func (r *RobotPlayer) NotifySendMessageCard(IPlayer, IPlayer, []IPlayer, ICard, protos.Direction) {
 }
 
-func (r *RobotPlayer) NotifySendPhase(uint32) {
-	if r.Location() != r.GetGame().GetWhoseSendTurn() {
+func (r *RobotPlayer) NotifySendPhase(whoseTurn, inFrontOfWhom IPlayer, lockedPlayers []IPlayer, messageCard ICard, _ protos.Direction, isMessageFaceUp bool, _ uint32) {
+	fsm := r.GetGame().GetFsm().(*SendPhaseIdle)
+	if r.Location() != inFrontOfWhom.Location() {
 		return
 	}
 	cards := r.GetCards()
 	for cardId := range cards {
 		card := cards[cardId]
 		ai := AISendPhase[card.GetType()]
-		if ai != nil && ai(r, card) {
+		if ai != nil && ai(fsm, card) {
 			return
 		}
 	}
 	time.AfterFunc(2*time.Second, func() {
-		colors := r.GetGame().GetCurrentMessageCard().GetColor()
-		certainlyReceive := r.GetGame().IsMessageCardFaceUp() && len(colors) == 1 && colors[0] != protos.Color_Black
-		certainlyReject := r.GetGame().IsMessageCardFaceUp() && len(colors) == 1 && colors[0] == protos.Color_Black
-		if certainlyReceive || func(e int, arr []int) bool {
-			for _, a := range arr {
-				if a == e {
+		colors := messageCard.GetColors()
+		certainlyReceive := isMessageFaceUp && len(colors) == 1 && colors[0] != protos.Color_Black
+		certainlyReject := isMessageFaceUp && len(colors) == 1 && colors[0] == protos.Color_Black
+		if certainlyReceive || func(e int, lockedPlayers []IPlayer) bool {
+			for _, a := range lockedPlayers {
+				if a.Location() == e {
 					return true
 				}
 			}
 			return false
-		}(r.Location(), r.GetGame().GetLockPlayers()) || r.Location() == r.GetGame().GetWhoseTurn() || (!certainlyReject && utils.Random.Intn((len(r.GetGame().GetPlayers())-1)*2) == 0) {
-			Post(r.GetGame().OnChooseReceiveCard)
+		}(r.Location(), lockedPlayers) || r.Location() == whoseTurn.Location() || (!certainlyReject && utils.Random.Intn((len(r.GetGame().GetPlayers())-1)*2) == 0) {
+			r.GetGame().Resolve(&OnChooseReceiveCard{
+				WhoseTurn:           whoseTurn,
+				MessageCard:         messageCard,
+				InFrontOfWhom:       inFrontOfWhom,
+				IsMessageCardFaceUp: isMessageFaceUp,
+			})
 		} else {
-			Post(r.GetGame().MessageMoveNext)
+			r.GetGame().Resolve(&MessageMoveNext{SendPhase: fsm})
 		}
 	})
 }
 
-func (r *RobotPlayer) NotifyChooseReceiveCard() {
+func (r *RobotPlayer) NotifyChooseReceiveCard(IPlayer) {
 }
 
-func (r *RobotPlayer) NotifyFightPhase(uint32) {
-	if r.Location() != r.GetGame().GetWhoseFightTurn() {
+func (r *RobotPlayer) NotifyFightPhase(_, _, whoseFightTurn IPlayer, _ ICard, _ bool, _ uint32) {
+	fsm := r.GetGame().GetFsm().(*FightPhaseIdle)
+	if r.Location() != whoseFightTurn.Location() {
 		return
 	}
 	cards := r.GetCards()
 	for cardId := range cards {
 		card := cards[cardId]
 		ai := AIFightPhase[card.GetType()]
-		if ai != nil && ai(r, card) {
+		if ai != nil && ai(fsm, card) {
 			return
 		}
 	}
 	time.AfterFunc(2*time.Second, func() {
-		Post(r.GetGame().FightPhaseNext)
+		r.GetGame().Resolve(&FightPhaseNext{FightPhase: fsm})
 	})
 }
 
-func (r *RobotPlayer) NotifyReceivePhase() {
+func (r *RobotPlayer) NotifyReceivePhase(IPlayer, IPlayer, ICard) {
 }
 
 func (r *RobotPlayer) NotifyDie(location int, _ bool) {
 	if location == r.Location() {
-		r.SetAlive(false)
-		var cards []interfaces.ICard
+		var cards []ICard
 		for _, card := range r.GetCards() {
 			cards = append(cards, card)
 		}
@@ -120,35 +127,34 @@ func (r *RobotPlayer) NotifyDie(location int, _ bool) {
 	}
 }
 
-func (r *RobotPlayer) NotifyWin(interfaces.IPlayer, []interfaces.IPlayer) {
+func (r *RobotPlayer) NotifyWin([]IPlayer, []IPlayer) {
 }
 
-func (r *RobotPlayer) NotifyAskForChengQing(_ interfaces.IPlayer, askWhom interfaces.IPlayer) {
+func (r *RobotPlayer) NotifyAskForChengQing(_ IPlayer, askWhom IPlayer) {
+	fsm := r.GetGame().GetFsm().(*WaitForChengQing)
 	if askWhom.Location() != r.Location() {
 		return
 	}
 	time.AfterFunc(2*time.Second, func() {
-		Post(func() {
-			Post(r.GetGame().AskNextForChengQing)
-		})
+		r.GetGame().Resolve(&WaitNextForChengQing{WaitForChengQing: fsm})
 	})
 }
 
-func (r *RobotPlayer) WaitForDieGiveCard(whoDie interfaces.IPlayer) {
+func (r *RobotPlayer) WaitForDieGiveCard(whoDie IPlayer) {
+	fsm := r.GetGame().GetFsm().(*WaitForDieGiveCard)
 	if whoDie.Location() != r.Location() {
 		return
 	}
-
 	time.AfterFunc(2*time.Second, func() {
 		Post(func() {
-			if r.Location() != r.GetGame().GetWhoDie() {
+			if r.Location() != whoDie.Location() {
 				return
 			}
 			identity1, _ := r.GetIdentity()
 			if identity1 != protos.Color_Black {
 				for _, p := range r.GetGame().GetPlayers() {
 					if identity2, _ := r.GetIdentity(); identity1 == identity2 && p.Location() != r.Location() {
-						var cards []interfaces.ICard
+						var cards []ICard
 						for _, card := range r.GetCards() {
 							cards = append(cards, card)
 							if len(cards) >= 3 {
@@ -182,22 +188,21 @@ func (r *RobotPlayer) WaitForDieGiveCard(whoDie interfaces.IPlayer) {
 					}
 				}
 			}
-			for _, p := range r.GetGame().GetPlayers() {
-				p.NotifyDie(whoDie.Location(), false)
-			}
-			Post(r.GetGame().AfterChengQing)
+			r.GetGame().Resolve(&AfterDieGiveCard{DieGiveCard: fsm})
 		})
 	})
 }
 
-func autoSendMessageCard(r interfaces.IPlayer, lock bool) {
-	var card interfaces.ICard
+func autoSendMessageCard(r IPlayer, lock bool) {
+	var card ICard
 	for _, card = range r.GetCards() {
 		break
 	}
+	fsm := r.GetGame().GetFsm().(*SendPhaseStart)
 	dir := card.GetDirection()
 	var targetLocation int
-	var lockLocation, availableLocations []int
+	var availableLocations []int
+	var lockedPlayers []IPlayer
 	for _, p := range r.GetGame().GetPlayers() {
 		if p.Location() != r.Location() && p.IsAlive() {
 			availableLocations = append(availableLocations, p.Location())
@@ -206,14 +211,14 @@ func autoSendMessageCard(r interfaces.IPlayer, lock bool) {
 	if dir != protos.Direction_Up && lock && card.CanLock() && utils.Random.Intn(3) != 0 {
 		location := availableLocations[utils.Random.Intn(len(availableLocations))]
 		if r.GetGame().GetPlayers()[location].IsAlive() {
-			lockLocation = append(lockLocation, location)
+			lockedPlayers = append(lockedPlayers, r.GetGame().GetPlayers()[location])
 		}
 	}
 	switch dir {
 	case protos.Direction_Up:
 		targetLocation = availableLocations[utils.Random.Intn(len(availableLocations))]
 		if lock && card.CanLock() && utils.Random.Intn(2) != 0 {
-			lockLocation = append(lockLocation, targetLocation)
+			lockedPlayers = append(lockedPlayers, r.GetGame().GetPlayers()[targetLocation])
 		}
 	case protos.Direction_Left:
 		targetLocation = (r.Location() + len(r.GetGame().GetPlayers()) - 1) % len(r.GetGame().GetPlayers())
@@ -226,47 +231,53 @@ func autoSendMessageCard(r interfaces.IPlayer, lock bool) {
 			targetLocation = (targetLocation + 1) % len(r.GetGame().GetPlayers())
 		}
 	}
-	Post(func() { r.GetGame().OnSendCard(card, dir, targetLocation, lockLocation) })
+	r.GetGame().Resolve(&OnSendCard{
+		WhoseTurn:     fsm.Player,
+		MessageCard:   card,
+		Dir:           dir,
+		TargetPlayer:  r.GetGame().GetPlayers()[targetLocation],
+		LockedPlayers: lockedPlayers,
+	})
 }
 
 type IdlePlayer struct {
-	interfaces.BasePlayer
+	BasePlayer
 }
 
-func (p *IdlePlayer) NotifyDrawPhase() {
+func (p *IdlePlayer) NotifyDrawPhase(IPlayer) {
 }
 
-func (p *IdlePlayer) NotifyMainPhase(uint32) {
+func (p *IdlePlayer) NotifyMainPhase(IPlayer, uint32) {
 }
 
-func (p *IdlePlayer) NotifySendPhaseStart(uint32) {
+func (p *IdlePlayer) NotifySendPhaseStart(IPlayer, uint32) {
 }
 
-func (p *IdlePlayer) NotifySendMessageCard() {
+func (p *IdlePlayer) NotifySendMessageCard(IPlayer, IPlayer, []IPlayer, ICard, protos.Direction) {
 }
 
-func (p *IdlePlayer) NotifySendPhase(uint32) {
+func (p *IdlePlayer) NotifySendPhase(IPlayer, IPlayer, []IPlayer, ICard, protos.Direction, bool, uint32) {
 }
 
-func (p *IdlePlayer) NotifyChooseReceiveCard() {
+func (p *IdlePlayer) NotifyChooseReceiveCard(IPlayer) {
 }
 
-func (p *IdlePlayer) NotifyFightPhase(uint32) {
+func (p *IdlePlayer) NotifyFightPhase(IPlayer, IPlayer, IPlayer, ICard, bool, uint32) {
 }
 
-func (p *IdlePlayer) NotifyReceivePhase() {
+func (p *IdlePlayer) NotifyReceivePhase(IPlayer, IPlayer, ICard) {
 }
 
 func (p *IdlePlayer) NotifyDie(int, bool) {
 }
 
-func (p *IdlePlayer) NotifyWin(interfaces.IPlayer, []interfaces.IPlayer) {
+func (p *IdlePlayer) NotifyWin([]IPlayer, []IPlayer) {
 }
 
-func (p *IdlePlayer) NotifyAskForChengQing(interfaces.IPlayer, interfaces.IPlayer) {
+func (p *IdlePlayer) NotifyAskForChengQing(IPlayer, IPlayer) {
 }
 
-func (p *IdlePlayer) WaitForDieGiveCard(interfaces.IPlayer) {
+func (p *IdlePlayer) WaitForDieGiveCard(IPlayer) {
 }
 
 func (p *IdlePlayer) String() string {

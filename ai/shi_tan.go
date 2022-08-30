@@ -2,19 +2,19 @@ package ai
 
 import (
 	"github.com/CuteReimu/FengSheng/game"
-	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
 	"github.com/CuteReimu/FengSheng/utils"
 	"time"
 )
 
 func init() {
-	game.AIMainPhase[protos.CardType_Ping_Heng] = pingHeng
+	game.AIMainPhase[protos.CardType_Shi_Tan] = shiTan
 }
 
-func pingHeng(player interfaces.IPlayer, card interfaces.ICard) bool {
+func shiTan(e *game.MainPhaseIdle, card game.ICard) bool {
+	player := e.Player
 	chooseHuman := utils.Random.Intn(2) == 0
-	var players []interfaces.IPlayer
+	var players []game.IPlayer
 	for _, p := range player.GetGame().GetPlayers() {
 		if p.Location() != player.Location() && p.IsAlive() {
 			if _, ok := p.(*game.HumanPlayer); ok == chooseHuman {

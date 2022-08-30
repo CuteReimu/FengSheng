@@ -1,15 +1,14 @@
-package interfaces
+package game
 
 import (
 	"github.com/CuteReimu/FengSheng/protos"
 	"github.com/CuteReimu/FengSheng/utils"
 )
 
-var logger = utils.GetLogger("interfaces")
-
 type IPlayer interface {
-	Init(game IGame, location int, identity protos.Color, secretTask protos.SecretTask)
-	GetGame() IGame
+	Init(game *Game, location int, identity protos.Color, secretTask protos.SecretTask)
+	IncrSeq()
+	GetGame() *Game
 	Location() int
 	GetAbstractLocation(location int) int
 	GetAlternativeLocation(location int) uint32
@@ -26,16 +25,16 @@ type IPlayer interface {
 	DeleteMessageCard(cardId uint32)
 	DeleteAllMessageCards() []ICard
 	CheckThreeSameMessageCard(colors ...protos.Color) bool
-	NotifyDrawPhase()
-	NotifyMainPhase(waitSecond uint32)
-	NotifySendPhaseStart(waitSecond uint32)
-	NotifySendMessageCard()
-	NotifySendPhase(waitSecond uint32)
-	NotifyChooseReceiveCard()
-	NotifyFightPhase(waitSecond uint32)
-	NotifyReceivePhase()
+	NotifyDrawPhase(player IPlayer)
+	NotifyMainPhase(player IPlayer, waitSecond uint32)
+	NotifySendPhaseStart(player IPlayer, waitSecond uint32)
+	NotifySendMessageCard(player, targetPlayer IPlayer, lockedPlayers []IPlayer, messageCard ICard, dir protos.Direction)
+	NotifySendPhase(whoseTurn, inFrontOfWhom IPlayer, lockedPlayers []IPlayer, messageCard ICard, dir protos.Direction, isMessageFaceUp bool, waitSecond uint32)
+	NotifyChooseReceiveCard(player IPlayer)
+	NotifyFightPhase(whoseTurn, inFrontOfWhom, whoseFightTurn IPlayer, messageCard ICard, isMessageFaceUp bool, waitSecond uint32)
+	NotifyReceivePhase(whoseTurn, inFrontOfWhom IPlayer, messageCard ICard)
 	NotifyDie(location int, loseGame bool)
-	NotifyWin(declareWinner IPlayer, winner []IPlayer)
+	NotifyWin(declareWinner []IPlayer, winner []IPlayer)
 	NotifyAskForChengQing(whoDie IPlayer, askWhom IPlayer)
 	WaitForDieGiveCard(whoDie IPlayer)
 	SetAlive(alive bool)
@@ -50,7 +49,7 @@ type IPlayer interface {
 }
 
 type BasePlayer struct {
-	game          IGame
+	game          *Game
 	location      int
 	cards         map[uint32]ICard
 	messageCards  map[uint32]ICard
@@ -61,7 +60,7 @@ type BasePlayer struct {
 	hasNoIdentity bool
 }
 
-func (p *BasePlayer) Init(game IGame, location int, identity protos.Color, secretTask protos.SecretTask) {
+func (p *BasePlayer) Init(game *Game, location int, identity protos.Color, secretTask protos.SecretTask) {
 	logger.Info(location, "号的身份是", utils.IdentityColorToString(identity, secretTask))
 	p.game = game
 	p.location = location
@@ -71,7 +70,10 @@ func (p *BasePlayer) Init(game IGame, location int, identity protos.Color, secre
 	p.SetIdentity(identity, secretTask)
 }
 
-func (p *BasePlayer) GetGame() IGame {
+func (p *BasePlayer) IncrSeq() {
+}
+
+func (p *BasePlayer) GetGame() *Game {
 	return p.game
 }
 
@@ -196,7 +198,7 @@ func (p *BasePlayer) CheckThreeSameMessageCard(colors ...protos.Color) bool {
 	for _, color := range colors {
 		var count int
 		for _, card := range p.messageCards {
-			if utils.IsColorIn(color, card.GetColor()) {
+			if utils.IsColorIn(color, card.GetColors()) {
 				count++
 			}
 		}

@@ -2,13 +2,12 @@ package card
 
 import (
 	"github.com/CuteReimu/FengSheng/game"
-	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
 	"github.com/CuteReimu/FengSheng/utils"
 )
 
 type PingHeng struct {
-	interfaces.BaseCard
+	game.BaseCard
 }
 
 func (card *PingHeng) String() string {
@@ -19,12 +18,13 @@ func (card *PingHeng) GetType() protos.CardType {
 	return protos.CardType_Ping_Heng
 }
 
-func (card *PingHeng) CanUse(game interfaces.IGame, r interfaces.IPlayer, args ...interface{}) bool {
-	if game.GetCurrentPhase() != protos.Phase_Main_Phase || game.GetWhoseTurn() != r.Location() || !game.IsIdleTimePoint() {
+func (card *PingHeng) CanUse(g *game.Game, r game.IPlayer, args ...interface{}) bool {
+	fsm, ok := g.GetFsm().(*game.MainPhaseIdle)
+	if !ok || r.Location() != fsm.Player.Location() {
 		logger.Error("平衡的使用时机不对")
 		return false
 	}
-	target := args[0].(interfaces.IPlayer)
+	target := args[0].(game.IPlayer)
 	if target.Location() == r.Location() {
 		logger.Error("平衡不能对自己使用")
 		return false
@@ -36,8 +36,8 @@ func (card *PingHeng) CanUse(game interfaces.IGame, r interfaces.IPlayer, args .
 	return true
 }
 
-func (card *PingHeng) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...interface{}) {
-	target := args[0].(interfaces.IPlayer)
+func (card *PingHeng) Execute(g *game.Game, r game.IPlayer, args ...interface{}) {
+	target := args[0].(game.IPlayer)
 	logger.Info(r, "对", target, "使用了", card)
 	r.DeleteCard(card.GetId())
 	for _, p := range g.GetPlayers() {
@@ -50,7 +50,7 @@ func (card *PingHeng) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...
 			player.Send(msg)
 		}
 	}
-	var discardCards, targetDiscardCards []interfaces.ICard
+	var discardCards, targetDiscardCards []game.ICard
 	for _, c := range r.GetCards() {
 		discardCards = append(discardCards, c)
 	}
@@ -62,15 +62,7 @@ func (card *PingHeng) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...
 	r.Draw(3)
 	target.Draw(3)
 	g.GetDeck().Discard(card)
-	game.Post(g.MainPhase)
-}
-
-func (card *PingHeng) CanUse2(interfaces.IGame, interfaces.IPlayer, ...interface{}) bool {
-	panic("unreachable code")
-}
-
-func (card *PingHeng) Execute2(interfaces.IGame, interfaces.IPlayer, ...interface{}) {
-	panic("unreachable code")
+	g.ContinueResolve()
 }
 
 func (card *PingHeng) ToPbCard() *protos.Card {

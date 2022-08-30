@@ -2,13 +2,12 @@ package card
 
 import (
 	"github.com/CuteReimu/FengSheng/game"
-	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
 	"github.com/CuteReimu/FengSheng/utils"
 )
 
 type JieHuo struct {
-	interfaces.BaseCard
+	game.BaseCard
 }
 
 func (card *JieHuo) String() string {
@@ -19,23 +18,25 @@ func (card *JieHuo) GetType() protos.CardType {
 	return protos.CardType_Jie_Huo
 }
 
-func (card *JieHuo) CanUse(game interfaces.IGame, r interfaces.IPlayer, _ ...interface{}) bool {
-	if game.GetCurrentPhase() != protos.Phase_Fight_Phase {
+func (card *JieHuo) CanUse(g *game.Game, r game.IPlayer, _ ...interface{}) bool {
+	fsm, ok := g.GetFsm().(*game.FightPhaseIdle)
+	if !ok || r.Location() != fsm.WhoseFightTurn.Location() {
 		logger.Error("截获的使用时机不对")
 		return false
 	}
-	if game.GetWhoseSendTurn() == r.Location() {
+	if r.Location() == fsm.InFrontOfWhom.Location() {
 		logger.Error("情报在自己面前不能使用截获")
 		return false
 	}
 	return true
 }
 
-func (card *JieHuo) Execute(g interfaces.IGame, r interfaces.IPlayer, _ ...interface{}) {
+func (card *JieHuo) Execute(g *game.Game, r game.IPlayer, _ ...interface{}) {
+	fsm := g.GetFsm().(*game.FightPhaseIdle)
 	logger.Info(r, "使用了", card)
 	r.DeleteCard(card.GetId())
-	g.SetWhoseSendTurn(r.Location())
-	g.SetWhoseFightTurn(g.GetWhoseSendTurn())
+	fsm.InFrontOfWhom = r
+	fsm.WhoseFightTurn = fsm.InFrontOfWhom
 	g.GetDeck().Discard(card)
 	for _, player := range g.GetPlayers() {
 		if p, ok := player.(*game.HumanPlayer); ok {
@@ -46,17 +47,7 @@ func (card *JieHuo) Execute(g interfaces.IGame, r interfaces.IPlayer, _ ...inter
 			p.Send(msg)
 		}
 	}
-	for _, p := range g.GetPlayers() {
-		p.NotifyFightPhase(20)
-	}
-}
-
-func (card *JieHuo) CanUse2(interfaces.IGame, interfaces.IPlayer, ...interface{}) bool {
-	panic("unreachable code")
-}
-
-func (card *JieHuo) Execute2(interfaces.IGame, interfaces.IPlayer, ...interface{}) {
-	panic("unreachable code")
+	g.ContinueResolve()
 }
 
 func (card *JieHuo) ToPbCard() *protos.Card {
