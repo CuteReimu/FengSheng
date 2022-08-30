@@ -33,7 +33,7 @@ func shiTan(player interfaces.IPlayer, card interfaces.ICard) bool {
 		return false
 	}
 	p := players[utils.Random.Intn(len(players))]
-	time.AfterFunc(time.Second, func() {
+	time.AfterFunc(2*time.Second, func() {
 		game.Post(func() { card.Execute(player.GetGame(), player, p) })
 	})
 	return true

@@ -25,6 +25,10 @@ func (card *PoYi) CanUse(game interfaces.IGame, r interfaces.IPlayer, _ ...inter
 		logger.Error("破译的使用时机不对")
 		return false
 	}
+	if game.IsMessageCardFaceUp() {
+		logger.Error("破译不能对已翻开的情报使用")
+		return false
+	}
 	return true
 }
 
@@ -47,7 +51,7 @@ func (card *PoYi) Execute(g interfaces.IGame, r interfaces.IPlayer, _ ...interfa
 		}
 	}
 	if _, ok := r.(*game.RobotPlayer); ok {
-		time.AfterFunc(time.Second, func() {
+		time.AfterFunc(2*time.Second, func() {
 			game.Post(func() {
 				card.showAndDrawCard(g, r, utils.IsColorIn(protos.Color_Black, g.GetCurrentMessageCard().GetColor()))
 			})

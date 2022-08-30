@@ -12,6 +12,7 @@ import (
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/proc"
 	_ "github.com/davyxu/cellnet/proc/tcp"
+	"time"
 )
 
 var logger = utils.GetLogger("game")
@@ -23,6 +24,7 @@ func Post(callback func()) {
 }
 
 type Game struct {
+	Id                 uint32
 	Players            []interfaces.IPlayer
 	Deck               interfaces.IDeck
 	CurrentCard        *interfaces.CurrentCard
@@ -40,8 +42,15 @@ type Game struct {
 	afterChengQing     func()
 }
 
+func (game *Game) end() {
+	delete(Cache, game.Id)
+}
+
+var Cache = make(map[uint32]*Game)
+
 func Start(totalCount int) {
-	game := &Game{Players: make([]interfaces.IPlayer, totalCount)}
+	gameId := uint32(1)
+	game := &Game{Id: gameId, Players: make([]interfaces.IPlayer, totalCount)}
 
 	if !config.IsTcpDebugLogOpen() {
 		msglog.SetCurrMsgLogMode(msglog.MsgLogMode_Mute)
@@ -74,7 +83,8 @@ func Start(totalCount int) {
 		if unready == 0 {
 			logger.Info(player, "加入了。已加入", totalCount, "个人，游戏开始。。。")
 			Post(game.start)
-			game = &Game{Players: make([]interfaces.IPlayer, totalCount)}
+			gameId++
+			game = &Game{Id: gameId, Players: make([]interfaces.IPlayer, totalCount)}
 		} else {
 			logger.Info(player, "加入了。已加入", totalCount-unready, "个人，等待", unready, "人加入。。。")
 		}
@@ -84,6 +94,7 @@ func Start(totalCount int) {
 	proc.BindProcessorHandler(p, "tcp.ltv", func(ev cellnet.Event) {
 		switch pb := ev.Message().(type) {
 		case *cellnet.SessionAccepted:
+			logger.Info("session connected: ", ev.Session().ID())
 			player := &HumanPlayer{Session: ev.Session()}
 			humanMap[player.Session.ID()] = player
 			index := onAdd(player)
@@ -99,7 +110,6 @@ func Start(totalCount int) {
 			if player, ok := humanMap[ev.Session().ID()]; ok {
 				if player.GetGame() != nil {
 					game := player.GetGame().(*Game)
-					game.Players[player.Location()] = nil
 					if func(players []interfaces.IPlayer) bool {
 						for i := range players {
 							if _, ok := players[i].(*HumanPlayer); ok {
@@ -107,12 +117,18 @@ func Start(totalCount int) {
 							}
 						}
 						return false
-					}(player.GetGame().GetPlayers()) {
+					}(game.GetPlayers()) {
 						game.Players[player.Location()] = &RobotPlayer{BasePlayer: player.BasePlayer}
 					} else {
-						for i := range player.GetGame().GetPlayers() {
-							game.Players[i] = &IdlePlayer{BasePlayer: player.BasePlayer}
+						for i := range game.GetPlayers() {
+							switch p := game.Players[i].(type) {
+							case *HumanPlayer:
+								game.Players[i] = &IdlePlayer{BasePlayer: p.BasePlayer}
+							case *RobotPlayer:
+								game.Players[i] = &IdlePlayer{BasePlayer: p.BasePlayer}
+							}
 						}
+						game.end()
 					}
 				} else {
 					msg := &protos.LeaveRoomToc{}
@@ -197,12 +213,15 @@ func (game *Game) start() {
 	for location, player := range game.Players {
 		player.Init(game, location, idTask[location].id, idTask[location].task)
 	}
+	Cache[game.Id] = game
 	game.Deck = NewDeck(game)
 	game.WhoseTurn = utils.Random.Intn(len(game.Players))
 	for i := 0; i < len(game.Players); i++ {
 		game.Players[(game.WhoseTurn+i)%len(game.Players)].Draw(config.GetHandCardCountBegin())
 	}
-	game.DrawPhase()
+	time.AfterFunc(time.Second, func() {
+		Post(game.DrawPhase)
+	})
 }
 
 func (game *Game) DrawPhase() {
@@ -329,7 +348,7 @@ func (game *Game) ReceivePhase() {
 	if player.IsAlive() {
 		game.CurrentPhase = protos.Phase_Receive_Phase
 		player.AddMessageCards(game.CurrentMessageCard)
-		logger.Info(player, "成功接收情报")
+		logger.Info(player, "成功接收情报", game.CurrentMessageCard)
 		for _, p := range game.Players {
 			p.NotifyReceivePhase()
 		}
@@ -457,7 +476,7 @@ func (game *Game) checkWinOrDie() bool {
 	var killer, stealer interfaces.IPlayer
 	var redPlayers, bluePlayers []interfaces.IPlayer
 	for _, p := range game.GetPlayers() {
-		if p.IsAlive() {
+		if p.IsAlive() && !p.HasNoIdentity() && !p.IsLose() {
 			identity, secretTask := p.GetIdentity()
 			switch identity {
 			case protos.Color_Black:
@@ -517,6 +536,7 @@ func (game *Game) checkWinOrDie() bool {
 		for _, p := range game.GetPlayers() {
 			p.NotifyWin(declareWinner, winner)
 		}
+		game.end()
 		return true
 	}
 	if black >= 3 {
@@ -530,13 +550,37 @@ func (game *Game) checkWinOrDie() bool {
 		game.AskForChengQing()
 		game.afterChengQing = func() {
 			if !game.Players[game.WhoDie].IsAlive() && killer != nil && game.WhoseTurn == killer.Location() {
-				logger.Info(declareWinner, "宣告胜利，胜利者有", winner)
+				logger.Info(killer, "宣告胜利，胜利者有", []interfaces.IPlayer{killer})
 				for _, p := range game.GetPlayers() {
 					p.NotifyWin(killer, []interfaces.IPlayer{killer})
 				}
+				game.end()
 				return
 			}
-			Post(game.NextTurn)
+			var alivePlayer interfaces.IPlayer
+			for _, p := range game.Players {
+				if p.IsAlive() {
+					if alivePlayer == nil {
+						alivePlayer = p
+					} else {
+						Post(game.NextTurn)
+						return
+					}
+				}
+			}
+			winner := []interfaces.IPlayer{alivePlayer}
+			if identity1, _ := alivePlayer.GetIdentity(); identity1 != protos.Color_Black {
+				for _, p := range game.Players {
+					if identity2, _ := p.GetIdentity(); identity2 == identity1 && p.Location() != alivePlayer.Location() {
+						winner = append(winner, p)
+					}
+				}
+			}
+			logger.Info("只剩下", []interfaces.IPlayer{alivePlayer}, "存活，胜利者有", winner)
+			for _, p := range game.GetPlayers() {
+				p.NotifyWin(alivePlayer, winner)
+			}
+			game.end()
 		}
 		return true
 	}

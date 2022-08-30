@@ -16,6 +16,8 @@ const (
 	tcpDebugLogOpen    = "log.tcp_debug_log"
 	beginHandCardCount = "rule.hand_card_count_begin"
 	turnHandCardCount  = "rule.hand_card_count_each_turn"
+	gmEnable           = "gm.enable"
+	gmListenAddress    = "gm.listen_address"
 )
 
 func Init() {
@@ -30,6 +32,8 @@ func Init() {
 	initSingleConfig(&newConfig, tcpDebugLogOpen, true)
 	initSingleConfig(&newConfig, beginHandCardCount, 3)
 	initSingleConfig(&newConfig, turnHandCardCount, 3)
+	initSingleConfig(&newConfig, gmEnable, false)
+	initSingleConfig(&newConfig, gmListenAddress, "127.0.0.1:9092")
 	if len(newConfig) > 0 {
 		if err := globalConfig.WriteConfigAs("application.yaml"); err != nil {
 			panic(fmt.Sprintf("写入配置失败: %+v", err))
@@ -71,4 +75,14 @@ func GetHandCardCountBegin() int {
 // GetHandCardCountEachTurn 每回合摸牌数
 func GetHandCardCountEachTurn() int {
 	return globalConfig.GetInt(turnHandCardCount)
+}
+
+// IsGmEnable 是否开启GM命令
+func IsGmEnable() bool {
+	return globalConfig.GetBool(gmEnable)
+}
+
+// GetGmListenAddress GM监听端口号
+func GetGmListenAddress() string {
+	return globalConfig.GetString(gmListenAddress)
 }

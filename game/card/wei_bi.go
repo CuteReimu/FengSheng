@@ -64,12 +64,12 @@ func (card *WeiBi) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...int
 					PlayerId:       p.GetAlternativeLocation(r.Location()),
 					TargetPlayerId: p.GetAlternativeLocation(target.Location()),
 					WantType:       wantType,
-					WaitingSecond:  10,
+					WaitingSecond:  20,
 				}
 				if p.Location() == target.Location() {
 					seq := player.Seq
 					msg.Seq = player.Seq
-					player.Timer = time.AfterFunc(time.Second*time.Duration(msg.WaitingSecond), func() {
+					player.Timer = time.AfterFunc(time.Second*time.Duration(msg.WaitingSecond+2), func() {
 						game.Post(func() {
 							if player.Seq == seq {
 								player.Seq++
@@ -85,7 +85,7 @@ func (card *WeiBi) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...int
 			}
 		}
 		if _, ok := target.(*game.RobotPlayer); ok {
-			time.AfterFunc(time.Second, func() {
+			time.AfterFunc(2*time.Second, func() {
 				game.Post(func() { card.autoSelect(g, r, target, wantType) })
 			})
 		}
@@ -97,6 +97,7 @@ func (card *WeiBi) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...int
 				msg := &protos.WeiBiShowHandCardToc{
 					Card:           card.ToPbCard(),
 					PlayerId:       p.GetAlternativeLocation(r.Location()),
+					WantType:       wantType,
 					TargetPlayerId: p.GetAlternativeLocation(target.Location()),
 				}
 				if p.Location() == r.Location() {
@@ -107,7 +108,13 @@ func (card *WeiBi) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...int
 				player.Send(msg)
 			}
 		}
-		game.Post(g.MainPhase)
+		if _, ok := r.(*game.RobotPlayer); ok {
+			time.AfterFunc(2*time.Second, func() {
+				game.Post(g.MainPhase)
+			})
+		} else {
+			game.Post(g.MainPhase)
+		}
 	}
 }
 

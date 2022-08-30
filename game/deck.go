@@ -10,6 +10,7 @@ import (
 var DefaultDeck []interfaces.ICard
 
 type Deck struct {
+	nextId      uint32
 	game        interfaces.IGame
 	cards       []interfaces.ICard
 	discardPile []interfaces.ICard
@@ -17,6 +18,7 @@ type Deck struct {
 
 func NewDeck(game interfaces.IGame) *Deck {
 	d := &Deck{game: game, cards: append(make([]interfaces.ICard, 0), DefaultDeck...)}
+	d.nextId = uint32(len(d.cards)) - 1
 	d.Shuffle()
 	return d
 }
@@ -60,4 +62,9 @@ func (d *Deck) notifyDeckCount(shuffled bool) {
 			})
 		}
 	}
+}
+
+func (d *Deck) GetNextId() uint32 {
+	d.nextId++
+	return d.nextId
 }
