@@ -187,12 +187,6 @@ type FightPhaseNext struct {
 
 func (fp *FightPhaseNext) Resolve() (next Fsm, continueResolve bool) {
 	game := fp.FightPhase.WhoseFightTurn.GetGame()
-	nextPhase := &FightPhaseIdle{
-		WhoseTurn:           fp.FightPhase.WhoseTurn,
-		MessageCard:         fp.FightPhase.MessageCard,
-		InFrontOfWhom:       fp.FightPhase.InFrontOfWhom,
-		IsMessageCardFaceUp: fp.FightPhase.IsMessageCardFaceUp,
-	}
 	whoseFightTurn := fp.FightPhase.WhoseFightTurn.Location()
 	for {
 		whoseFightTurn = (whoseFightTurn + 1) % len(game.GetPlayers())
@@ -206,6 +200,7 @@ func (fp *FightPhaseNext) Resolve() (next Fsm, continueResolve bool) {
 			break
 		}
 	}
+	nextPhase := fp.FightPhase
 	nextPhase.WhoseFightTurn = game.GetPlayers()[whoseFightTurn]
 	return nextPhase, true
 }
@@ -540,27 +535,35 @@ type DieSkill struct {
 }
 
 func (ds *DieSkill) Resolve() (next Fsm, continueResolve bool) {
-	if ds.DiedIndex >= len(ds.DiedQueue) {
-		return &WaitForDieGiveCard{
-			WhoseTurn:       ds.WhoseTurn,
-			DiedQueue:       ds.DiedQueue,
-			ReceiveOrder:    ds.ReceiveOrder,
-			AfterDieResolve: ds.AfterDieResolve,
-		}, true
-	}
-	game := ds.AskWhom.GetGame()
-	askWhom := ds.AskWhom.Location()
 	// TODO 有技能应该暂停
+	return &DieSkillNext{DieSkill: ds}, true
+}
+
+type DieSkillNext struct {
+	DieSkill *DieSkill
+}
+
+func (ds *DieSkillNext) Resolve() (next Fsm, continueResolve bool) {
+	game := ds.DieSkill.WhoseTurn.GetGame()
+	askWhom := ds.DieSkill.AskWhom.Location()
 	for {
 		askWhom = (askWhom + 1) % len(game.GetPlayers())
-		if askWhom == ds.AskWhom.Location() {
-			ds.DiedIndex++
-			ds.AskWhom = ds.DiedQueue[ds.DiedIndex]
-			return ds, true
+		if askWhom == ds.DieSkill.DiedQueue[ds.DieSkill.DiedIndex].Location() {
+			ds.DieSkill.DiedIndex++
+			if ds.DieSkill.DiedIndex > len(ds.DieSkill.DiedQueue) {
+				return &WaitForDieGiveCard{
+					WhoseTurn:       ds.DieSkill.WhoseTurn,
+					DiedQueue:       ds.DieSkill.DiedQueue,
+					ReceiveOrder:    ds.DieSkill.ReceiveOrder,
+					AfterDieResolve: ds.DieSkill.AfterDieResolve,
+				}, true
+			}
+			ds.DieSkill.AskWhom = ds.DieSkill.DiedQueue[ds.DieSkill.DiedIndex]
+			return ds.DieSkill, true
 		}
 		if game.GetPlayers()[askWhom].IsAlive() {
-			ds.AskWhom = game.GetPlayers()[askWhom]
-			return ds, true
+			ds.DieSkill.AskWhom = game.GetPlayers()[askWhom]
+			return ds.DieSkill, true
 		}
 	}
 }
