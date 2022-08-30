@@ -292,8 +292,7 @@ func (r *HumanPlayer) WaitForDieGiveCard(whoDie IPlayer) {
 				if r.Seq == seq {
 					r.IncrSeq()
 					fsm := r.GetGame().GetFsm().(*WaitForDieGiveCard)
-					fsm.DiedIndex++
-					r.GetGame().Resolve(fsm)
+					r.GetGame().Resolve(&AfterDieGiveCard{DieGiveCard: fsm})
 				}
 			})
 		})

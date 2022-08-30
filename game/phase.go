@@ -581,7 +581,15 @@ type WaitForDieGiveCard struct {
 
 func (dg *WaitForDieGiveCard) Resolve() (next Fsm, continueResolve bool) {
 	if dg.DiedIndex >= len(dg.DiedQueue) {
-		return dg.AfterDieResolve, true
+		if len(dg.ReceiveOrder) > 0 {
+			return &CheckWinOrDie{
+				WhoseTurn:       dg.WhoseTurn,
+				ReceiveOrder:    dg.ReceiveOrder,
+				AfterDieResolve: dg.AfterDieResolve,
+			}, true
+		} else {
+			return dg.AfterDieResolve, true
+		}
 	}
 	whoDie := dg.DiedQueue[dg.DiedIndex]
 	for _, p := range whoDie.GetGame().GetPlayers() {
@@ -595,15 +603,17 @@ type AfterDieGiveCard struct {
 }
 
 func (dg *AfterDieGiveCard) Resolve() (next Fsm, continueResolve bool) {
-	if len(dg.DieGiveCard.ReceiveOrder) > 0 {
-		return &CheckWinOrDie{
-			WhoseTurn:       dg.DieGiveCard.WhoseTurn,
-			ReceiveOrder:    dg.DieGiveCard.ReceiveOrder,
-			AfterDieResolve: dg.DieGiveCard.AfterDieResolve,
-		}, true
-	} else {
-		return dg.DieGiveCard.AfterDieResolve, true
+	player := dg.DieGiveCard.DiedQueue[dg.DieGiveCard.DiedIndex]
+	var cards []ICard
+	for _, c := range player.GetCards() {
+		cards = append(cards, c)
 	}
+	player.GetGame().PlayerDiscardCard(player, cards...)
+	for _, p := range player.GetGame().GetPlayers() {
+		p.NotifyDie(player.Location(), false)
+	}
+	dg.DieGiveCard.DiedIndex++
+	return dg.DieGiveCard, true
 }
 
 // NextTurn 即将跳转到下一回合时
