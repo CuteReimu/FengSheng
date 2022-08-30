@@ -243,7 +243,7 @@ func (r *HumanPlayer) NotifyWin(declareWinner []IPlayer, winner []IPlayer) {
 		SecretTasks: make([]protos.SecretTask, len(r.GetGame().GetPlayers())),
 	}
 	for _, p := range declareWinner {
-		msg.DeclarePlayerId = append(msg.DeclarePlayerId, r.GetAlternativeLocation(p.Location()))
+		msg.DeclarePlayerIds = append(msg.DeclarePlayerIds, r.GetAlternativeLocation(p.Location()))
 	}
 	for _, p := range winner {
 		msg.WinnerIds = append(msg.WinnerIds, r.GetAlternativeLocation(p.Location()))
