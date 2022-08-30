@@ -196,7 +196,7 @@ func (fp *FightPhaseNext) Resolve() (next Fsm, continueResolve bool) {
 	whoseFightTurn := fp.FightPhase.WhoseFightTurn.Location()
 	for {
 		whoseFightTurn = (whoseFightTurn + 1) % len(game.GetPlayers())
-		if whoseFightTurn == fp.FightPhase.WhoseFightTurn.Location() {
+		if whoseFightTurn == fp.FightPhase.InFrontOfWhom.Location() {
 			return &ReceivePhase{
 				WhoseTurn:     fp.FightPhase.WhoseTurn,
 				MessageCard:   fp.FightPhase.MessageCard,
