@@ -80,6 +80,7 @@ func (sc *OnSendCard) Resolve() (next Fsm, continueResolve bool) {
 	for _, p := range game.GetPlayers() {
 		p.NotifySendMessageCard(sc.WhoseTurn, sc.TargetPlayer, sc.LockedPlayers, sc.MessageCard, sc.Dir)
 	}
+	logger.Info("情报到达", sc.TargetPlayer, "面前")
 	return &SendPhaseIdle{
 		WhoseTurn:     sc.WhoseTurn,
 		MessageCard:   sc.MessageCard,
@@ -101,7 +102,6 @@ type SendPhaseIdle struct {
 
 func (sp *SendPhaseIdle) Resolve() (next Fsm, continueResolve bool) {
 	game := sp.WhoseTurn.GetGame()
-	logger.Info("情报到达", sp.InFrontOfWhom, "面前")
 	for _, p := range game.GetPlayers() {
 		p.NotifySendPhase(sp.WhoseTurn, sp.InFrontOfWhom, sp.LockedPlayers, sp.MessageCard, sp.Dir, sp.IsMessageCardFaceUp, 20)
 	}
@@ -118,6 +118,7 @@ func (mm *MessageMoveNext) Resolve() (next Fsm, continueResolve bool) {
 	if mm.SendPhase.Dir == protos.Direction_Up {
 		if mm.SendPhase.WhoseTurn.IsAlive() {
 			mm.SendPhase.InFrontOfWhom = mm.SendPhase.WhoseTurn
+			logger.Info("情报到达", mm.SendPhase.InFrontOfWhom, "面前")
 			return mm.SendPhase, true
 		} else {
 			return &NextTurn{player: mm.SendPhase.WhoseTurn}, true
@@ -132,6 +133,7 @@ func (mm *MessageMoveNext) Resolve() (next Fsm, continueResolve bool) {
 			}
 			mm.SendPhase.InFrontOfWhom = game.GetPlayers()[inFrontOfWhom]
 			if mm.SendPhase.InFrontOfWhom.IsAlive() {
+				logger.Info("情报到达", mm.SendPhase.InFrontOfWhom, "面前")
 				return mm.SendPhase, true
 			} else if mm.SendPhase.WhoseTurn == mm.SendPhase.InFrontOfWhom {
 				return &NextTurn{player: mm.SendPhase.WhoseTurn}, true
