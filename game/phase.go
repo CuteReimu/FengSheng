@@ -552,7 +552,7 @@ func (ds *DieSkillNext) Resolve() (next Fsm, continueResolve bool) {
 		askWhom = (askWhom + 1) % len(game.GetPlayers())
 		if askWhom == ds.DieSkill.DiedQueue[ds.DieSkill.DiedIndex].Location() {
 			ds.DieSkill.DiedIndex++
-			if ds.DieSkill.DiedIndex > len(ds.DieSkill.DiedQueue) {
+			if ds.DieSkill.DiedIndex >= len(ds.DieSkill.DiedQueue) {
 				return &WaitForDieGiveCard{
 					WhoseTurn:       ds.DieSkill.WhoseTurn,
 					DiedQueue:       ds.DieSkill.DiedQueue,
