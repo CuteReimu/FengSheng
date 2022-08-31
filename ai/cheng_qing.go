@@ -2,7 +2,6 @@ package ai
 
 import (
 	"github.com/CuteReimu/FengSheng/game"
-	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
 	"github.com/CuteReimu/FengSheng/utils"
 	"time"
@@ -13,14 +12,15 @@ func init() {
 }
 
 type playerAndCard struct {
-	player interfaces.IPlayer
-	card   interfaces.ICard
+	player game.IPlayer
+	card   game.ICard
 }
 
-func chengQing(player interfaces.IPlayer, card interfaces.ICard) bool {
+func chengQing(e *game.MainPhaseIdle, card game.ICard) bool {
+	player := e.Player
 	var playerAndCards []playerAndCard
 	for _, c := range player.GetMessageCards() {
-		if utils.IsColorIn(protos.Color_Black, c.GetColor()) {
+		if utils.IsColorIn(protos.Color_Black, c.GetColors()) {
 			playerAndCards = append(playerAndCards, playerAndCard{player, c})
 		}
 	}

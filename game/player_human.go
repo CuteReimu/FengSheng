@@ -1,7 +1,6 @@
 package game
 
 import (
-	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
 	"github.com/davyxu/cellnet"
 	"github.com/sirupsen/logrus"
@@ -10,7 +9,7 @@ import (
 )
 
 type HumanPlayer struct {
-	interfaces.BasePlayer
+	BasePlayer
 	cellnet.Session
 	Seq    uint32
 	Timer  *time.Timer
@@ -21,7 +20,7 @@ func (r *HumanPlayer) String() string {
 	return strconv.Itoa(r.Location()) + "号[玩家]"
 }
 
-func (r *HumanPlayer) Init(game interfaces.IGame, location int, identity protos.Color, secretTask protos.SecretTask) {
+func (r *HumanPlayer) Init(game *Game, location int, identity protos.Color, secretTask protos.SecretTask) {
 	r.logger = logrus.WithField("human_player", r.Location())
 	r.BasePlayer.Init(game, location, identity, secretTask)
 	msg := &protos.InitToc{
@@ -33,7 +32,14 @@ func (r *HumanPlayer) Init(game interfaces.IGame, location int, identity protos.
 	r.Seq++
 }
 
-func (r *HumanPlayer) NotifyAddHandCard(location int, unknownCount int, cards ...interfaces.ICard) {
+func (r *HumanPlayer) IncrSeq() {
+	r.Seq++
+	if r.Timer != nil {
+		r.Timer.Stop()
+	}
+}
+
+func (r *HumanPlayer) NotifyAddHandCard(location int, unknownCount int, cards ...ICard) {
 	msg := &protos.AddCardToc{
 		PlayerId:         r.GetAlternativeLocation(location),
 		UnknownCardCount: uint32(unknownCount),
@@ -44,8 +50,8 @@ func (r *HumanPlayer) NotifyAddHandCard(location int, unknownCount int, cards ..
 	r.Send(msg)
 }
 
-func (r *HumanPlayer) NotifyDrawPhase() {
-	playerId := r.GetAlternativeLocation(r.GetGame().GetWhoseTurn())
+func (r *HumanPlayer) NotifyDrawPhase(player IPlayer) {
+	playerId := r.GetAlternativeLocation(player.Location())
 	msg := &protos.NotifyPhaseToc{
 		CurrentPlayerId: playerId,
 		CurrentPhase:    protos.Phase_Draw_Phase,
@@ -54,25 +60,22 @@ func (r *HumanPlayer) NotifyDrawPhase() {
 	r.Send(msg)
 }
 
-func (r *HumanPlayer) NotifyMainPhase(waitSecond uint32) {
-	playerId := r.GetAlternativeLocation(r.GetGame().GetWhoseTurn())
+func (r *HumanPlayer) NotifyMainPhase(player IPlayer, waitSecond uint32) {
+	playerId := r.GetAlternativeLocation(player.Location())
 	msg := &protos.NotifyPhaseToc{
 		CurrentPlayerId: playerId,
 		CurrentPhase:    protos.Phase_Main_Phase,
 		WaitingPlayerId: playerId,
 		WaitingSecond:   waitSecond,
 	}
-	if r.Location() == r.GetGame().GetWhoseTurn() {
+	if r.Location() == player.Location() {
 		msg.Seq = r.Seq
 		seq := r.Seq
 		r.Timer = time.AfterFunc(time.Second*time.Duration(waitSecond+2), func() {
 			Post(func() {
 				if seq == r.Seq {
-					r.Seq++
-					if r.Timer != nil {
-						r.Timer.Stop()
-					}
-					Post(r.GetGame().SendPhaseStart)
+					r.IncrSeq()
+					r.GetGame().Resolve(&SendPhaseStart{Player: player})
 				}
 			})
 		})
@@ -80,24 +83,21 @@ func (r *HumanPlayer) NotifyMainPhase(waitSecond uint32) {
 	r.Send(msg)
 }
 
-func (r *HumanPlayer) NotifySendPhaseStart(waitSecond uint32) {
-	playerId := r.GetAlternativeLocation(r.GetGame().GetWhoseTurn())
+func (r *HumanPlayer) NotifySendPhaseStart(player IPlayer, waitSecond uint32) {
+	playerId := r.GetAlternativeLocation(player.Location())
 	msg := &protos.NotifyPhaseToc{
 		CurrentPlayerId: playerId,
 		CurrentPhase:    protos.Phase_Send_Start_Phase,
 		WaitingPlayerId: playerId,
 		WaitingSecond:   waitSecond,
 	}
-	if r.Location() == r.GetGame().GetWhoseTurn() {
+	if r.Location() == player.Location() {
 		msg.Seq = r.Seq
 		seq := r.Seq
 		r.Timer = time.AfterFunc(time.Second*time.Duration(waitSecond+2), func() {
 			Post(func() {
 				if seq == r.Seq {
-					r.Seq++
-					if r.Timer != nil {
-						r.Timer.Stop()
-					}
+					r.IncrSeq()
 					autoSendMessageCard(r, false)
 				}
 			})
@@ -106,54 +106,66 @@ func (r *HumanPlayer) NotifySendPhaseStart(waitSecond uint32) {
 	r.Send(msg)
 }
 
-func (r *HumanPlayer) NotifySendPhase(waitSecond uint32, isFirstTime bool) {
-	playerId := r.GetAlternativeLocation(r.GetGame().GetWhoseTurn())
-	if isFirstTime {
-		msg := &protos.SendMessageCardToc{
-			PlayerId:       playerId,
-			TargetPlayerId: r.GetAlternativeLocation(r.GetGame().GetWhoseSendTurn()),
-			CardDir:        r.GetGame().GetMessageCardDirection(),
-		}
-		if r.GetGame().GetWhoseTurn() == r.Location() {
-			msg.CardId = r.GetGame().GetCurrentMessageCard().GetId()
-		}
-		for _, id := range r.GetGame().GetLockPlayers() {
-			msg.LockPlayerIds = append(msg.LockPlayerIds, r.GetAlternativeLocation(id))
-		}
-		r.Send(msg)
+func (r *HumanPlayer) NotifySendMessageCard(player, targetPlayer IPlayer, lockedPlayers []IPlayer, messageCard ICard, dir protos.Direction) {
+	msg := &protos.SendMessageCardToc{
+		PlayerId:       r.GetAlternativeLocation(player.Location()),
+		TargetPlayerId: r.GetAlternativeLocation(targetPlayer.Location()),
+		CardDir:        dir,
 	}
+	if player.Location() == r.Location() {
+		msg.CardId = messageCard.GetId()
+	}
+	for _, p := range lockedPlayers {
+		msg.LockPlayerIds = append(msg.LockPlayerIds, r.GetAlternativeLocation(p.Location()))
+	}
+	r.Send(msg)
+}
+
+func (r *HumanPlayer) NotifySendPhase(whoseTurn, inFrontOfWhom IPlayer, lockedPlayers []IPlayer, messageCard ICard, dir protos.Direction, isMessageFaceUp bool, waitSecond uint32) {
+	playerId := r.GetAlternativeLocation(whoseTurn.Location())
 	msg := &protos.NotifyPhaseToc{
 		CurrentPlayerId: playerId,
 		CurrentPhase:    protos.Phase_Send_Phase,
-		MessagePlayerId: r.GetAlternativeLocation(r.GetGame().GetWhoseSendTurn()),
-		MessageCardDir:  r.GetGame().GetMessageCardDirection(),
-		WaitingPlayerId: r.GetAlternativeLocation(r.GetGame().GetWhoseSendTurn()),
+		MessagePlayerId: r.GetAlternativeLocation(inFrontOfWhom.Location()),
+		MessageCardDir:  dir,
+		WaitingPlayerId: r.GetAlternativeLocation(inFrontOfWhom.Location()),
 		WaitingSecond:   waitSecond,
 	}
-	if r.GetGame().IsMessageCardFaceUp() {
-		msg.MessageCard = r.GetGame().GetCurrentMessageCard().ToPbCard()
+	if isMessageFaceUp {
+		msg.MessageCard = messageCard.ToPbCard()
 	}
-	if r.Location() == r.GetGame().GetWhoseSendTurn() {
+	if r.Location() == inFrontOfWhom.Location() {
 		msg.Seq = r.Seq
 		seq := r.Seq
 		r.Timer = time.AfterFunc(time.Second*time.Duration(waitSecond+2), func() {
 			Post(func() {
 				if seq == r.Seq {
-					r.Seq++
-					if r.Timer != nil {
-						r.Timer.Stop()
-					}
-					if func(r interfaces.IPlayer) bool {
-						for _, p := range r.GetGame().GetLockPlayers() {
-							if r.Location() == p {
+					r.IncrSeq()
+					if func(r IPlayer) bool {
+						for _, p := range lockedPlayers {
+							if r.Location() == p.Location() {
 								return true
 							}
 						}
-						return r.GetGame().GetWhoseSendTurn() == r.GetGame().GetWhoseTurn()
+						return inFrontOfWhom.Location() == whoseTurn.Location()
 					}(r) {
-						Post(r.GetGame().OnChooseReceiveCard)
+						r.GetGame().Resolve(&OnChooseReceiveCard{
+							WhoseTurn:           whoseTurn,
+							MessageCard:         messageCard,
+							InFrontOfWhom:       inFrontOfWhom,
+							IsMessageCardFaceUp: isMessageFaceUp,
+						})
 					} else {
-						Post(r.GetGame().MessageMoveNext)
+						r.GetGame().Resolve(&MessageMoveNext{
+							SendPhase: &SendPhaseIdle{
+								WhoseTurn:           whoseTurn,
+								MessageCard:         messageCard,
+								Dir:                 dir,
+								InFrontOfWhom:       inFrontOfWhom,
+								LockedPlayers:       lockedPlayers,
+								IsMessageCardFaceUp: isMessageFaceUp,
+							},
+						})
 					}
 				}
 			})
@@ -162,34 +174,37 @@ func (r *HumanPlayer) NotifySendPhase(waitSecond uint32, isFirstTime bool) {
 	r.Send(msg)
 }
 
-func (r *HumanPlayer) NotifyChooseReceiveCard() {
-	r.Send(&protos.ChooseReceiveToc{PlayerId: r.GetAlternativeLocation(r.GetGame().GetWhoseSendTurn())})
+func (r *HumanPlayer) NotifyChooseReceiveCard(player IPlayer) {
+	r.Send(&protos.ChooseReceiveToc{PlayerId: r.GetAlternativeLocation(player.Location())})
 }
 
-func (r *HumanPlayer) NotifyFightPhase(waitSecond uint32) {
-	playerId := r.GetAlternativeLocation(r.GetGame().GetWhoseTurn())
+func (r *HumanPlayer) NotifyFightPhase(whoseTurn, inFrontOfWhom, whoseFightTurn IPlayer, messageCard ICard, isMessageFaceUp bool, waitSecond uint32) {
 	msg := &protos.NotifyPhaseToc{
-		CurrentPlayerId: playerId,
+		CurrentPlayerId: r.GetAlternativeLocation(whoseTurn.Location()),
 		CurrentPhase:    protos.Phase_Fight_Phase,
-		MessagePlayerId: r.GetAlternativeLocation(r.GetGame().GetWhoseSendTurn()),
-		MessageCardDir:  r.GetGame().GetMessageCardDirection(),
-		WaitingPlayerId: r.GetAlternativeLocation(r.GetGame().GetWhoseFightTurn()),
+		MessagePlayerId: r.GetAlternativeLocation(inFrontOfWhom.Location()),
+		WaitingPlayerId: r.GetAlternativeLocation(whoseFightTurn.Location()),
 		WaitingSecond:   waitSecond,
 	}
-	if r.GetGame().IsMessageCardFaceUp() {
-		msg.MessageCard = r.GetGame().GetCurrentMessageCard().ToPbCard()
+	if isMessageFaceUp {
+		msg.MessageCard = messageCard.ToPbCard()
 	}
-	if r.Location() == r.GetGame().GetWhoseFightTurn() {
+	if r.Location() == whoseFightTurn.Location() {
 		msg.Seq = r.Seq
 		seq := r.Seq
 		r.Timer = time.AfterFunc(time.Second*time.Duration(waitSecond+2), func() {
 			Post(func() {
 				if seq == r.Seq {
-					r.Seq++
-					if r.Timer != nil {
-						r.Timer.Stop()
-					}
-					Post(r.GetGame().FightPhaseNext)
+					r.IncrSeq()
+					r.GetGame().Resolve(&FightPhaseNext{
+						FightPhase: &FightPhaseIdle{
+							WhoseTurn:           whoseTurn,
+							MessageCard:         messageCard,
+							InFrontOfWhom:       inFrontOfWhom,
+							WhoseFightTurn:      whoseFightTurn,
+							IsMessageCardFaceUp: isMessageFaceUp,
+						},
+					})
 				}
 			})
 		})
@@ -197,21 +212,19 @@ func (r *HumanPlayer) NotifyFightPhase(waitSecond uint32) {
 	r.Send(msg)
 }
 
-func (r *HumanPlayer) NotifyReceivePhase() {
+func (r *HumanPlayer) NotifyReceivePhase(whoseTurn, inFrontOfWhom IPlayer, messageCard ICard) {
 	r.Send(&protos.NotifyPhaseToc{
-		CurrentPlayerId: r.GetAlternativeLocation(r.GetGame().GetWhoseTurn()),
+		CurrentPlayerId: r.GetAlternativeLocation(whoseTurn.Location()),
 		CurrentPhase:    protos.Phase_Receive_Phase,
-		MessagePlayerId: r.GetAlternativeLocation(r.GetGame().GetWhoseSendTurn()),
-		MessageCardDir:  r.GetGame().GetMessageCardDirection(),
-		MessageCard:     r.GetGame().GetCurrentMessageCard().ToPbCard(),
-		WaitingPlayerId: r.GetAlternativeLocation(r.GetGame().GetWhoseFightTurn()),
+		MessagePlayerId: r.GetAlternativeLocation(inFrontOfWhom.Location()),
+		MessageCard:     messageCard.ToPbCard(),
+		WaitingPlayerId: r.GetAlternativeLocation(inFrontOfWhom.Location()),
 	})
 }
 
 func (r *HumanPlayer) NotifyDie(location int, loseGame bool) {
 	if location == r.Location() {
-		r.SetAlive(false)
-		var cards []interfaces.ICard
+		var cards []ICard
 		for _, card := range r.GetCards() {
 			cards = append(cards, card)
 		}
@@ -224,11 +237,13 @@ func (r *HumanPlayer) NotifyDie(location int, loseGame bool) {
 	})
 }
 
-func (r *HumanPlayer) NotifyWin(declareWinner interfaces.IPlayer, winner []interfaces.IPlayer) {
+func (r *HumanPlayer) NotifyWin(declareWinner []IPlayer, winner []IPlayer) {
 	msg := &protos.NotifyWinnerToc{
-		DeclarePlayerId: r.GetAlternativeLocation(declareWinner.Location()),
-		Identity:        make([]protos.Color, len(r.GetGame().GetPlayers())),
-		SecretTasks:     make([]protos.SecretTask, len(r.GetGame().GetPlayers())),
+		Identity:    make([]protos.Color, len(r.GetGame().GetPlayers())),
+		SecretTasks: make([]protos.SecretTask, len(r.GetGame().GetPlayers())),
+	}
+	for _, p := range declareWinner {
+		msg.DeclarePlayerIds = append(msg.DeclarePlayerIds, r.GetAlternativeLocation(p.Location()))
 	}
 	for _, p := range winner {
 		msg.WinnerIds = append(msg.WinnerIds, r.GetAlternativeLocation(p.Location()))
@@ -240,7 +255,7 @@ func (r *HumanPlayer) NotifyWin(declareWinner interfaces.IPlayer, winner []inter
 	r.Send(msg)
 }
 
-func (r *HumanPlayer) NotifyAskForChengQing(whoDie interfaces.IPlayer, askWhom interfaces.IPlayer) {
+func (r *HumanPlayer) NotifyAskForChengQing(whoDie IPlayer, askWhom IPlayer) {
 	msg := &protos.WaitForChengQingToc{
 		DiePlayerId:     r.GetAlternativeLocation(whoDie.Location()),
 		WaitingPlayerId: r.GetAlternativeLocation(askWhom.Location()),
@@ -252,11 +267,10 @@ func (r *HumanPlayer) NotifyAskForChengQing(whoDie interfaces.IPlayer, askWhom i
 		time.AfterFunc(time.Duration(msg.WaitingSecond+2)*time.Second, func() {
 			Post(func() {
 				if r.Seq == seq {
-					r.Seq++
-					if r.Timer != nil {
-						r.Timer.Stop()
-					}
-					Post(r.GetGame().AskNextForChengQing)
+					r.IncrSeq()
+					r.GetGame().Resolve(&WaitNextForChengQing{
+						WaitForChengQing: r.GetGame().GetFsm().(*WaitForChengQing),
+					})
 				}
 			})
 		})
@@ -264,7 +278,7 @@ func (r *HumanPlayer) NotifyAskForChengQing(whoDie interfaces.IPlayer, askWhom i
 	r.Send(msg)
 }
 
-func (r *HumanPlayer) WaitForDieGiveCard(whoDie interfaces.IPlayer) {
+func (r *HumanPlayer) WaitForDieGiveCard(whoDie IPlayer) {
 	msg := &protos.WaitForDieGiveCardToc{
 		PlayerId:      r.GetAlternativeLocation(whoDie.Location()),
 		WaitingSecond: 30,
@@ -276,14 +290,9 @@ func (r *HumanPlayer) WaitForDieGiveCard(whoDie interfaces.IPlayer) {
 		time.AfterFunc(time.Duration(msg.WaitingSecond+2)*time.Second, func() {
 			Post(func() {
 				if r.Seq == seq {
-					r.Seq++
-					if r.Timer != nil {
-						r.Timer.Stop()
-					}
-					for _, p := range r.GetGame().GetPlayers() {
-						p.NotifyDie(whoDie.Location(), false)
-					}
-					Post(r.GetGame().AfterChengQing)
+					r.IncrSeq()
+					fsm := r.GetGame().GetFsm().(*WaitForDieGiveCard)
+					r.GetGame().Resolve(&AfterDieGiveCard{DieGiveCard: fsm})
 				}
 			})
 		})
@@ -296,15 +305,13 @@ func (r *HumanPlayer) onEndMainPhase(pb *protos.EndMainPhaseTos) {
 		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
 		return
 	}
-	if r.Location() != r.GetGame().GetWhoseTurn() || r.GetGame().GetCurrentPhase() != protos.Phase_Main_Phase || !r.GetGame().IsIdleTimePoint() {
+	fsm, ok := r.GetGame().GetFsm().(*MainPhaseIdle)
+	if !ok || r.Location() != fsm.Player.Location() {
 		r.logger.Error("不是你的回合的出牌阶段")
 		return
 	}
-	r.Seq++
-	if r.Timer != nil {
-		r.Timer.Stop()
-	}
-	Post(r.GetGame().SendPhaseStart)
+	r.IncrSeq()
+	r.GetGame().Resolve(&SendPhaseStart{Player: fsm.Player})
 }
 
 func (r *HumanPlayer) onUseShiTan(pb *protos.UseShiTanTos) {
@@ -327,10 +334,7 @@ func (r *HumanPlayer) onUseShiTan(pb *protos.UseShiTanTos) {
 	}
 	target := r.GetGame().GetPlayers()[r.GetAbstractLocation(int(pb.PlayerId))]
 	if card.CanUse(r.GetGame(), r, target) {
-		r.Seq++
-		if r.Timer != nil {
-			r.Timer.Stop()
-		}
+		r.IncrSeq()
 		card.Execute(r.GetGame(), r, target)
 	}
 }
@@ -340,22 +344,7 @@ func (r *HumanPlayer) onExecuteShiTan(pb *protos.ExecuteShiTanTos) {
 		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
 		return
 	}
-	currentCard := r.GetGame().GetCurrentCard()
-	if currentCard == nil || currentCard.Card.GetType() != protos.CardType_Shi_Tan {
-		r.logger.Error("现在并不在结算试探", currentCard.Card)
-		return
-	}
-	if currentCard.TargetPlayer != r.Location() {
-		r.logger.Error("你不是试探的目标", currentCard.Card)
-		return
-	}
-	if currentCard.Card.CanUse2(r.GetGame(), r, pb.CardId) {
-		r.Seq++
-		if r.Timer != nil {
-			r.Timer.Stop()
-		}
-		currentCard.Card.Execute2(r.GetGame(), r, pb.CardId)
-	}
+	r.GetGame().TryContinueResolveProtocol(r, pb)
 }
 
 func (r *HumanPlayer) onUseLiYou(pb *protos.UseLiYouTos) {
@@ -378,10 +367,7 @@ func (r *HumanPlayer) onUseLiYou(pb *protos.UseLiYouTos) {
 	}
 	target := r.GetGame().GetPlayers()[r.GetAbstractLocation(int(pb.PlayerId))]
 	if card.CanUse(r.GetGame(), r, target) {
-		r.Seq++
-		if r.Timer != nil {
-			r.Timer.Stop()
-		}
+		r.IncrSeq()
 		card.Execute(r.GetGame(), r, target)
 	}
 }
@@ -405,10 +391,7 @@ func (r *HumanPlayer) onUsePingHeng(pb *protos.UsePingHengTos) {
 	}
 	target := r.GetGame().GetPlayers()[r.GetAbstractLocation(int(pb.PlayerId))]
 	if card.CanUse(r.GetGame(), r, target) {
-		r.Seq++
-		if r.Timer != nil {
-			r.Timer.Stop()
-		}
+		r.IncrSeq()
 		card.Execute(r.GetGame(), r, target)
 	}
 }
@@ -433,10 +416,7 @@ func (r *HumanPlayer) onUseWeiBi(pb *protos.UseWeiBiTos) {
 	}
 	target := r.GetGame().GetPlayers()[r.GetAbstractLocation(int(pb.PlayerId))]
 	if card.CanUse(r.GetGame(), r, target, pb.WantType) {
-		r.Seq++
-		if r.Timer != nil {
-			r.Timer.Stop()
-		}
+		r.IncrSeq()
 		card.Execute(r.GetGame(), r, target, pb.WantType)
 	}
 }
@@ -446,22 +426,7 @@ func (r *HumanPlayer) onWeiBiGiveCard(pb *protos.WeiBiGiveCardTos) {
 		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
 		return
 	}
-	currentCard := r.GetGame().GetCurrentCard()
-	if currentCard == nil || currentCard.Card.GetType() != protos.CardType_Wei_Bi {
-		r.logger.Error("现在并不在结算威逼")
-		return
-	}
-	if currentCard.TargetPlayer != r.Location() {
-		r.logger.Error("你不是威逼的目标", currentCard.Card)
-		return
-	}
-	if currentCard.Card.CanUse2(r.GetGame(), r.GetGame().GetPlayers()[currentCard.Player], r, pb.CardId) {
-		r.Seq++
-		if r.Timer != nil {
-			r.Timer.Stop()
-		}
-		currentCard.Card.Execute2(r.GetGame(), r.GetGame().GetPlayers()[currentCard.Player], r, pb.CardId)
-	}
+	r.GetGame().TryContinueResolveProtocol(r, pb)
 }
 
 func (r *HumanPlayer) onUseChengQing(pb *protos.UseChengQingTos) {
@@ -484,10 +449,7 @@ func (r *HumanPlayer) onUseChengQing(pb *protos.UseChengQingTos) {
 	}
 	target := r.GetGame().GetPlayers()[r.GetAbstractLocation(int(pb.PlayerId))]
 	if card.CanUse(r.GetGame(), r, target, pb.TargetCardId) {
-		r.Seq++
-		if r.Timer != nil {
-			r.Timer.Stop()
-		}
+		r.IncrSeq()
 		card.Execute(r.GetGame(), r, target, pb.TargetCardId)
 	}
 }
@@ -497,7 +459,8 @@ func (r *HumanPlayer) onSendMessageCard(pb *protos.SendMessageCardTos) {
 		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
 		return
 	}
-	if r.GetGame().GetWhoseTurn() != r.Location() || r.GetGame().GetCurrentPhase() != protos.Phase_Send_Start_Phase || !r.GetGame().IsIdleTimePoint() {
+	fsm, ok := r.GetGame().GetFsm().(*SendPhaseStart)
+	if !ok || r.Location() != fsm.Player.Location() {
 		r.logger.Error("不是传递情报的时机")
 		return
 	}
@@ -555,15 +518,23 @@ func (r *HumanPlayer) onSendMessageCard(pb *protos.SendMessageCardTos) {
 		r.logger.Error("目标已死亡")
 		return
 	}
-	var lockLocation []int
+	var lockPlayers []IPlayer
 	for _, lockPlayerId := range pb.LockPlayerId {
-		lockLocation = append(lockLocation, r.GetAbstractLocation(int(lockPlayerId)))
+		lockPlayer := r.GetGame().GetPlayers()[r.GetAbstractLocation(int(lockPlayerId))]
+		if !lockPlayer.IsAlive() {
+			r.logger.Error("锁定目标已死亡：", lockPlayer)
+			return
+		}
+		lockPlayers = append(lockPlayers, lockPlayer)
 	}
-	r.Seq++
-	if r.Timer != nil {
-		r.Timer.Stop()
-	}
-	Post(func() { r.GetGame().OnSendCard(card, pb.CardDir, targetLocation, lockLocation) })
+	r.IncrSeq()
+	r.GetGame().Resolve(&OnSendCard{
+		WhoseTurn:     fsm.Player,
+		MessageCard:   card,
+		Dir:           pb.CardDir,
+		TargetPlayer:  r.GetGame().GetPlayers()[targetLocation],
+		LockedPlayers: lockPlayers,
+	})
 }
 
 func (r *HumanPlayer) onChooseWhetherReceive(pb *protos.ChooseWhetherReceiveTos) {
@@ -571,37 +542,37 @@ func (r *HumanPlayer) onChooseWhetherReceive(pb *protos.ChooseWhetherReceiveTos)
 		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
 		return
 	}
-	if r.GetGame().GetWhoseSendTurn() != r.Location() || r.GetGame().GetCurrentPhase() != protos.Phase_Send_Phase || !r.GetGame().IsIdleTimePoint() {
+	fsm, ok := r.GetGame().GetFsm().(*SendPhaseIdle)
+	if !ok || r.Location() != fsm.InFrontOfWhom.Location() {
 		r.logger.Error("不是选择是否接收情报的时机")
 		return
 	}
 	if pb.Receive {
-		r.Seq++
-		if r.Timer != nil {
-			r.Timer.Stop()
-		}
-		Post(r.GetGame().OnChooseReceiveCard)
+		r.IncrSeq()
+		r.GetGame().Resolve(&OnChooseReceiveCard{
+			WhoseTurn:           fsm.WhoseTurn,
+			MessageCard:         fsm.MessageCard,
+			InFrontOfWhom:       fsm.InFrontOfWhom,
+			IsMessageCardFaceUp: fsm.IsMessageCardFaceUp,
+		})
 	} else {
-		if r.Location() == r.GetGame().GetWhoseTurn() {
+		if r.Location() == fsm.WhoseTurn.Location() {
 			r.logger.Error("传出者必须接收")
 			return
 		}
-		if func(e int, arr []int) bool {
-			for _, a := range arr {
-				if e == a {
+		if func(e int, lockPlayers []IPlayer) bool {
+			for _, a := range lockPlayers {
+				if e == a.Location() {
 					return true
 				}
 			}
 			return false
-		}(r.Location(), r.GetGame().GetLockPlayers()) {
+		}(r.Location(), fsm.LockedPlayers) {
 			r.logger.Error("被锁定，必须接收")
 			return
 		}
-		r.Seq++
-		if r.Timer != nil {
-			r.Timer.Stop()
-		}
-		Post(r.GetGame().MessageMoveNext)
+		r.IncrSeq()
+		r.GetGame().Resolve(&MessageMoveNext{SendPhase: fsm})
 	}
 }
 
@@ -610,15 +581,13 @@ func (r *HumanPlayer) onEndFightPhase(pb *protos.EndFightPhaseTos) {
 		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
 		return
 	}
-	if r.GetGame().GetCurrentPhase() != protos.Phase_Fight_Phase {
+	fsm, ok := r.GetGame().GetFsm().(*FightPhaseIdle)
+	if !ok || r.Location() != fsm.WhoseFightTurn.Location() {
 		r.logger.Error("时机不对")
 		return
 	}
-	r.Seq++
-	if r.Timer != nil {
-		r.Timer.Stop()
-	}
-	Post(r.GetGame().FightPhaseNext)
+	r.IncrSeq()
+	r.GetGame().Resolve(&FightPhaseNext{FightPhase: fsm})
 }
 
 func (r *HumanPlayer) onChengQingSaveDie(pb *protos.ChengQingSaveDieTos) {
@@ -626,16 +595,14 @@ func (r *HumanPlayer) onChengQingSaveDie(pb *protos.ChengQingSaveDieTos) {
 		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
 		return
 	}
-	if r.GetGame().GetDieState() != interfaces.DieStateWaitForChengQing {
-		r.logger.Error("现在不是使用澄清的时候")
+	fsm, ok := r.GetGame().GetFsm().(*WaitForChengQing)
+	if !ok {
+		r.logger.Error("现在不是使用澄清的时机")
 		return
 	}
 	if !pb.Use {
-		r.Seq++
-		if r.Timer != nil {
-			r.Timer.Stop()
-		}
-		Post(r.GetGame().AskNextForChengQing)
+		r.IncrSeq()
+		r.GetGame().Resolve(&WaitNextForChengQing{WaitForChengQing: fsm})
 		return
 	}
 	card := r.FindCard(pb.CardId)
@@ -647,12 +614,9 @@ func (r *HumanPlayer) onChengQingSaveDie(pb *protos.ChengQingSaveDieTos) {
 		r.logger.Error("这张牌不是澄清，而是", card)
 		return
 	}
-	target := r.GetGame().GetPlayers()[r.GetGame().GetWhoDie()]
+	target := fsm.WhoDie
 	if card.CanUse(r.GetGame(), r, target, pb.TargetCardId) {
-		r.Seq++
-		if r.Timer != nil {
-			r.Timer.Stop()
-		}
+		r.IncrSeq()
 		card.Execute(r.GetGame(), r, target, pb.TargetCardId)
 	}
 }
@@ -662,19 +626,14 @@ func (r *HumanPlayer) onDieGiveCard(pb *protos.DieGiveCardTos) {
 		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
 		return
 	}
-	if r.GetGame().GetDieState() != interfaces.DieStateDying {
+	fsm, ok := r.GetGame().GetFsm().(*WaitForDieGiveCard)
+	if !ok || r.Location() != fsm.DiedQueue[fsm.DiedIndex].Location() {
 		r.logger.Error("你没有死亡")
 		return
 	}
 	if pb.TargetPlayerId == 0 {
-		r.Seq++
-		if r.Timer != nil {
-			r.Timer.Stop()
-		}
-		for _, p := range r.GetGame().GetPlayers() {
-			p.NotifyDie(r.GetGame().GetWhoDie(), false)
-		}
-		Post(r.GetGame().AfterChengQing)
+		r.IncrSeq()
+		r.GetGame().Resolve(&AfterDieGiveCard{DieGiveCard: fsm})
 		return
 	} else if pb.TargetPlayerId >= uint32(len(r.GetGame().GetPlayers())) {
 		r.logger.Error("目标错误: ", pb.TargetPlayerId)
@@ -682,17 +641,11 @@ func (r *HumanPlayer) onDieGiveCard(pb *protos.DieGiveCardTos) {
 	}
 	if len(pb.CardId) == 0 {
 		r.logger.Warn("参数似乎有些不对，姑且认为不给牌吧")
-		r.Seq++
-		if r.Timer != nil {
-			r.Timer.Stop()
-		}
-		for _, p := range r.GetGame().GetPlayers() {
-			p.NotifyDie(r.GetGame().GetWhoDie(), false)
-		}
-		Post(r.GetGame().AfterChengQing)
+		r.IncrSeq()
+		r.GetGame().Resolve(&AfterDieGiveCard{DieGiveCard: fsm})
 		return
 	}
-	var cards []interfaces.ICard
+	var cards []ICard
 	for _, cardId := range pb.CardId {
 		card := r.FindCard(cardId)
 		if card == nil {
@@ -722,14 +675,8 @@ func (r *HumanPlayer) onDieGiveCard(pb *protos.DieGiveCardTos) {
 			player.Send(msg)
 		}
 	}
-	r.Seq++
-	if r.Timer != nil {
-		r.Timer.Stop()
-	}
-	for _, p := range r.GetGame().GetPlayers() {
-		p.NotifyDie(r.GetGame().GetWhoDie(), false)
-	}
-	Post(r.GetGame().AfterChengQing)
+	r.IncrSeq()
+	r.GetGame().Resolve(&AfterDieGiveCard{DieGiveCard: fsm})
 }
 
 func (r *HumanPlayer) onUsePoYi(pb *protos.UsePoYiTos) {
@@ -747,10 +694,7 @@ func (r *HumanPlayer) onUsePoYi(pb *protos.UsePoYiTos) {
 		return
 	}
 	if card.CanUse(r.GetGame(), r) {
-		r.Seq++
-		if r.Timer != nil {
-			r.Timer.Stop()
-		}
+		r.IncrSeq()
 		card.Execute(r.GetGame(), r)
 	}
 }
@@ -760,26 +704,7 @@ func (r *HumanPlayer) onPoYiShow(pb *protos.PoYiShowTos) {
 		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
 		return
 	}
-	currentCard := r.GetGame().GetCurrentCard()
-	if currentCard == nil {
-		r.logger.Error("没有这张牌")
-		return
-	}
-	if currentCard.Player != r.Location() {
-		r.logger.Error("你不是破译的使用者")
-		return
-	}
-	if currentCard.Card.GetType() != protos.CardType_Po_Yi {
-		r.logger.Error("这张牌不是误导，而是", currentCard)
-		return
-	}
-	if currentCard.Card.CanUse2(r.GetGame(), r, pb.Show) {
-		r.Seq++
-		if r.Timer != nil {
-			r.Timer.Stop()
-		}
-		currentCard.Card.Execute2(r.GetGame(), r, pb.Show)
-	}
+	r.GetGame().TryContinueResolveProtocol(r, pb)
 }
 
 func (r *HumanPlayer) onUseJieHuo(pb *protos.UseJieHuoTos) {
@@ -797,10 +722,7 @@ func (r *HumanPlayer) onUseJieHuo(pb *protos.UseJieHuoTos) {
 		return
 	}
 	if card.CanUse(r.GetGame(), r) {
-		r.Seq++
-		if r.Timer != nil {
-			r.Timer.Stop()
-		}
+		r.IncrSeq()
 		card.Execute(r.GetGame(), r)
 	}
 }
@@ -825,10 +747,7 @@ func (r *HumanPlayer) onUseWuDao(pb *protos.UseWuDaoTos) {
 	}
 	target := r.GetGame().GetPlayers()[r.GetAbstractLocation(int(pb.TargetPlayerId))]
 	if card.CanUse(r.GetGame(), r, target) {
-		r.Seq++
-		if r.Timer != nil {
-			r.Timer.Stop()
-		}
+		r.IncrSeq()
 		card.Execute(r.GetGame(), r, target)
 	}
 }
@@ -848,10 +767,7 @@ func (r *HumanPlayer) onUseDiaoBao(pb *protos.UseDiaoBaoTos) {
 		return
 	}
 	if card.CanUse(r.GetGame(), r) {
-		r.Seq++
-		if r.Timer != nil {
-			r.Timer.Stop()
-		}
+		r.IncrSeq()
 		card.Execute(r.GetGame(), r)
 	}
 }

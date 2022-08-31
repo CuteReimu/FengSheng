@@ -1,9 +1,8 @@
 package gm
 
 import (
+	"github.com/CuteReimu/FengSheng/card"
 	"github.com/CuteReimu/FengSheng/game"
-	"github.com/CuteReimu/FengSheng/game/card"
-	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
 	"github.com/CuteReimu/FengSheng/utils"
 	"net/url"
@@ -32,52 +31,57 @@ func addCard(values url.Values) []byte {
 	} else if count > 99 {
 		count = 99
 	}
+	var availableCards []game.ICard
+	for _, c := range game.DefaultDeck {
+		if c.GetType() == protos.CardType(cardType) {
+			availableCards = append(availableCards, c)
+		}
+	}
 	for _, g := range game.Cache {
 		game.Post(func() {
 			if playerId < len(g.Players) && g.Players[playerId].IsAlive() {
-				var cards []interfaces.ICard
+				var cards []game.ICard
 				for i := 0; i < count; i++ {
-					bc := interfaces.BaseCard{
-						Id:        g.GetDeck().GetNextId(),
-						Direction: protos.Direction(utils.Random.Intn(len(protos.Direction_name))),
-						Lockable:  utils.Random.Intn(2) == 1,
-					}
-					color := utils.Random.Intn(5) + 1
-					bc.Color = append(bc.Color, protos.Color(color%3))
-					if color > 3 {
-						bc.Color = append(bc.Color, protos.Color(color-3))
-					}
-					var c interfaces.ICard
+					var c game.ICard
 					switch protos.CardType(cardType) {
 					case protos.CardType_Cheng_Qing:
-						c = &card.ChengQing{BaseCard: bc}
+						c2 := &card.ChengQing{BaseCard: availableCards[utils.Random.Intn(len(availableCards))].(*card.ChengQing).BaseCard}
+						c2.BaseCard.Id = g.GetDeck().GetNextId()
+						c = c2
 					case protos.CardType_Shi_Tan:
-						shiTan := &card.ShiTan{BaseCard: bc}
-						color = utils.Random.Intn(8)
-						if color&0x01 != 0 {
-							shiTan.WhoDrawCard = append(shiTan.WhoDrawCard, protos.Color_Red)
-						}
-						if color&0x02 != 0 {
-							shiTan.WhoDrawCard = append(shiTan.WhoDrawCard, protos.Color_Blue)
-						}
-						if color&0x04 != 0 && len(shiTan.WhoDrawCard) < 2 {
-							shiTan.WhoDrawCard = append(shiTan.WhoDrawCard, protos.Color_Black)
-						}
-						c = shiTan
+						c1 := availableCards[utils.Random.Intn(len(availableCards))].(*card.ShiTan)
+						c2 := &card.ShiTan{BaseCard: c1.BaseCard}
+						c2.BaseCard.Id = g.GetDeck().GetNextId()
+						c2.WhoDrawCard = append(c2.WhoDrawCard, c1.WhoDrawCard...)
+						c = c2
 					case protos.CardType_Wei_Bi:
-						c = &card.WeiBi{BaseCard: bc}
+						c2 := &card.WeiBi{BaseCard: availableCards[utils.Random.Intn(len(availableCards))].(*card.WeiBi).BaseCard}
+						c2.BaseCard.Id = g.GetDeck().GetNextId()
+						c = c2
 					case protos.CardType_Li_You:
-						c = &card.LiYou{BaseCard: bc}
+						c2 := &card.LiYou{BaseCard: availableCards[utils.Random.Intn(len(availableCards))].(*card.LiYou).BaseCard}
+						c2.BaseCard.Id = g.GetDeck().GetNextId()
+						c = c2
 					case protos.CardType_Ping_Heng:
-						c = &card.PingHeng{BaseCard: bc}
+						c2 := &card.PingHeng{BaseCard: availableCards[utils.Random.Intn(len(availableCards))].(*card.PingHeng).BaseCard}
+						c2.BaseCard.Id = g.GetDeck().GetNextId()
+						c = c2
 					case protos.CardType_Po_Yi:
-						c = &card.PoYi{BaseCard: bc}
+						c2 := &card.PoYi{BaseCard: availableCards[utils.Random.Intn(len(availableCards))].(*card.PoYi).BaseCard}
+						c2.BaseCard.Id = g.GetDeck().GetNextId()
+						c = c2
 					case protos.CardType_Jie_Huo:
-						c = &card.JieHuo{BaseCard: bc}
+						c2 := &card.JieHuo{BaseCard: availableCards[utils.Random.Intn(len(availableCards))].(*card.JieHuo).BaseCard}
+						c2.BaseCard.Id = g.GetDeck().GetNextId()
+						c = c2
 					case protos.CardType_Diao_Bao:
-						c = &card.DiaoBao{BaseCard: bc}
+						c2 := &card.DiaoBao{BaseCard: availableCards[utils.Random.Intn(len(availableCards))].(*card.DiaoBao).BaseCard}
+						c2.BaseCard.Id = g.GetDeck().GetNextId()
+						c = c2
 					case protos.CardType_Wu_Dao:
-						c = &card.WuDao{BaseCard: bc}
+						c2 := &card.WuDao{BaseCard: availableCards[utils.Random.Intn(len(availableCards))].(*card.WuDao).BaseCard}
+						c2.BaseCard.Id = g.GetDeck().GetNextId()
+						c = c2
 					}
 					cards = append(cards, c)
 				}

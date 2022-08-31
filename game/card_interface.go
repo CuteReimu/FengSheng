@@ -1,4 +1,4 @@
-package interfaces
+package game
 
 import "github.com/CuteReimu/FengSheng/protos"
 
@@ -11,13 +11,11 @@ type CurrentCard struct {
 type ICard interface {
 	GetId() uint32
 	GetType() protos.CardType
-	GetColor() []protos.Color
+	GetColors() []protos.Color
 	GetDirection() protos.Direction
 	CanLock() bool
-	CanUse(g IGame, user IPlayer, args ...interface{}) bool
-	Execute(g IGame, user IPlayer, args ...interface{})
-	CanUse2(g IGame, user IPlayer, args ...interface{}) bool
-	Execute2(g IGame, user IPlayer, args ...interface{})
+	CanUse(g *Game, user IPlayer, args ...interface{}) bool
+	Execute(g *Game, user IPlayer, args ...interface{})
 	ToPbCard() *protos.Card
 	String() string
 }
@@ -33,7 +31,7 @@ func (card *BaseCard) GetId() uint32 {
 	return card.Id
 }
 
-func (card *BaseCard) GetColor() []protos.Color {
+func (card *BaseCard) GetColors() []protos.Color {
 	return card.Color
 }
 

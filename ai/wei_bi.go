@@ -2,7 +2,6 @@ package ai
 
 import (
 	"github.com/CuteReimu/FengSheng/game"
-	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
 	"github.com/CuteReimu/FengSheng/utils"
 	"time"
@@ -14,9 +13,10 @@ func init() {
 	game.AIMainPhase[protos.CardType_Wei_Bi] = weiBi
 }
 
-func weiBi(player interfaces.IPlayer, card interfaces.ICard) bool {
+func weiBi(e *game.MainPhaseIdle, card game.ICard) bool {
+	player := e.Player
 	chooseHuman := utils.Random.Intn(2) == 0
-	var players []interfaces.IPlayer
+	var players []game.IPlayer
 	for _, p := range player.GetGame().GetPlayers() {
 		if p.Location() != player.Location() && p.IsAlive() && len(p.GetCards()) > 0 {
 			if _, ok := p.(*game.HumanPlayer); ok == chooseHuman {

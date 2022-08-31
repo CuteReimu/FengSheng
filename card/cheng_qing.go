@@ -2,13 +2,12 @@ package card
 
 import (
 	"github.com/CuteReimu/FengSheng/game"
-	"github.com/CuteReimu/FengSheng/game/interfaces"
 	"github.com/CuteReimu/FengSheng/protos"
 	"github.com/CuteReimu/FengSheng/utils"
 )
 
 type ChengQing struct {
-	interfaces.BaseCard
+	game.BaseCard
 }
 
 func (card *ChengQing) String() string {
@@ -19,12 +18,20 @@ func (card *ChengQing) GetType() protos.CardType {
 	return protos.CardType_Cheng_Qing
 }
 
-func (card *ChengQing) CanUse(game interfaces.IGame, r interfaces.IPlayer, args ...interface{}) bool {
-	target := args[0].(interfaces.IPlayer)
+func (card *ChengQing) CanUse(g *game.Game, r game.IPlayer, args ...interface{}) bool {
+	target := args[0].(game.IPlayer)
 	targetCardId := args[1].(uint32)
-	if game.GetDieState() != interfaces.DieStateWaitForChengQing && (game.GetCurrentPhase() != protos.Phase_Main_Phase || game.GetWhoseTurn() != r.Location() || !game.IsIdleTimePoint()) {
-		logger.Error("澄清的使用时机不对")
-		return false
+	switch fsm := g.GetFsm().(type) {
+	case *game.MainPhaseIdle:
+		if r.Location() != fsm.Player.Location() {
+			logger.Error("澄清的使用时机不对")
+			return false
+		}
+	case *game.WaitForChengQing:
+		if r.Location() != fsm.AskWhom.Location() {
+			logger.Error("澄清的使用时机不对")
+			return false
+		}
 	}
 	if !target.IsAlive() {
 		logger.Error("目标已死亡")
@@ -35,15 +42,15 @@ func (card *ChengQing) CanUse(game interfaces.IGame, r interfaces.IPlayer, args 
 		logger.Error("没有这张情报")
 		return false
 	}
-	if !utils.IsColorIn(protos.Color_Black, targetCard.GetColor()) {
+	if !utils.IsColorIn(protos.Color_Black, targetCard.GetColors()) {
 		logger.Error("澄清只能对黑情报使用")
 		return false
 	}
 	return true
 }
 
-func (card *ChengQing) Execute(g interfaces.IGame, r interfaces.IPlayer, args ...interface{}) {
-	target := args[0].(interfaces.IPlayer)
+func (card *ChengQing) Execute(g *game.Game, r game.IPlayer, args ...interface{}) {
+	target := args[0].(game.IPlayer)
 	targetCardId := args[1].(uint32)
 	logger.Info(r, "对", target, "使用了", card)
 	r.DeleteCard(card.GetId())
@@ -63,19 +70,7 @@ func (card *ChengQing) Execute(g interfaces.IGame, r interfaces.IPlayer, args ..
 		}
 	}
 	g.GetDeck().Discard(card)
-	if g.GetDieState() == interfaces.DieStateWaitForChengQing {
-		game.Post(g.AfterChengQing)
-	} else {
-		game.Post(g.MainPhase)
-	}
-}
-
-func (card *ChengQing) CanUse2(interfaces.IGame, interfaces.IPlayer, ...interface{}) bool {
-	panic("unreachable code")
-}
-
-func (card *ChengQing) Execute2(interfaces.IGame, interfaces.IPlayer, ...interface{}) {
-	panic("unreachable code")
+	g.ContinueResolve()
 }
 
 func (card *ChengQing) ToPbCard() *protos.Card {
