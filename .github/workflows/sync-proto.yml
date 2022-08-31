@@ -19,3 +19,4 @@ jobs:
         with:
           GH_PAT: ${{ secrets.GH_PAT }}
           SKIP_PR: true
+          COMMIT_EACH_FILE: false
