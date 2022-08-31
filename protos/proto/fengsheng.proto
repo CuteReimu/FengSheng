@@ -1,6 +1,11 @@
 syntax = "proto3";
 option go_package = "protos/;protos";
 
+// 申请加入房间
+message join_room_tos {
+  uint32 version = 1; // 客户端版本号
+}
+
 // 返回房间所有人的信息
 message get_room_info_toc {
   repeated string names       = 1; // 其它所有人的名字

@@ -18,6 +18,8 @@ const (
 	turnHandCardCount  = "rule.hand_card_count_each_turn"
 	gmEnable           = "gm.enable"
 	gmListenAddress    = "gm.listen_address"
+	clientVersion      = "version"
+	roomCount          = "room_count"
 )
 
 func Init() {
@@ -34,6 +36,8 @@ func Init() {
 	initSingleConfig(&newConfig, turnHandCardCount, 3)
 	initSingleConfig(&newConfig, gmEnable, false)
 	initSingleConfig(&newConfig, gmListenAddress, "127.0.0.1:9092")
+	initSingleConfig(&newConfig, clientVersion, uint32(1))
+	initSingleConfig(&newConfig, roomCount, 200)
 	if len(newConfig) > 0 {
 		if err := globalConfig.WriteConfigAs("application.yaml"); err != nil {
 			panic(fmt.Sprintf("写入配置失败: %+v", err))
@@ -85,4 +89,14 @@ func IsGmEnable() bool {
 // GetGmListenAddress GM监听端口号
 func GetGmListenAddress() string {
 	return globalConfig.GetString(gmListenAddress)
+}
+
+// GetClientVersion 获取客户端版本号
+func GetClientVersion() uint32 {
+	return globalConfig.GetUint32(clientVersion)
+}
+
+// GetMaxRoomCount 获取最大房间数
+func GetMaxRoomCount() int {
+	return globalConfig.GetInt(roomCount)
 }

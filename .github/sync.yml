@@ -1,3 +1,5 @@
 Jiaozze/TheMessage:
-  - source: fengsheng.proto
+  - source: protos/proto/errcode.proto
+    dest: Assets/Network/errcode.proto
+  - source: protos/proto/fengsheng.proto
     dest: Assets/Network/fengsheng.proto

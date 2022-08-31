@@ -1,6 +1,7 @@
 package game
 
 import (
+	"github.com/CuteReimu/FengSheng/config"
 	"github.com/CuteReimu/FengSheng/protos"
 )
 
@@ -18,7 +19,7 @@ func (dp *DrawPhase) Resolve() (next Fsm, continueResolve bool) {
 	for _, p := range game.GetPlayers() {
 		p.NotifyDrawPhase(dp.Player)
 	}
-	dp.Player.Draw(3)
+	dp.Player.Draw(config.GetHandCardCountEachTurn())
 	return &MainPhaseIdle{Player: dp.Player}, true
 }
 

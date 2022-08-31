@@ -92,16 +92,30 @@ func Start(totalCount int) {
 		switch pb := ev.Message().(type) {
 		case *cellnet.SessionAccepted:
 			logger.Info("session connected: ", ev.Session().ID())
-			player := &HumanPlayer{Session: ev.Session()}
-			humanMap[player.Session.ID()] = player
-			index := onAdd(player)
-			msg := &protos.GetRoomInfoToc{Names: make([]string, len(game.Players)), MyPosition: uint32(index)}
-			for i := range game.Players {
-				if game.Players[i] != nil {
-					msg.Names[i] = game.Players[i].String()
+		case *protos.JoinRoomTos:
+			if pb.Version >= config.GetClientVersion() {
+				if len(Cache) <= config.GetMaxRoomCount() {
+					player := &HumanPlayer{Session: ev.Session()}
+					humanMap[player.Session.ID()] = player
+					index := onAdd(player)
+					msg := &protos.GetRoomInfoToc{Names: make([]string, len(game.Players)), MyPosition: uint32(index)}
+					for i := range game.Players {
+						if game.Players[i] != nil {
+							msg.Names[i] = game.Players[i].String()
+						}
+					}
+					player.Send(msg)
+				} else {
+					ev.Session().Send(&protos.ErrorCodeToc{
+						Code: protos.ErrorCode_no_more_room,
+					})
 				}
+			} else {
+				ev.Session().Send(&protos.ErrorCodeToc{
+					Code:      protos.ErrorCode_client_version_not_match,
+					IntParams: []int64{int64(config.GetClientVersion())},
+				})
 			}
-			player.Send(msg)
 		case *cellnet.SessionClosed:
 			logger.Info("session closed: ", ev.Session().ID())
 			if player, ok := humanMap[ev.Session().ID()]; ok {

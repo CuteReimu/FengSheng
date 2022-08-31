@@ -20,9 +20,11 @@ log:
     tcp_debug_log: true # 是否开启tcp调试日志
 player:
     total_count: 5  # 玩家总人数
+room_count: 200  # 最大房间数
 rule:
     hand_card_count_begin: 3      # 游戏开始时摸牌数
     hand_card_count_each_turn: 3  # 每回合摸牌数
+version: 1   # 需要的客户端最低版本号
 ```
 
 ## 游戏步骤
