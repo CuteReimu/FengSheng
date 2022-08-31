@@ -1,5 +1,9 @@
 Jiaozze/TheMessage:
+  - source: protos/proto/common.proto
+    dest: Assets/Network/common.proto
   - source: protos/proto/errcode.proto
     dest: Assets/Network/errcode.proto
   - source: protos/proto/fengsheng.proto
     dest: Assets/Network/fengsheng.proto
+  - source: protos/proto/role.proto
+    dest: Assets/Network/role.proto

@@ -5,6 +5,7 @@ on:
       - master
     paths:
       - '**.proto'
+      - '.github/sync.yml'
   workflow_dispatch:
 
 jobs:
