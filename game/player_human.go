@@ -492,7 +492,7 @@ func (r *HumanPlayer) onSendMessageCard(pb *protos.SendMessageCardTos) {
 		r.logger.Error("方向错误: ", pb.TargetPlayerId)
 		return
 	}
-	if !r.HasSkill(SkillIdMingEr) {
+	if r.FindSkill(SkillIdMingEr) == nil {
 		var targetLocation int
 		switch pb.CardDir {
 		case protos.Direction_Left:

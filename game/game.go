@@ -197,6 +197,11 @@ func Start(totalCount int) {
 			humanMap[ev.Session().ID()].onUseDiaoBao(pb)
 		case *protos.UseWuDaoTos:
 			humanMap[ev.Session().ID()].onUseWuDao(pb)
+		case *protos.SkillXinSiChaoTos:
+			r := humanMap[ev.Session().ID()]
+			if skill := r.FindSkill(SkillIdXinSiChao); skill != nil {
+				skill.ExecuteProtocol(r.game, r, pb)
+			}
 		}
 	})
 	p.Start()

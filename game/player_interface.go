@@ -47,7 +47,7 @@ type IPlayer interface {
 	GetIdentity() (protos.Color, protos.SecretTask)
 	SetSkills(skills []ISkill)
 	GetSkills() []ISkill
-	HasSkill(skillId SkillId) bool
+	FindSkill(skillId SkillId) ISkill
 	GetRole() protos.Role
 	IsRoleFaceUp() bool
 	AddSkillUseCount(skillId SkillId)
@@ -241,13 +241,13 @@ func (p *BasePlayer) GetSkills() []ISkill {
 	return p.roleSkillsData.Skills
 }
 
-func (p *BasePlayer) HasSkill(skillId SkillId) bool {
+func (p *BasePlayer) FindSkill(skillId SkillId) ISkill {
 	for _, skill := range p.roleSkillsData.Skills {
 		if skill.GetSkillId() == skillId {
-			return true
+			return skill
 		}
 	}
-	return false
+	return nil
 }
 
 func (p *BasePlayer) GetRole() protos.Role {

@@ -45,7 +45,7 @@ func (m *MingEr) GetSkillId() game.SkillId {
 
 func (m *MingEr) Execute(g *game.Game) (nextFsm game.Fsm, continueResolve bool, ok bool) {
 	fsm, ok := g.GetFsm().(*game.ReceivePhaseSenderSkill)
-	if !ok || !fsm.WhoseTurn.HasSkill(m.GetSkillId()) || !fsm.WhoseTurn.IsAlive() {
+	if !ok || fsm.WhoseTurn.FindSkill(m.GetSkillId()) == nil || !fsm.WhoseTurn.IsAlive() {
 		return nil, false, false
 	}
 	if fsm.WhoseTurn.GetSkillUseCount(m.GetSkillId()) > 0 {
