@@ -16,6 +16,9 @@ type RobotPlayer struct {
 }
 
 func (r *RobotPlayer) String() string {
+	if r.roleSkillsData.FaceUp {
+		return strconv.Itoa(r.Location()) + "号[" + r.roleSkillsData.Name + "]"
+	}
 	return strconv.Itoa(r.Location()) + "号[机器人]"
 }
 

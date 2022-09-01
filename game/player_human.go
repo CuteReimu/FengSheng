@@ -18,7 +18,7 @@ type HumanPlayer struct {
 
 func (r *HumanPlayer) String() string {
 	if r.roleSkillsData.FaceUp {
-		return "[" + r.roleSkillsData.Name + "]"
+		return strconv.Itoa(r.Location()) + "号[" + r.roleSkillsData.Name + "]"
 	}
 	return strconv.Itoa(r.Location()) + "号[玩家]"
 }
