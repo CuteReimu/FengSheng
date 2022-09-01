@@ -10,7 +10,7 @@ func init() {
 		Name:   "老鳖",
 		Role:   protos.Role_lao_bie,
 		FaceUp: true,
-		Skills: nil,
+		Skills: []game.ISkill{&LianLuo{}, &MingEr{}},
 	})
 }
 
