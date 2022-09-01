@@ -3,6 +3,7 @@ package role
 import (
 	"github.com/CuteReimu/FengSheng/game"
 	"github.com/CuteReimu/FengSheng/protos"
+	"google.golang.org/protobuf/proto"
 )
 
 func init() {
@@ -28,6 +29,9 @@ func (l *LianLuo) Execute(*game.Game) (nextFsm game.Fsm, continueResolve bool, o
 	return
 }
 
+func (l *LianLuo) ExecuteProtocol(*game.Game, game.IPlayer, proto.Message) {
+}
+
 type MingEr struct {
 }
 
@@ -47,6 +51,7 @@ func (m *MingEr) Execute(g *game.Game) (nextFsm game.Fsm, continueResolve bool, 
 	if fsm.WhoseTurn.GetSkillUseCount(m.GetSkillId()) > 0 {
 		return nil, false, false
 	}
+	fsm.WhoseTurn.AddSkillUseCount(m.GetSkillId())
 	logger.Info("[老鳖]发动了[明饵]")
 	for _, p := range g.GetPlayers() {
 		if player, ok := p.(*game.HumanPlayer); ok {
@@ -62,4 +67,7 @@ func (m *MingEr) Execute(g *game.Game) (nextFsm game.Fsm, continueResolve bool, 
 		fsm.InFrontOfWhom.Draw(1)
 	}
 	return nil, false, false
+}
+
+func (m *MingEr) ExecuteProtocol(*game.Game, game.IPlayer, proto.Message) {
 }
