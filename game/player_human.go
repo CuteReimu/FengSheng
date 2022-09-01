@@ -17,16 +17,31 @@ type HumanPlayer struct {
 }
 
 func (r *HumanPlayer) String() string {
+	if r.roleSkillsData.FaceUp {
+		return "[" + r.roleSkillsData.Name + "]"
+	}
 	return strconv.Itoa(r.Location()) + "号[玩家]"
 }
 
-func (r *HumanPlayer) Init(game *Game, location int, identity protos.Color, secretTask protos.SecretTask) {
+func (r *HumanPlayer) Init(game *Game, location int, identity protos.Color, secretTask protos.SecretTask, roleSkillsData *RoleSkillsData) {
 	r.logger = logrus.WithField("human_player", r.Location())
-	r.BasePlayer.Init(game, location, identity, secretTask)
+	r.BasePlayer.Init(game, location, identity, secretTask, roleSkillsData)
 	msg := &protos.InitToc{
 		PlayerCount: uint32(len(r.GetGame().GetPlayers())),
 		Identity:    identity,
 		SecretTask:  secretTask,
+	}
+	l := location
+	for {
+		if l < len(RoleCache) {
+			msg.Roles = append(msg.Roles, RoleCache[l].Role)
+		} else {
+			msg.Roles = append(msg.Roles, protos.Role_unknown)
+		}
+		l = (l + 1) % len(game.GetPlayers())
+		if l == location {
+			break
+		}
 	}
 	r.Send(msg)
 	r.Seq++

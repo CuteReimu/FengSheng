@@ -221,8 +221,15 @@ func (game *Game) start() {
 	utils.Random.Shuffle(len(game.Players), func(i, j int) {
 		idTask[i], idTask[j] = idTask[j], idTask[i]
 	})
+	utils.Random.Shuffle(len(RoleCache), func(i, j int) {
+		RoleCache[i], RoleCache[j] = RoleCache[j], RoleCache[i]
+	})
 	for location, player := range game.Players {
-		player.Init(game, location, idTask[location].id, idTask[location].task)
+		if location < len(RoleCache) {
+			player.Init(game, location, idTask[location].id, idTask[location].task, RoleCache[location])
+		} else {
+			player.Init(game, location, idTask[location].id, idTask[location].task, nil)
+		}
 	}
 	Cache[game.Id] = game
 	game.Deck = NewDeck(game)

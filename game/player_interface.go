@@ -6,7 +6,7 @@ import (
 )
 
 type IPlayer interface {
-	Init(game *Game, location int, identity protos.Color, secretTask protos.SecretTask)
+	Init(game *Game, location int, identity protos.Color, secretTask protos.SecretTask, roleSkillsData *RoleSkillsData)
 	IncrSeq()
 	GetGame() *Game
 	Location() int
@@ -45,28 +45,35 @@ type IPlayer interface {
 	HasNoIdentity() bool
 	SetIdentity(identity protos.Color, secretTask protos.SecretTask)
 	GetIdentity() (protos.Color, protos.SecretTask)
+	SetSkills(skills []ISkill)
+	GetSkills() []ISkill
+	HasSkill(skillId SkillId) bool
+	GetRole() protos.Role
+	IsRoleFaceUp() bool
 	String() string
 }
 
 type BasePlayer struct {
-	game          *Game
-	location      int
-	cards         map[uint32]ICard
-	messageCards  map[uint32]ICard
-	identity      protos.Color
-	secretTask    protos.SecretTask
-	alive         bool
-	lose          bool
-	hasNoIdentity bool
+	game           *Game
+	location       int
+	cards          map[uint32]ICard
+	messageCards   map[uint32]ICard
+	identity       protos.Color
+	secretTask     protos.SecretTask
+	alive          bool
+	lose           bool
+	hasNoIdentity  bool
+	roleSkillsData RoleSkillsData
 }
 
-func (p *BasePlayer) Init(game *Game, location int, identity protos.Color, secretTask protos.SecretTask) {
+func (p *BasePlayer) Init(game *Game, location int, identity protos.Color, secretTask protos.SecretTask, roleSkillsData *RoleSkillsData) {
 	logger.Info(location, "号的身份是", utils.IdentityColorToString(identity, secretTask))
 	p.game = game
 	p.location = location
 	p.cards = make(map[uint32]ICard)
 	p.messageCards = make(map[uint32]ICard)
 	p.alive = true
+	p.roleSkillsData = *roleSkillsData
 	p.SetIdentity(identity, secretTask)
 }
 
@@ -216,4 +223,29 @@ func (p *BasePlayer) SetIdentity(identity protos.Color, secretTask protos.Secret
 
 func (p *BasePlayer) GetIdentity() (protos.Color, protos.SecretTask) {
 	return p.identity, p.secretTask
+}
+
+func (p *BasePlayer) SetSkills(skills []ISkill) {
+	p.roleSkillsData.Skills = skills
+}
+
+func (p *BasePlayer) GetSkills() []ISkill {
+	return p.roleSkillsData.Skills
+}
+
+func (p *BasePlayer) HasSkill(skillId SkillId) bool {
+	for _, skill := range p.roleSkillsData.Skills {
+		if skill.GetSkillId() == skillId {
+			return true
+		}
+	}
+	return false
+}
+
+func (p *BasePlayer) GetRole() protos.Role {
+	return p.roleSkillsData.Role
+}
+
+func (p *BasePlayer) IsRoleFaceUp() bool {
+	return p.roleSkillsData.FaceUp
 }
