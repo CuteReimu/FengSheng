@@ -225,6 +225,7 @@ func (rp *ReceivePhase) Resolve() (next Fsm, continueResolve bool) {
 		}
 		return &ReceivePhaseSenderSkill{
 			WhoseTurn:     rp.WhoseTurn,
+			ReceiveOrder:  []IPlayer{rp.InFrontOfWhom},
 			InFrontOfWhom: rp.InFrontOfWhom,
 		}, true
 	}
@@ -234,12 +235,14 @@ func (rp *ReceivePhase) Resolve() (next Fsm, continueResolve bool) {
 // ReceivePhaseSenderSkill 接收情报时，传出者的技能
 type ReceivePhaseSenderSkill struct {
 	WhoseTurn     IPlayer
+	ReceiveOrder  []IPlayer
 	InFrontOfWhom IPlayer
 }
 
 func (rp *ReceivePhaseSenderSkill) Resolve() (next Fsm, continueResolve bool) {
 	return &ReceivePhaseReceiverSkill{
 		WhoseTurn:     rp.WhoseTurn,
+		ReceiveOrder:  rp.ReceiveOrder,
 		InFrontOfWhom: rp.InFrontOfWhom,
 	}, true
 }
@@ -247,13 +250,14 @@ func (rp *ReceivePhaseSenderSkill) Resolve() (next Fsm, continueResolve bool) {
 // ReceivePhaseReceiverSkill 接收情报时，接收者的技能
 type ReceivePhaseReceiverSkill struct {
 	WhoseTurn     IPlayer
+	ReceiveOrder  []IPlayer
 	InFrontOfWhom IPlayer
 }
 
 func (rp *ReceivePhaseReceiverSkill) Resolve() (next Fsm, continueResolve bool) {
 	return &CheckWinOrDie{
 		WhoseTurn:       rp.WhoseTurn,
-		ReceiveOrder:    []IPlayer{rp.InFrontOfWhom},
+		ReceiveOrder:    rp.ReceiveOrder,
 		AfterDieResolve: &NextTurn{player: rp.WhoseTurn},
 	}, true
 }
