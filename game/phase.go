@@ -240,6 +240,9 @@ type ReceivePhaseSenderSkill struct {
 }
 
 func (rp *ReceivePhaseSenderSkill) Resolve() (next Fsm, continueResolve bool) {
+	if nextFsm, continueResolve, ok := rp.WhoseTurn.GetGame().DealListeningSkills(); ok {
+		return nextFsm, continueResolve
+	}
 	return &ReceivePhaseReceiverSkill{
 		WhoseTurn:     rp.WhoseTurn,
 		ReceiveOrder:  rp.ReceiveOrder,
@@ -255,6 +258,9 @@ type ReceivePhaseReceiverSkill struct {
 }
 
 func (rp *ReceivePhaseReceiverSkill) Resolve() (next Fsm, continueResolve bool) {
+	if nextFsm, continueResolve, ok := rp.InFrontOfWhom.GetGame().DealListeningSkills(); ok {
+		return nextFsm, continueResolve
+	}
 	return &CheckWinOrDie{
 		WhoseTurn:       rp.WhoseTurn,
 		ReceiveOrder:    rp.ReceiveOrder,
@@ -542,7 +548,9 @@ type DieSkill struct {
 }
 
 func (ds *DieSkill) Resolve() (next Fsm, continueResolve bool) {
-	// TODO 有技能应该暂停
+	if nextFsm, continueResolve, ok := ds.AskWhom.GetGame().DealListeningSkills(); ok {
+		return nextFsm, continueResolve
+	}
 	return &DieSkillNext{DieSkill: ds}, true
 }
 
@@ -633,6 +641,9 @@ func (nt *NextTurn) Resolve() (next Fsm, continueResolve bool) {
 		whoseTurn = (whoseTurn + 1) % len(game.GetPlayers())
 		player := game.GetPlayers()[whoseTurn]
 		if player.IsAlive() {
+			for _, p := range game.GetPlayers() {
+				p.ResetSkillUseCount()
+			}
 			return &DrawPhase{Player: player}, true
 		}
 	}

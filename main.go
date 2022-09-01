@@ -6,6 +6,7 @@ import (
 	"github.com/CuteReimu/FengSheng/config"
 	"github.com/CuteReimu/FengSheng/game"
 	"github.com/CuteReimu/FengSheng/gm"
+	_ "github.com/CuteReimu/FengSheng/role"
 )
 
 func main() {

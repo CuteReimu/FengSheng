@@ -33,10 +33,11 @@ type WaitingFsm interface {
 }
 
 type Game struct {
-	Id      uint32
-	Players []IPlayer
-	Deck    *Deck
-	fsm     Fsm
+	Id              uint32
+	Players         []IPlayer
+	Deck            *Deck
+	fsm             Fsm
+	listeningSkills []ISkill
 }
 
 func (game *Game) end() {
@@ -303,4 +304,17 @@ func (game *Game) TryContinueResolveProtocol(player *HumanPlayer, pb proto.Messa
 func (game *Game) Resolve(fsm Fsm) {
 	game.fsm = fsm
 	game.ContinueResolve()
+}
+
+func (game *Game) AddListeningSkill(skill ISkill) {
+	game.listeningSkills = append(game.listeningSkills, skill)
+}
+
+func (game *Game) DealListeningSkills() (nextFsm Fsm, continueResolve bool, ok bool) {
+	for _, skill := range game.listeningSkills {
+		if nextFsm, continueResolve, ok = skill.Execute(game); ok {
+			return nextFsm, continueResolve, true
+		}
+	}
+	return nil, false, false
 }

@@ -50,6 +50,9 @@ type IPlayer interface {
 	HasSkill(skillId SkillId) bool
 	GetRole() protos.Role
 	IsRoleFaceUp() bool
+	AddSkillUseCount(skillId SkillId)
+	GetSkillUseCount(skillId SkillId) int
+	ResetSkillUseCount()
 	String() string
 }
 
@@ -64,6 +67,7 @@ type BasePlayer struct {
 	lose           bool
 	hasNoIdentity  bool
 	roleSkillsData RoleSkillsData
+	skillUseCount  map[SkillId]int
 }
 
 func (p *BasePlayer) Init(game *Game, location int, identity protos.Color, secretTask protos.SecretTask, roleSkillsData *RoleSkillsData) {
@@ -74,6 +78,10 @@ func (p *BasePlayer) Init(game *Game, location int, identity protos.Color, secre
 	p.messageCards = make(map[uint32]ICard)
 	p.alive = true
 	p.roleSkillsData = *roleSkillsData
+	for _, skill := range p.roleSkillsData.Skills {
+		skill.Init(game)
+	}
+	p.ResetSkillUseCount()
 	p.SetIdentity(identity, secretTask)
 }
 
@@ -248,4 +256,16 @@ func (p *BasePlayer) GetRole() protos.Role {
 
 func (p *BasePlayer) IsRoleFaceUp() bool {
 	return p.roleSkillsData.FaceUp
+}
+
+func (p *BasePlayer) AddSkillUseCount(skillId SkillId) {
+	p.skillUseCount[skillId]++
+}
+
+func (p *BasePlayer) GetSkillUseCount(skillId SkillId) int {
+	return p.skillUseCount[skillId]
+}
+
+func (p *BasePlayer) ResetSkillUseCount() {
+	p.skillUseCount = make(map[SkillId]int)
 }

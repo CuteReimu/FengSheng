@@ -2,7 +2,6 @@ package game
 
 import (
 	"github.com/CuteReimu/FengSheng/protos"
-	"google.golang.org/protobuf/proto"
 )
 
 type RoleSkillsData struct {
@@ -15,9 +14,14 @@ type RoleSkillsData struct {
 var RoleCache []*RoleSkillsData
 
 type ISkill interface {
-	Init()
+	Init(g *Game)
 	GetSkillId() SkillId
-	Execute(g *Game, r IPlayer, message proto.Message)
+	Execute(g *Game) (nextFsm Fsm, continueResolve bool, ok bool)
 }
 
 type SkillId uint32
+
+const (
+	SkillIdLianLuo SkillId = iota
+	SkillIdMingEr
+)
