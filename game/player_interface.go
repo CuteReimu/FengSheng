@@ -77,7 +77,9 @@ func (p *BasePlayer) Init(game *Game, location int, identity protos.Color, secre
 	p.cards = make(map[uint32]ICard)
 	p.messageCards = make(map[uint32]ICard)
 	p.alive = true
-	p.roleSkillsData = *roleSkillsData
+	if roleSkillsData != nil {
+		p.roleSkillsData = *roleSkillsData
+	}
 	for _, skill := range p.roleSkillsData.Skills {
 		skill.Init(game)
 	}
