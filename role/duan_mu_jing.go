@@ -41,8 +41,7 @@ func (x *XinSiChao) ExecuteProtocol(g *game.Game, r game.IPlayer, message proto.
 		return
 	}
 	pb := message.(*protos.SkillXinSiChaoTos)
-	humanPlayer, ok := r.(*game.HumanPlayer)
-	if ok && pb.Seq != humanPlayer.Seq {
+	if humanPlayer, ok := r.(*game.HumanPlayer); ok && pb.Seq != humanPlayer.Seq {
 		logger.Error("操作太晚了, required Seq: ", humanPlayer.Seq, ", actual Seq: ", pb.Seq)
 		return
 	}
@@ -51,12 +50,7 @@ func (x *XinSiChao) ExecuteProtocol(g *game.Game, r game.IPlayer, message proto.
 		logger.Error("没有这张卡")
 		return
 	}
-	if ok {
-		humanPlayer.Seq++
-		if humanPlayer.Timer != nil {
-			humanPlayer.Timer.Stop()
-		}
-	}
+	r.IncrSeq()
 	r.AddSkillUseCount(x.GetSkillId())
 	logger.Info("[端木静]发动了[新思潮]")
 	for _, p := range g.GetPlayers() {
