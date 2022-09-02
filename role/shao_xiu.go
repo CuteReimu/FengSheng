@@ -57,13 +57,22 @@ func (e *executeMianLiCangZhen) ResolveProtocol(player game.IPlayer, message pro
 		logger.Error("不是你发技能的时机")
 		return e, false
 	}
-	if _, ok := message.(*protos.EndReceivePhaseTos); ok && player.Location() == e.fsm.WhoseTurn.Location() {
-		player.IncrSeq()
-		return e.fsm, true
+	if _, ok := message.(*protos.EndReceivePhaseTos); ok {
+		if player.Location() == e.fsm.WhoseTurn.Location() {
+			player.IncrSeq()
+			return e.fsm, true
+		} else {
+			logger.Error("还没轮到你")
+			return e, false
+		}
+	}
+	pb, ok := message.(*protos.SkillMianLiCangZhenTos)
+	if !ok {
+		logger.Error("错误的协议")
+		return e, false
 	}
 	r := e.fsm.WhoseTurn
 	g := r.GetGame()
-	pb := message.(*protos.SkillMianLiCangZhenTos)
 	if humanPlayer, ok := r.(*game.HumanPlayer); ok && pb.Seq != humanPlayer.Seq {
 		logger.Error("操作太晚了, required Seq: ", humanPlayer.Seq, ", actual Seq: ", pb.Seq)
 		return e, false
