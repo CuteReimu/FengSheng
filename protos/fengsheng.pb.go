@@ -3214,6 +3214,54 @@ func (x *UseWuDaoToc) GetTargetPlayerId() uint32 {
 	return 0
 }
 
+// 接收阶段，轮到自己，选择什么都不做
+type EndReceivePhaseTos struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Seq uint32 `protobuf:"varint,1,opt,name=seq,proto3" json:"seq,omitempty"`
+}
+
+func (x *EndReceivePhaseTos) Reset() {
+	*x = EndReceivePhaseTos{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_fengsheng_proto_msgTypes[50]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EndReceivePhaseTos) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EndReceivePhaseTos) ProtoMessage() {}
+
+func (x *EndReceivePhaseTos) ProtoReflect() protoreflect.Message {
+	mi := &file_fengsheng_proto_msgTypes[50]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EndReceivePhaseTos.ProtoReflect.Descriptor instead.
+func (*EndReceivePhaseTos) Descriptor() ([]byte, []int) {
+	return file_fengsheng_proto_rawDescGZIP(), []int{50}
+}
+
+func (x *EndReceivePhaseTos) GetSeq() uint32 {
+	if x != nil {
+		return x.Seq
+	}
+	return 0
+}
+
 var File_fengsheng_proto protoreflect.FileDescriptor
 
 var file_fengsheng_proto_rawDesc = []byte{
@@ -3573,9 +3621,11 @@ var file_fengsheng_proto_rawDesc = []byte{
 	0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x08, 0x70, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x49,
 	0x64, 0x12, 0x28, 0x0a, 0x10, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x5f, 0x70, 0x6c, 0x61, 0x79,
 	0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x0e, 0x74, 0x61, 0x72,
-	0x67, 0x65, 0x74, 0x50, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x49, 0x64, 0x42, 0x10, 0x5a, 0x0e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x3b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x62, 0x06, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x67, 0x65, 0x74, 0x50, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x49, 0x64, 0x22, 0x29, 0x0a, 0x15, 0x65,
+	0x6e, 0x64, 0x5f, 0x72, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x5f, 0x70, 0x68, 0x61, 0x73, 0x65,
+	0x5f, 0x74, 0x6f, 0x73, 0x12, 0x10, 0x0a, 0x03, 0x73, 0x65, 0x71, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x0d, 0x52, 0x03, 0x73, 0x65, 0x71, 0x42, 0x10, 0x5a, 0x0e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73,
+	0x2f, 0x3b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -3590,7 +3640,7 @@ func file_fengsheng_proto_rawDescGZIP() []byte {
 	return file_fengsheng_proto_rawDescData
 }
 
-var file_fengsheng_proto_msgTypes = make([]protoimpl.MessageInfo, 50)
+var file_fengsheng_proto_msgTypes = make([]protoimpl.MessageInfo, 51)
 var file_fengsheng_proto_goTypes = []interface{}{
 	(*JoinRoomTos)(nil),             // 0: join_room_tos
 	(*GetRoomInfoToc)(nil),          // 1: get_room_info_toc
@@ -3642,47 +3692,48 @@ var file_fengsheng_proto_goTypes = []interface{}{
 	(*UseDiaoBaoToc)(nil),           // 47: use_diao_bao_toc
 	(*UseWuDaoTos)(nil),             // 48: use_wu_dao_tos
 	(*UseWuDaoToc)(nil),             // 49: use_wu_dao_toc
-	(Color)(0),                      // 50: color
-	(SecretTask)(0),                 // 51: secret_task
-	(Role)(0),                       // 52: role
-	(*Card)(nil),                    // 53: card
-	(Phase)(0),                      // 54: phase
-	(Direction)(0),                  // 55: direction
-	(CardType)(0),                   // 56: card_type
+	(*EndReceivePhaseTos)(nil),      // 50: end_receive_phase_tos
+	(Color)(0),                      // 51: color
+	(SecretTask)(0),                 // 52: secret_task
+	(Role)(0),                       // 53: role
+	(*Card)(nil),                    // 54: card
+	(Phase)(0),                      // 55: phase
+	(Direction)(0),                  // 56: direction
+	(CardType)(0),                   // 57: card_type
 }
 var file_fengsheng_proto_depIdxs = []int32{
-	50, // 0: init_toc.identity:type_name -> color
-	51, // 1: init_toc.secret_task:type_name -> secret_task
-	52, // 2: init_toc.roles:type_name -> role
-	52, // 3: notify_role_update_toc.role:type_name -> role
-	53, // 4: add_card_toc.cards:type_name -> card
-	53, // 5: show_shi_tan_toc.card:type_name -> card
-	53, // 6: discard_card_toc.cards:type_name -> card
-	54, // 7: notify_phase_toc.current_phase:type_name -> phase
-	55, // 8: notify_phase_toc.message_card_dir:type_name -> direction
-	53, // 9: notify_phase_toc.message_card:type_name -> card
-	53, // 10: use_li_you_toc.li_you_card:type_name -> card
-	53, // 11: use_li_you_toc.message_card:type_name -> card
-	53, // 12: use_ping_heng_toc.ping_heng_card:type_name -> card
-	56, // 13: use_wei_bi_tos.want_type:type_name -> card_type
-	53, // 14: wei_bi_wait_for_give_card_toc.card:type_name -> card
-	56, // 15: wei_bi_wait_for_give_card_toc.want_type:type_name -> card_type
-	53, // 16: wei_bi_give_card_toc.card:type_name -> card
-	53, // 17: wei_bi_show_hand_card_toc.card:type_name -> card
-	56, // 18: wei_bi_show_hand_card_toc.want_type:type_name -> card_type
-	53, // 19: wei_bi_show_hand_card_toc.cards:type_name -> card
-	53, // 20: use_cheng_qing_toc.card:type_name -> card
-	55, // 21: send_message_card_tos.card_dir:type_name -> direction
-	55, // 22: send_message_card_toc.card_dir:type_name -> direction
-	50, // 23: notify_winner_toc.identity:type_name -> color
-	51, // 24: notify_winner_toc.secret_tasks:type_name -> secret_task
-	53, // 25: notify_die_give_card_toc.card:type_name -> card
-	53, // 26: use_po_yi_toc.card:type_name -> card
-	53, // 27: use_po_yi_toc.message_card:type_name -> card
-	53, // 28: po_yi_show_toc.message_card:type_name -> card
-	53, // 29: use_jie_huo_toc.card:type_name -> card
-	53, // 30: use_diao_bao_toc.old_message_card:type_name -> card
-	53, // 31: use_wu_dao_toc.card:type_name -> card
+	51, // 0: init_toc.identity:type_name -> color
+	52, // 1: init_toc.secret_task:type_name -> secret_task
+	53, // 2: init_toc.roles:type_name -> role
+	53, // 3: notify_role_update_toc.role:type_name -> role
+	54, // 4: add_card_toc.cards:type_name -> card
+	54, // 5: show_shi_tan_toc.card:type_name -> card
+	54, // 6: discard_card_toc.cards:type_name -> card
+	55, // 7: notify_phase_toc.current_phase:type_name -> phase
+	56, // 8: notify_phase_toc.message_card_dir:type_name -> direction
+	54, // 9: notify_phase_toc.message_card:type_name -> card
+	54, // 10: use_li_you_toc.li_you_card:type_name -> card
+	54, // 11: use_li_you_toc.message_card:type_name -> card
+	54, // 12: use_ping_heng_toc.ping_heng_card:type_name -> card
+	57, // 13: use_wei_bi_tos.want_type:type_name -> card_type
+	54, // 14: wei_bi_wait_for_give_card_toc.card:type_name -> card
+	57, // 15: wei_bi_wait_for_give_card_toc.want_type:type_name -> card_type
+	54, // 16: wei_bi_give_card_toc.card:type_name -> card
+	54, // 17: wei_bi_show_hand_card_toc.card:type_name -> card
+	57, // 18: wei_bi_show_hand_card_toc.want_type:type_name -> card_type
+	54, // 19: wei_bi_show_hand_card_toc.cards:type_name -> card
+	54, // 20: use_cheng_qing_toc.card:type_name -> card
+	56, // 21: send_message_card_tos.card_dir:type_name -> direction
+	56, // 22: send_message_card_toc.card_dir:type_name -> direction
+	51, // 23: notify_winner_toc.identity:type_name -> color
+	52, // 24: notify_winner_toc.secret_tasks:type_name -> secret_task
+	54, // 25: notify_die_give_card_toc.card:type_name -> card
+	54, // 26: use_po_yi_toc.card:type_name -> card
+	54, // 27: use_po_yi_toc.message_card:type_name -> card
+	54, // 28: po_yi_show_toc.message_card:type_name -> card
+	54, // 29: use_jie_huo_toc.card:type_name -> card
+	54, // 30: use_diao_bao_toc.old_message_card:type_name -> card
+	54, // 31: use_wu_dao_toc.card:type_name -> card
 	32, // [32:32] is the sub-list for method output_type
 	32, // [32:32] is the sub-list for method input_type
 	32, // [32:32] is the sub-list for extension type_name
@@ -4297,6 +4348,18 @@ func file_fengsheng_proto_init() {
 				return nil
 			}
 		}
+		file_fengsheng_proto_msgTypes[50].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EndReceivePhaseTos); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -4304,7 +4367,7 @@ func file_fengsheng_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_fengsheng_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   50,
+			NumMessages:   51,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

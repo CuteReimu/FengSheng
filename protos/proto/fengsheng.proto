@@ -346,3 +346,8 @@ message use_wu_dao_toc {
   uint32 player_id        = 2; // 使用者
   uint32 target_player_id = 3; // 误导的目标
 }
+
+// 接收阶段，轮到自己，选择什么都不做
+message end_receive_phase_tos {
+  uint32 seq = 1;
+}
