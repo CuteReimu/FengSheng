@@ -54,23 +54,44 @@ func (card *ChengQing) Execute(g *game.Game, r game.IPlayer, args ...interface{}
 	targetCardId := args[1].(uint32)
 	logger.Info(r, "对", target, "使用了", card)
 	r.DeleteCard(card.GetId())
-	targetCard := target.FindMessageCard(targetCardId)
-	logger.Info(target, "面前的", targetCard, "被置入弃牌堆")
-	target.DeleteMessageCard(targetCardId)
-	g.GetDeck().Discard(targetCard)
-	for _, p := range g.GetPlayers() {
-		if player, ok := p.(*game.HumanPlayer); ok {
-			msg := &protos.UseChengQingToc{
-				Card:           card.ToPbCard(),
-				PlayerId:       p.GetAlternativeLocation(r.Location()),
-				TargetPlayerId: p.GetAlternativeLocation(target.Location()),
-				TargetCardId:   targetCardId,
+	curFsm := g.GetFsm()
+	resolveFunc := func() (next game.Fsm, continueResolve bool) {
+		targetCard := target.FindMessageCard(targetCardId)
+		logger.Info(target, "面前的", targetCard, "被置入弃牌堆")
+		target.DeleteMessageCard(targetCardId)
+		g.GetDeck().Discard(targetCard)
+		for _, p := range g.GetPlayers() {
+			if player, ok := p.(*game.HumanPlayer); ok {
+				msg := &protos.UseChengQingToc{
+					Card:           card.ToPbCard(),
+					PlayerId:       p.GetAlternativeLocation(r.Location()),
+					TargetPlayerId: p.GetAlternativeLocation(target.Location()),
+					TargetCardId:   targetCardId,
+				}
+				player.Send(msg)
 			}
-			player.Send(msg)
 		}
+		g.GetDeck().Discard(card)
+		return curFsm, true
 	}
-	g.GetDeck().Discard(card)
-	g.ContinueResolve()
+	switch fsm := curFsm.(type) {
+	case *game.MainPhaseIdle:
+		g.Resolve(&game.OnUseCard{
+			WhoseTurn:   fsm.Player,
+			Player:      r,
+			Card:        card,
+			AskWhom:     r,
+			ResolveFunc: resolveFunc,
+		})
+	case *game.WaitForChengQing:
+		g.Resolve(&game.OnUseCard{
+			WhoseTurn:   fsm.WhoseTurn,
+			Player:      r,
+			Card:        card,
+			AskWhom:     r,
+			ResolveFunc: resolveFunc,
+		})
+	}
 }
 
 func (card *ChengQing) ToPbCard() *protos.Card {

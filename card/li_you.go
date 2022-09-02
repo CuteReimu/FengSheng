@@ -36,35 +36,44 @@ func (card *LiYou) Execute(g *game.Game, r game.IPlayer, args ...interface{}) {
 	target := args[0].(game.IPlayer)
 	logger.Info(r, "对", target, "使用了", card)
 	r.DeleteCard(card.GetId())
-	deckCards := g.GetDeck().Draw(1)
-	var joinIntoHand bool
-	if len(deckCards) > 0 {
-		target.AddMessageCards(deckCards...)
-		if target.CheckThreeSameMessageCard(deckCards[0].GetColors()...) {
-			target.DeleteMessageCard(deckCards[0].GetId())
-			joinIntoHand = true
-			r.AddCards(deckCards...)
-			logger.Info(deckCards, "加入了", r, "的手牌")
-		} else {
-			logger.Info(deckCards, "加入了", target, "的情报区")
-		}
-	}
-	for _, p := range g.GetPlayers() {
-		if player, ok := p.(*game.HumanPlayer); ok {
-			msg := &protos.UseLiYouToc{
-				PlayerId:       p.GetAlternativeLocation(r.Location()),
-				TargetPlayerId: p.GetAlternativeLocation(target.Location()),
-				LiYouCard:      card.ToPbCard(),
-				JoinIntoHand:   joinIntoHand,
+	resolveFunc := func() (next game.Fsm, continueResolve bool) {
+		deckCards := g.GetDeck().Draw(1)
+		var joinIntoHand bool
+		if len(deckCards) > 0 {
+			target.AddMessageCards(deckCards...)
+			if target.CheckThreeSameMessageCard(deckCards[0].GetColors()...) {
+				target.DeleteMessageCard(deckCards[0].GetId())
+				joinIntoHand = true
+				r.AddCards(deckCards...)
+				logger.Info(deckCards, "加入了", r, "的手牌")
+			} else {
+				logger.Info(deckCards, "加入了", target, "的情报区")
 			}
-			if len(deckCards) > 0 {
-				msg.MessageCard = deckCards[0].ToPbCard()
-			}
-			player.Send(msg)
 		}
+		for _, p := range g.GetPlayers() {
+			if player, ok := p.(*game.HumanPlayer); ok {
+				msg := &protos.UseLiYouToc{
+					PlayerId:       p.GetAlternativeLocation(r.Location()),
+					TargetPlayerId: p.GetAlternativeLocation(target.Location()),
+					LiYouCard:      card.ToPbCard(),
+					JoinIntoHand:   joinIntoHand,
+				}
+				if len(deckCards) > 0 {
+					msg.MessageCard = deckCards[0].ToPbCard()
+				}
+				player.Send(msg)
+			}
+		}
+		g.GetDeck().Discard(card)
+		return &game.MainPhaseIdle{Player: r}, true
 	}
-	g.GetDeck().Discard(card)
-	g.Resolve(&game.MainPhaseIdle{Player: r})
+	g.Resolve(&game.OnUseCard{
+		WhoseTurn:   r,
+		Player:      r,
+		Card:        card,
+		AskWhom:     r,
+		ResolveFunc: resolveFunc,
+	})
 }
 
 func (card *LiYou) ToPbCard() *protos.Card {

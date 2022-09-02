@@ -37,9 +37,18 @@ func (card *PoYi) Execute(g *game.Game, r game.IPlayer, _ ...interface{}) {
 	fsm := g.GetFsm().(*game.SendPhaseIdle)
 	logger.Info(r, "使用了", card)
 	r.DeleteCard(card.GetId())
-	g.Resolve(&executePoYi{
-		card:      card,
-		sendPhase: fsm,
+	resolveFunc := func() (next game.Fsm, continueResolve bool) {
+		return &executePoYi{
+			card:      card,
+			sendPhase: fsm,
+		}, true
+	}
+	g.Resolve(&game.OnUseCard{
+		WhoseTurn:   r,
+		Player:      r,
+		Card:        card,
+		AskWhom:     r,
+		ResolveFunc: resolveFunc,
 	})
 }
 

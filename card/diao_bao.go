@@ -31,24 +31,33 @@ func (card *DiaoBao) Execute(g *game.Game, r game.IPlayer, _ ...interface{}) {
 	fsm := g.GetFsm().(*game.FightPhaseIdle)
 	logger.Info(r, "使用了", card)
 	r.DeleteCard(card.GetId())
-	oldCard := fsm.MessageCard
-	g.GetDeck().Discard(oldCard)
-	fsm.MessageCard = card
-	fsm.IsMessageCardFaceUp = false
-	fsm.WhoseFightTurn = fsm.InFrontOfWhom
-	for _, player := range g.GetPlayers() {
-		if p, ok := player.(*game.HumanPlayer); ok {
-			msg := &protos.UseDiaoBaoToc{
-				OldMessageCard: oldCard.ToPbCard(),
-				PlayerId:       p.GetAlternativeLocation(r.Location()),
+	resolveFunc := func() (next game.Fsm, continueResolve bool) {
+		oldCard := fsm.MessageCard
+		g.GetDeck().Discard(oldCard)
+		fsm.MessageCard = card
+		fsm.IsMessageCardFaceUp = false
+		fsm.WhoseFightTurn = fsm.InFrontOfWhom
+		for _, player := range g.GetPlayers() {
+			if p, ok := player.(*game.HumanPlayer); ok {
+				msg := &protos.UseDiaoBaoToc{
+					OldMessageCard: oldCard.ToPbCard(),
+					PlayerId:       p.GetAlternativeLocation(r.Location()),
+				}
+				if p.Location() == r.Location() {
+					msg.CardId = card.GetId()
+				}
+				p.Send(msg)
 			}
-			if p.Location() == r.Location() {
-				msg.CardId = card.GetId()
-			}
-			p.Send(msg)
 		}
+		return fsm, true
 	}
-	g.ContinueResolve()
+	g.Resolve(&game.OnUseCard{
+		WhoseTurn:   fsm.WhoseTurn,
+		Player:      r,
+		Card:        card,
+		AskWhom:     r,
+		ResolveFunc: resolveFunc,
+	})
 }
 
 func (card *DiaoBao) ToPbCard() *protos.Card {

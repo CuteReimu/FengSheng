@@ -53,23 +53,32 @@ func (card *ShiTan) Execute(g *game.Game, r game.IPlayer, args ...interface{}) {
 	target := args[0].(game.IPlayer)
 	logger.Info(r, "对", target, "使用了", card)
 	r.DeleteCard(card.GetId())
-	g.Resolve(&executeShiTan{
-		player: r,
-		target: target,
-		card:   card,
-	})
-	for _, p := range g.GetPlayers() {
-		if player, ok := p.(*game.HumanPlayer); ok {
-			msg := &protos.UseShiTanToc{
-				PlayerId:       p.GetAlternativeLocation(r.Location()),
-				TargetPlayerId: p.GetAlternativeLocation(target.Location()),
+	resolveFunc := func() (next game.Fsm, continueResolve bool) {
+		for _, p := range g.GetPlayers() {
+			if player, ok := p.(*game.HumanPlayer); ok {
+				msg := &protos.UseShiTanToc{
+					PlayerId:       p.GetAlternativeLocation(r.Location()),
+					TargetPlayerId: p.GetAlternativeLocation(target.Location()),
+				}
+				if p.Location() == r.Location() {
+					msg.CardId = card.GetId()
+				}
+				player.Send(msg)
 			}
-			if p.Location() == r.Location() {
-				msg.CardId = card.GetId()
-			}
-			player.Send(msg)
 		}
+		return &executeShiTan{
+			player: r,
+			target: target,
+			card:   card,
+		}, true
 	}
+	g.Resolve(&game.OnUseCard{
+		WhoseTurn:   r,
+		Player:      r,
+		Card:        card,
+		AskWhom:     r,
+		ResolveFunc: resolveFunc,
+	})
 }
 
 type executeShiTan struct {

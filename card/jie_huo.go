@@ -35,19 +35,28 @@ func (card *JieHuo) Execute(g *game.Game, r game.IPlayer, _ ...interface{}) {
 	fsm := g.GetFsm().(*game.FightPhaseIdle)
 	logger.Info(r, "使用了", card)
 	r.DeleteCard(card.GetId())
-	fsm.InFrontOfWhom = r
-	fsm.WhoseFightTurn = fsm.InFrontOfWhom
-	g.GetDeck().Discard(card)
-	for _, player := range g.GetPlayers() {
-		if p, ok := player.(*game.HumanPlayer); ok {
-			msg := &protos.UseJieHuoToc{
-				Card:     card.ToPbCard(),
-				PlayerId: p.GetAlternativeLocation(r.Location()),
+	resolveFunc := func() (next game.Fsm, continueResolve bool) {
+		fsm.InFrontOfWhom = r
+		fsm.WhoseFightTurn = fsm.InFrontOfWhom
+		g.GetDeck().Discard(card)
+		for _, player := range g.GetPlayers() {
+			if p, ok := player.(*game.HumanPlayer); ok {
+				msg := &protos.UseJieHuoToc{
+					Card:     card.ToPbCard(),
+					PlayerId: p.GetAlternativeLocation(r.Location()),
+				}
+				p.Send(msg)
 			}
-			p.Send(msg)
 		}
+		return fsm, true
 	}
-	g.ContinueResolve()
+	g.Resolve(&game.OnUseCard{
+		WhoseTurn:   fsm.WhoseTurn,
+		Player:      r,
+		Card:        card,
+		AskWhom:     r,
+		ResolveFunc: resolveFunc,
+	})
 }
 
 func (card *JieHuo) ToPbCard() *protos.Card {

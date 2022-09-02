@@ -55,20 +55,29 @@ func (card *WuDao) Execute(g *game.Game, r game.IPlayer, args ...interface{}) {
 	logger.Info(r, "对", target, "使用了", card)
 	fsm := g.GetFsm().(*game.FightPhaseIdle)
 	r.DeleteCard(card.GetId())
-	fsm.InFrontOfWhom = target
-	fsm.WhoseFightTurn = fsm.InFrontOfWhom
-	g.GetDeck().Discard(card)
-	for _, player := range g.GetPlayers() {
-		if p, ok := player.(*game.HumanPlayer); ok {
-			msg := &protos.UseWuDaoToc{
-				Card:           card.ToPbCard(),
-				PlayerId:       p.GetAlternativeLocation(r.Location()),
-				TargetPlayerId: p.GetAlternativeLocation(target.Location()),
+	resolveFunc := func() (next game.Fsm, continueResolve bool) {
+		fsm.InFrontOfWhom = target
+		fsm.WhoseFightTurn = fsm.InFrontOfWhom
+		g.GetDeck().Discard(card)
+		for _, player := range g.GetPlayers() {
+			if p, ok := player.(*game.HumanPlayer); ok {
+				msg := &protos.UseWuDaoToc{
+					Card:           card.ToPbCard(),
+					PlayerId:       p.GetAlternativeLocation(r.Location()),
+					TargetPlayerId: p.GetAlternativeLocation(target.Location()),
+				}
+				p.Send(msg)
 			}
-			p.Send(msg)
 		}
+		return fsm, true
 	}
-	g.ContinueResolve()
+	g.Resolve(&game.OnUseCard{
+		WhoseTurn:   fsm.WhoseTurn,
+		Player:      r,
+		Card:        card,
+		AskWhom:     r,
+		ResolveFunc: resolveFunc,
+	})
 }
 
 func (card *WuDao) ToPbCard() *protos.Card {

@@ -39,6 +39,40 @@ func (mp *MainPhaseIdle) Resolve() (next Fsm, continueResolve bool) {
 	return mp, false
 }
 
+type OnUseCard struct {
+	WhoseTurn   IPlayer
+	Player      IPlayer
+	Card        ICard
+	AskWhom     IPlayer
+	ResolveFunc func() (next Fsm, continueResolve bool)
+}
+
+func (uc *OnUseCard) Resolve() (next Fsm, continueResolve bool) {
+	if nextFsm, continueResolve, ok := uc.WhoseTurn.GetGame().DealListeningSkills(); ok {
+		return nextFsm, continueResolve
+	}
+	return &OnUseCardNext{OnUseCard: uc}, true
+}
+
+type OnUseCardNext struct {
+	OnUseCard *OnUseCard
+}
+
+func (uc *OnUseCardNext) Resolve() (next Fsm, continueResolve bool) {
+	askWhom := uc.OnUseCard.AskWhom.Location()
+	players := uc.OnUseCard.AskWhom.GetGame().GetPlayers()
+	for {
+		askWhom = (askWhom + 1) % len(players)
+		if askWhom == uc.OnUseCard.Player.Location() {
+			return uc.OnUseCard.ResolveFunc()
+		}
+		if players[askWhom].IsAlive() {
+			uc.OnUseCard.AskWhom = players[askWhom]
+			return uc.OnUseCard, true
+		}
+	}
+}
+
 // SendPhaseStart 情报传递阶段开始时，选择传递一张情报
 type SendPhaseStart struct {
 	Player IPlayer

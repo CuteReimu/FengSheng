@@ -49,41 +49,50 @@ func (card *WeiBi) Execute(g *game.Game, r game.IPlayer, args ...interface{}) {
 	wantType := args[1].(protos.CardType)
 	logger.Info(r, "对", target, "使用了", card)
 	r.DeleteCard(card.GetId())
-	if func(player game.IPlayer, cardType protos.CardType) bool {
-		for _, c := range player.GetCards() {
-			if c.GetType() == cardType {
-				return true
-			}
-		}
-		return false
-	}(target, wantType) {
-		g.Resolve(&executeWeiBi{
-			player:   r,
-			target:   target,
-			card:     card,
-			wantType: wantType,
-		})
-	} else {
-		logger.Info(target, "向", r, "展示了所有手牌")
-		g.GetDeck().Discard(card)
-		for _, p := range g.GetPlayers() {
-			if player, ok := p.(*game.HumanPlayer); ok {
-				msg := &protos.WeiBiShowHandCardToc{
-					Card:           card.ToPbCard(),
-					PlayerId:       p.GetAlternativeLocation(r.Location()),
-					WantType:       wantType,
-					TargetPlayerId: p.GetAlternativeLocation(target.Location()),
+	resolveFunc := func() (next game.Fsm, continueResolve bool) {
+		if func(player game.IPlayer, cardType protos.CardType) bool {
+			for _, c := range player.GetCards() {
+				if c.GetType() == cardType {
+					return true
 				}
-				if p.Location() == r.Location() {
-					for _, c := range target.GetCards() {
-						msg.Cards = append(msg.Cards, c.ToPbCard())
+			}
+			return false
+		}(target, wantType) {
+			return &executeWeiBi{
+				player:   r,
+				target:   target,
+				card:     card,
+				wantType: wantType,
+			}, true
+		} else {
+			logger.Info(target, "向", r, "展示了所有手牌")
+			g.GetDeck().Discard(card)
+			for _, p := range g.GetPlayers() {
+				if player, ok := p.(*game.HumanPlayer); ok {
+					msg := &protos.WeiBiShowHandCardToc{
+						Card:           card.ToPbCard(),
+						PlayerId:       p.GetAlternativeLocation(r.Location()),
+						WantType:       wantType,
+						TargetPlayerId: p.GetAlternativeLocation(target.Location()),
 					}
+					if p.Location() == r.Location() {
+						for _, c := range target.GetCards() {
+							msg.Cards = append(msg.Cards, c.ToPbCard())
+						}
+					}
+					player.Send(msg)
 				}
-				player.Send(msg)
 			}
+			return &game.MainPhaseIdle{Player: r}, true
 		}
-		g.ContinueResolve()
 	}
+	g.Resolve(&game.OnUseCard{
+		WhoseTurn:   r,
+		Player:      r,
+		Card:        card,
+		AskWhom:     r,
+		ResolveFunc: resolveFunc,
+	})
 }
 
 type executeWeiBi struct {
