@@ -124,20 +124,20 @@ func Start(totalCount int) {
 					game := player.GetGame()
 					if func(players []IPlayer) bool {
 						for i := range players {
-							if _, ok := players[i].(*HumanPlayer); ok {
+							if _, ok := players[i].(*HumanPlayer); ok && player.Location() != players[i].Location() {
 								return true
 							}
 						}
 						return false
 					}(game.GetPlayers()) {
-						game.Players[player.Location()] = &RobotPlayer{BasePlayer: player.BasePlayer}
+						game.GetPlayers()[player.Location()] = &RobotPlayer{BasePlayer: player.BasePlayer}
 					} else {
 						for i := range game.GetPlayers() {
-							switch p := game.Players[i].(type) {
+							switch p := game.GetPlayers()[i].(type) {
 							case *HumanPlayer:
-								game.Players[i] = &IdlePlayer{BasePlayer: p.BasePlayer}
+								game.GetPlayers()[i] = &IdlePlayer{BasePlayer: p.BasePlayer}
 							case *RobotPlayer:
-								game.Players[i] = &IdlePlayer{BasePlayer: p.BasePlayer}
+								game.GetPlayers()[i] = &IdlePlayer{BasePlayer: p.BasePlayer}
 							}
 						}
 						game.end()
