@@ -126,6 +126,11 @@ func (r *RobotPlayer) NotifyFightPhase(_, _, whoseFightTurn IPlayer, _ ICard, _ 
 func (r *RobotPlayer) NotifyReceivePhase(IPlayer, IPlayer, ICard) {
 }
 
+func (r *RobotPlayer) NotifyReceivePhaseWithWaiting(whoseTurn, _ IPlayer, _ ICard, _ IPlayer, _ uint32) {
+	// TODO 需要增加AI
+	time.AfterFunc(2*time.Second, whoseTurn.GetGame().ContinueResolve)
+}
+
 func (r *RobotPlayer) NotifyDie(location int, _ bool) {
 	if location == r.Location() {
 		var cards []ICard
@@ -279,6 +284,9 @@ func (p *IdlePlayer) NotifyFightPhase(IPlayer, IPlayer, IPlayer, ICard, bool, ui
 }
 
 func (p *IdlePlayer) NotifyReceivePhase(IPlayer, IPlayer, ICard) {
+}
+
+func (p *IdlePlayer) NotifyReceivePhaseWithWaiting(IPlayer, IPlayer, ICard, IPlayer, uint32) {
 }
 
 func (p *IdlePlayer) NotifyDie(int, bool) {

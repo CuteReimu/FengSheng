@@ -27,4 +27,5 @@ const (
 	SkillIdLianLuo SkillId = iota
 	SkillIdMingEr
 	SkillIdXinSiChao
+	SkillIdMianLiCangZhen
 )

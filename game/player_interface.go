@@ -33,6 +33,7 @@ type IPlayer interface {
 	NotifyChooseReceiveCard(player IPlayer)
 	NotifyFightPhase(whoseTurn, inFrontOfWhom, whoseFightTurn IPlayer, messageCard ICard, isMessageFaceUp bool, waitSecond uint32)
 	NotifyReceivePhase(whoseTurn, inFrontOfWhom IPlayer, messageCard ICard)
+	NotifyReceivePhaseWithWaiting(whoseTurn, inFrontOfWhom IPlayer, messageCard ICard, waitingPlayer IPlayer, waitSecond uint32)
 	NotifyDie(location int, loseGame bool)
 	NotifyWin(declareWinner []IPlayer, winner []IPlayer)
 	NotifyAskForChengQing(whoDie IPlayer, askWhom IPlayer)

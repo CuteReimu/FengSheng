@@ -29,7 +29,7 @@ type Fsm interface {
 
 type WaitingFsm interface {
 	Fsm
-	ResolveProtocol(player IPlayer, pb proto.Message) (next Fsm, continueResolve bool)
+	ResolveProtocol(player IPlayer, message proto.Message) (next Fsm, continueResolve bool)
 }
 
 type Game struct {
@@ -197,9 +197,16 @@ func Start(totalCount int) {
 			humanMap[ev.Session().ID()].onUseDiaoBao(pb)
 		case *protos.UseWuDaoTos:
 			humanMap[ev.Session().ID()].onUseWuDao(pb)
+		case *protos.EndReceivePhaseTos:
+			humanMap[ev.Session().ID()].onEndReceivePhase(pb)
 		case *protos.SkillXinSiChaoTos:
 			r := humanMap[ev.Session().ID()]
 			if skill := r.FindSkill(SkillIdXinSiChao); skill != nil {
+				skill.ExecuteProtocol(r.game, r, pb)
+			}
+		case *protos.SkillMianLiCangZhenTos:
+			r := humanMap[ev.Session().ID()]
+			if skill := r.FindSkill(SkillIdMianLiCangZhen); skill != nil {
 				skill.ExecuteProtocol(r.game, r, pb)
 			}
 		}

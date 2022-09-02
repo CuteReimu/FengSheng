@@ -237,6 +237,21 @@ func (r *HumanPlayer) NotifyReceivePhase(whoseTurn, inFrontOfWhom IPlayer, messa
 	})
 }
 
+func (r *HumanPlayer) NotifyReceivePhaseWithWaiting(whoseTurn, inFrontOfWhom IPlayer, messageCard ICard, waitingPlayer IPlayer, waitSecond uint32) {
+	msg := &protos.NotifyPhaseToc{
+		CurrentPlayerId: r.GetAlternativeLocation(whoseTurn.Location()),
+		CurrentPhase:    protos.Phase_Receive_Phase,
+		MessagePlayerId: r.GetAlternativeLocation(inFrontOfWhom.Location()),
+		MessageCard:     messageCard.ToPbCard(),
+		WaitingPlayerId: r.GetAlternativeLocation(waitingPlayer.Location()),
+		WaitingSecond:   waitSecond,
+	}
+	if r.Location() == waitingPlayer.Location() {
+		msg.Seq = r.Seq
+	}
+	r.Send(msg)
+}
+
 func (r *HumanPlayer) NotifyDie(location int, loseGame bool) {
 	if location == r.Location() {
 		var cards []ICard
@@ -787,4 +802,12 @@ func (r *HumanPlayer) onUseDiaoBao(pb *protos.UseDiaoBaoTos) {
 		r.IncrSeq()
 		card.Execute(r.GetGame(), r)
 	}
+}
+
+func (r *HumanPlayer) onEndReceivePhase(pb *protos.EndReceivePhaseTos) {
+	if pb.Seq != r.Seq {
+		r.logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
+		return
+	}
+	r.GetGame().TryContinueResolveProtocol(r, pb)
 }
