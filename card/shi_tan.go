@@ -100,6 +100,7 @@ func (e *executeShiTan) Resolve() (next game.Fsm, continueResolve bool) {
 								player.Timer.Stop()
 							}
 							e.autoSelect()
+							g.Resolve(&game.MainPhaseIdle{Player: e.player})
 						}
 					})
 				})
@@ -114,7 +115,7 @@ func (e *executeShiTan) Resolve() (next game.Fsm, continueResolve bool) {
 		time.AfterFunc(4*time.Second, func() {
 			game.Post(func() {
 				e.autoSelect()
-				g.Resolve(&game.MainPhaseIdle{Player: r})
+				g.Resolve(&game.MainPhaseIdle{Player: e.player})
 			})
 		})
 	}

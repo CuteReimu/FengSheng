@@ -116,6 +116,7 @@ func (e *executeWeiBi) Resolve() (next game.Fsm, continueResolve bool) {
 								player.Timer.Stop()
 							}
 							e.autoSelect()
+							g.Resolve(&game.MainPhaseIdle{Player: e.player})
 						}
 					})
 				})
