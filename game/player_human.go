@@ -300,7 +300,7 @@ func (r *HumanPlayer) NotifyAskForChengQing(whoDie IPlayer, askWhom IPlayer) {
 	if askWhom.Location() == r.Location() {
 		msg.Seq = r.Seq
 		seq := r.Seq
-		time.AfterFunc(time.Duration(msg.WaitingSecond+2)*time.Second, func() {
+		r.Timer = time.AfterFunc(time.Duration(msg.WaitingSecond+2)*time.Second, func() {
 			Post(func() {
 				if r.Seq == seq {
 					r.IncrSeq()
@@ -323,7 +323,7 @@ func (r *HumanPlayer) WaitForDieGiveCard(whoDie IPlayer) {
 	if whoDie.Location() == r.Location() {
 		msg.Seq = r.Seq
 		seq := r.Seq
-		time.AfterFunc(time.Duration(msg.WaitingSecond+2)*time.Second, func() {
+		r.Timer = time.AfterFunc(time.Duration(msg.WaitingSecond+2)*time.Second, func() {
 			Post(func() {
 				if r.Seq == seq {
 					r.IncrSeq()
