@@ -28,4 +28,6 @@ const (
 	SkillIdMingEr
 	SkillIdXinSiChao
 	SkillIdMianLiCangZhen
+	SkillIdQiHuoKeJu
+	SkillIdJinShen
 )

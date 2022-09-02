@@ -209,6 +209,16 @@ func Start(totalCount int) {
 			if skill := r.FindSkill(SkillIdMianLiCangZhen); skill != nil {
 				skill.ExecuteProtocol(r.game, r, pb)
 			}
+		case *protos.SkillQiHuoKeJuTos:
+			r := humanMap[ev.Session().ID()]
+			if skill := r.FindSkill(SkillIdQiHuoKeJu); skill != nil {
+				skill.ExecuteProtocol(r.game, r, pb)
+			}
+		case *protos.SkillJinShenTos:
+			r := humanMap[ev.Session().ID()]
+			if skill := r.FindSkill(SkillIdJinShen); skill != nil {
+				skill.ExecuteProtocol(r.game, r, pb)
+			}
 		}
 	})
 	p.Start()
