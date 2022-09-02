@@ -51,9 +51,11 @@ func (x *XinSiChao) ExecuteProtocol(g *game.Game, r game.IPlayer, message proto.
 		logger.Error("没有这张卡")
 		return
 	}
-	humanPlayer.Seq++
-	if humanPlayer.Timer != nil {
-		humanPlayer.Timer.Stop()
+	if ok {
+		humanPlayer.Seq++
+		if humanPlayer.Timer != nil {
+			humanPlayer.Timer.Stop()
+		}
 	}
 	r.AddSkillUseCount(x.GetSkillId())
 	logger.Info("[端木静]发动了[新思潮]")
