@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/CuteReimu/FengSheng/protos"
 	"github.com/spf13/viper"
 	"log"
 	"os"
@@ -18,6 +19,7 @@ const (
 	turnHandCardCount  = "rule.hand_card_count_each_turn"
 	gmEnable           = "gm.enable"
 	gmListenAddress    = "gm.listen_address"
+	gmDebugRoles       = "gm.debug_roles"
 	clientVersion      = "version"
 	roomCount          = "room_count"
 )
@@ -38,6 +40,7 @@ func Init() {
 	initSingleConfig(&newConfig, gmListenAddress, "127.0.0.1:9092")
 	initSingleConfig(&newConfig, clientVersion, uint32(1))
 	initSingleConfig(&newConfig, roomCount, 200)
+	initSingleConfig(&newConfig, gmDebugRoles, []int{int(protos.Role_duan_mu_jing), int(protos.Role_lao_bie)})
 	if len(newConfig) > 0 {
 		if err := globalConfig.WriteConfigAs("application.yaml"); err != nil {
 			panic(fmt.Sprintf("写入配置失败: %+v", err))
@@ -99,4 +102,9 @@ func GetClientVersion() uint32 {
 // GetMaxRoomCount 获取最大房间数
 func GetMaxRoomCount() int {
 	return globalConfig.GetInt(roomCount)
+}
+
+// GetDebugRoles 获取调试角色
+func GetDebugRoles() []int {
+	return globalConfig.GetIntSlice(gmDebugRoles)
 }

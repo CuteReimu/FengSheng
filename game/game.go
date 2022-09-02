@@ -230,6 +230,15 @@ func (game *Game) start() {
 	utils.Random.Shuffle(len(RoleCache), func(i, j int) {
 		RoleCache[i], RoleCache[j] = RoleCache[j], RoleCache[i]
 	})
+	if debugRoles := config.GetDebugRoles(); config.IsGmEnable() && len(debugRoles) > 0 {
+		for i, role := range debugRoles {
+			for j, r := range RoleCache {
+				if i != j && r.Role == protos.Role(role) {
+					RoleCache[i], RoleCache[j] = RoleCache[j], RoleCache[i]
+				}
+			}
+		}
+	}
 	for location, player := range game.Players {
 		if location < len(RoleCache) {
 			player.Init(game, location, idTask[location].id, idTask[location].task, RoleCache[location])

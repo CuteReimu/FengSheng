@@ -13,6 +13,9 @@
 
 ```yaml
 gm:
+    debug_roles:  # 测试时强制设置的角色，按进入房间的顺序安排
+        - 22
+        - 26
     enable: false
     listen_address: 127.0.0.1:9092
 listen_address: 127.0.0.1:9091  # 服务端监听端口
