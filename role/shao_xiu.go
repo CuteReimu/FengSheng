@@ -3,6 +3,7 @@ package role
 import (
 	"github.com/CuteReimu/FengSheng/game"
 	"github.com/CuteReimu/FengSheng/protos"
+	"github.com/CuteReimu/FengSheng/utils"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -80,6 +81,10 @@ func (e *executeMianLiCangZhen) ResolveProtocol(player game.IPlayer, message pro
 	card := r.FindCard(pb.CardId)
 	if card == nil {
 		logger.Error("没有这张卡")
+		return e, false
+	}
+	if !utils.IsColorIn(protos.Color_Black, card.GetColors()) {
+		logger.Error("你选择的不是黑色手牌")
 		return e, false
 	}
 	if pb.TargetPlayerId >= uint32(len(r.GetGame().GetPlayers())) {
