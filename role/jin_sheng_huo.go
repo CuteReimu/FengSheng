@@ -50,7 +50,7 @@ type executeJinShen struct {
 
 func (e *executeJinShen) Resolve() (next game.Fsm, continueResolve bool) {
 	for _, p := range e.fsm.WhoseTurn.GetGame().GetPlayers() {
-		p.NotifyReceivePhaseWithWaiting(e.fsm.WhoseTurn, e.fsm.InFrontOfWhom, e.fsm.MessageCard, e.fsm.WhoseTurn, 20)
+		p.NotifyReceivePhaseWithWaiting(e.fsm.WhoseTurn, e.fsm.InFrontOfWhom, e.fsm.MessageCard, e.fsm.InFrontOfWhom, 20)
 	}
 	return e, false
 }
