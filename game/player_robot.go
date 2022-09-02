@@ -163,7 +163,7 @@ func (r *RobotPlayer) WaitForDieGiveCard(whoDie IPlayer) {
 			identity1, _ := r.GetIdentity()
 			if identity1 != protos.Color_Black {
 				for _, p := range r.GetGame().GetPlayers() {
-					if identity2, _ := r.GetIdentity(); identity1 == identity2 && p.Location() != r.Location() {
+					if identity2, _ := p.GetIdentity(); identity1 == identity2 && p.Location() != r.Location() {
 						var cards []ICard
 						for _, card := range r.GetCards() {
 							cards = append(cards, card)
