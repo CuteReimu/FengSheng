@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+var AISkillMainPhase = make(map[SkillId]func(e *MainPhaseIdle, skill ISkill) bool)
 var AIMainPhase = make(map[protos.CardType]func(e *MainPhaseIdle, card ICard) bool)
 var AISendPhase = make(map[protos.CardType]func(e *SendPhaseIdle, card ICard) bool)
 var AIFightPhase = make(map[protos.CardType]func(e *FightPhaseIdle, card ICard) bool)
@@ -29,6 +30,12 @@ func (r *RobotPlayer) NotifyMainPhase(player IPlayer, _ uint32) {
 	fsm := r.GetGame().GetFsm().(*MainPhaseIdle)
 	if r.Location() != player.Location() {
 		return
+	}
+	for _, skill := range r.GetSkills() {
+		ai := AISkillMainPhase[skill.GetSkillId()]
+		if ai != nil && ai(fsm, skill) {
+			return
+		}
 	}
 	cards := r.GetCards()
 	if len(cards) > 1 {
@@ -203,6 +210,9 @@ func autoSendMessageCard(r IPlayer, lock bool) {
 	}
 	fsm := r.GetGame().GetFsm().(*SendPhaseStart)
 	dir := card.GetDirection()
+	if r.FindSkill(SkillIdLianLuo) != nil {
+		dir = protos.Direction(utils.Random.Intn(len(protos.Direction_name)))
+	}
 	var targetLocation int
 	var availableLocations []int
 	var lockedPlayers []IPlayer

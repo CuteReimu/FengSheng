@@ -13,6 +13,7 @@ func init() {
 		FaceUp: true,
 		Skills: []game.ISkill{&XinSiChao{}},
 	})
+	game.AISkillMainPhase[game.SkillIdXinSiChao] = xinSiChao
 }
 
 type XinSiChao struct {
@@ -66,4 +67,20 @@ func (x *XinSiChao) ExecuteProtocol(g *game.Game, r game.IPlayer, message proto.
 	g.PlayerDiscardCard(r, card)
 	r.Draw(2)
 	g.ContinueResolve()
+}
+
+func xinSiChao(e *game.MainPhaseIdle, skill game.ISkill) bool {
+	if e.Player.GetSkillUseCount(game.SkillIdXinSiChao) > 0 {
+		return false
+	}
+	var card game.ICard
+	for _, c := range e.Player.GetCards() {
+		card = c
+		break
+	}
+	if card == nil {
+		return false
+	}
+	skill.ExecuteProtocol(e.Player.GetGame(), e.Player, &protos.SkillXinSiChaoTos{CardId: card.GetId()})
+	return true
 }
