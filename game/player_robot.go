@@ -126,7 +126,10 @@ func (r *RobotPlayer) NotifyFightPhase(_, _, whoseFightTurn IPlayer, _ ICard, _ 
 func (r *RobotPlayer) NotifyReceivePhase(IPlayer, IPlayer, ICard) {
 }
 
-func (r *RobotPlayer) NotifyReceivePhaseWithWaiting(whoseTurn, _ IPlayer, _ ICard, _ IPlayer, _ uint32) {
+func (r *RobotPlayer) NotifyReceivePhaseWithWaiting(whoseTurn, _ IPlayer, _ ICard, waitingPlayer IPlayer, _ uint32) {
+	if r.Location() != waitingPlayer.Location() {
+		return
+	}
 	// TODO 需要增加AI
 	time.AfterFunc(2*time.Second, whoseTurn.GetGame().ContinueResolve)
 }
