@@ -56,6 +56,13 @@ func (x *XinSiChao) ExecuteProtocol(g *game.Game, r game.IPlayer, message proto.
 	}
 	r.AddSkillUseCount(x.GetSkillId())
 	logger.Info("[端木静]发动了[新思潮]")
+	for _, p := range g.GetPlayers() {
+		if player, ok := p.(*game.HumanPlayer); ok {
+			player.Send(&protos.SkillXinSiChaoToc{
+				PlayerId: player.GetAlternativeLocation(r.Location()),
+			})
+		}
+	}
 	g.PlayerDiscardCard(r, card)
 	r.Draw(2)
 	g.ContinueResolve()
