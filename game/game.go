@@ -316,7 +316,7 @@ func (game *Game) ContinueResolve() {
 	})
 }
 
-func (game *Game) TryContinueResolveProtocol(player *HumanPlayer, pb proto.Message) {
+func (game *Game) TryContinueResolveProtocol(player IPlayer, pb proto.Message) {
 	fsm, ok := game.GetFsm().(WaitingFsm)
 	if !ok {
 		logger.Error("时机错误", fsm)
