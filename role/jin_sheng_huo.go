@@ -74,7 +74,7 @@ func (e *executeJinShen) ResolveProtocol(player game.IPlayer, message proto.Mess
 		logger.Error("错误的协议")
 		return e, false
 	}
-	r := e.fsm.WhoseTurn
+	r := e.fsm.InFrontOfWhom
 	g := r.GetGame()
 	if humanPlayer, ok := r.(*game.HumanPlayer); ok && pb.Seq != humanPlayer.Seq {
 		logger.Error("操作太晚了, required Seq: ", humanPlayer.Seq, ", actual Seq: ", pb.Seq)
