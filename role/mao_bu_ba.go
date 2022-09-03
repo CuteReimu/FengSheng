@@ -56,7 +56,7 @@ func (e *executeQiHuoKeJu) Resolve() (next game.Fsm, continueResolve bool) {
 }
 
 func (e *executeQiHuoKeJu) ResolveProtocol(player game.IPlayer, message proto.Message) (next game.Fsm, continueResolve bool) {
-	if player.Location() != e.fsm.WhoseTurn.Location() {
+	if player.Location() != e.fsm.InFrontOfWhom.Location() {
 		logger.Error("不是你发技能的时机")
 		return e, false
 	}
