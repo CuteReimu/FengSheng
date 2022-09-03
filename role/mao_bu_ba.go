@@ -28,16 +28,16 @@ func (m *QiHuoKeJu) GetSkillId() game.SkillId {
 
 func (m *QiHuoKeJu) Execute(g *game.Game) (nextFsm game.Fsm, continueResolve bool, ok bool) {
 	fsm, ok := g.GetFsm().(*game.ReceivePhaseReceiverSkill)
-	if !ok || fsm.WhoseTurn.FindSkill(m.GetSkillId()) == nil {
+	if !ok || fsm.InFrontOfWhom.FindSkill(m.GetSkillId()) == nil {
 		return nil, false, false
 	}
-	if fsm.WhoseTurn.GetSkillUseCount(m.GetSkillId()) > 0 {
+	if fsm.InFrontOfWhom.GetSkillUseCount(m.GetSkillId()) > 0 {
 		return nil, false, false
 	}
 	if len(fsm.MessageCard.GetColors()) < 2 {
 		return nil, false, false
 	}
-	fsm.WhoseTurn.AddSkillUseCount(m.GetSkillId())
+	fsm.InFrontOfWhom.AddSkillUseCount(m.GetSkillId())
 	return &executeQiHuoKeJu{fsm: fsm}, true, ok
 }
 
