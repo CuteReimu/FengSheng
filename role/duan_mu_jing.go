@@ -4,6 +4,7 @@ import (
 	"github.com/CuteReimu/FengSheng/game"
 	"github.com/CuteReimu/FengSheng/protos"
 	"google.golang.org/protobuf/proto"
+	"time"
 )
 
 func init() {
@@ -77,6 +78,10 @@ func xinSiChao(e *game.MainPhaseIdle, skill game.ISkill) bool {
 	if card == nil {
 		return false
 	}
-	skill.ExecuteProtocol(e.Player.GetGame(), e.Player, &protos.SkillXinSiChaoTos{CardId: card.GetId()})
+	time.AfterFunc(2*time.Second, func() {
+		game.Post(func() {
+			skill.ExecuteProtocol(e.Player.GetGame(), e.Player, &protos.SkillXinSiChaoTos{CardId: card.GetId()})
+		})
+	})
 	return true
 }
