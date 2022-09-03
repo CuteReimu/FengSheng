@@ -509,28 +509,26 @@ func (r *HumanPlayer) onSendMessageCard(pb *protos.SendMessageCardTos) {
 		r.logger.Error("目标错误: ", pb.TargetPlayerId)
 		return
 	}
-	if pb.CardDir != card.GetDirection() {
+	if r.FindSkill(SkillIdLianLuo) == nil && pb.CardDir != card.GetDirection() {
 		r.logger.Error("方向错误: ", pb.TargetPlayerId)
 		return
 	}
-	if r.FindSkill(SkillIdMingEr) == nil {
-		var targetLocation int
-		switch pb.CardDir {
-		case protos.Direction_Left:
-			targetLocation = (r.Location() + len(r.GetGame().GetPlayers()) - 1) % len(r.GetGame().GetPlayers())
-			for !r.GetGame().GetPlayers()[targetLocation].IsAlive() {
-				targetLocation = (targetLocation + len(r.GetGame().GetPlayers()) - 1) % len(r.GetGame().GetPlayers())
-			}
-		case protos.Direction_Right:
-			targetLocation = (r.Location() + 1) % len(r.GetGame().GetPlayers())
-			for !r.GetGame().GetPlayers()[targetLocation].IsAlive() {
-				targetLocation++
-			}
+	var targetLocation int
+	switch pb.CardDir {
+	case protos.Direction_Left:
+		targetLocation = (r.Location() + len(r.GetGame().GetPlayers()) - 1) % len(r.GetGame().GetPlayers())
+		for !r.GetGame().GetPlayers()[targetLocation].IsAlive() {
+			targetLocation = (targetLocation + len(r.GetGame().GetPlayers()) - 1) % len(r.GetGame().GetPlayers())
 		}
-		if pb.CardDir != protos.Direction_Up && pb.TargetPlayerId != r.GetAlternativeLocation(targetLocation) {
-			r.logger.Error("不能传给那个人: ", pb.TargetPlayerId)
-			return
+	case protos.Direction_Right:
+		targetLocation = (r.Location() + 1) % len(r.GetGame().GetPlayers())
+		for !r.GetGame().GetPlayers()[targetLocation].IsAlive() {
+			targetLocation++
 		}
+	}
+	if pb.CardDir != protos.Direction_Up && pb.TargetPlayerId != r.GetAlternativeLocation(targetLocation) {
+		r.logger.Error("不能传给那个人: ", pb.TargetPlayerId)
+		return
 	}
 	if card.CanLock() {
 		if len(pb.LockPlayerId) > 1 {
@@ -551,7 +549,7 @@ func (r *HumanPlayer) onSendMessageCard(pb *protos.SendMessageCardTos) {
 			return
 		}
 	}
-	targetLocation := r.GetAbstractLocation(int(pb.TargetPlayerId))
+	targetLocation = r.GetAbstractLocation(int(pb.TargetPlayerId))
 	if !r.GetGame().GetPlayers()[targetLocation].IsAlive() {
 		r.logger.Error("目标已死亡")
 		return
