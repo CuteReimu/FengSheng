@@ -3,6 +3,7 @@ package role
 import (
 	"github.com/CuteReimu/FengSheng/game"
 	"github.com/CuteReimu/FengSheng/protos"
+	"github.com/CuteReimu/FengSheng/utils"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -49,6 +50,10 @@ func (m *MingEr) Execute(g *game.Game) (nextFsm game.Fsm, continueResolve bool, 
 		return nil, false, false
 	}
 	if fsm.WhoseTurn.GetSkillUseCount(m.GetSkillId()) > 0 {
+		return nil, false, false
+	}
+	colors := fsm.MessageCard.GetColors()
+	if !utils.IsColorIn(protos.Color_Red, colors) && !utils.IsColorIn(protos.Color_Blue, colors) {
 		return nil, false, false
 	}
 	fsm.WhoseTurn.AddSkillUseCount(m.GetSkillId())
