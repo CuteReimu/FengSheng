@@ -33,7 +33,7 @@ func (r *HumanPlayer) Init(game *Game, location int, identity protos.Color, secr
 	}
 	l := location
 	for {
-		if l < len(RoleCache) {
+		if l < len(RoleCache) && (RoleCache[l].FaceUp || l == location) {
 			msg.Roles = append(msg.Roles, RoleCache[l].Role)
 		} else {
 			msg.Roles = append(msg.Roles, protos.Role_unknown)
