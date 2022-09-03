@@ -61,7 +61,7 @@ func (e *executeQiHuoKeJu) ResolveProtocol(player game.IPlayer, message proto.Me
 		return e, false
 	}
 	if _, ok := message.(*protos.EndReceivePhaseTos); ok {
-		if player.Location() == e.fsm.WhoseTurn.Location() {
+		if player.Location() == e.fsm.InFrontOfWhom.Location() {
 			player.IncrSeq()
 			return e.fsm, true
 		} else {
