@@ -202,7 +202,7 @@ func (r *RobotPlayer) WaitForDieGiveCard(whoDie IPlayer) {
 										TargetPlayerId: p.GetAlternativeLocation(target.Location()),
 										CardCount:      uint32(len(cards)),
 									}
-									if p.Location() == r.Location() || p.Location() == target.Location() {
+									if p.Location() == target.Location() {
 										for _, card := range cards {
 											msg.Card = append(msg.Card, card.ToPbCard())
 										}
