@@ -383,7 +383,7 @@ func (cw *CheckWinOrDie) Resolve() (next Fsm, continueResolve bool) {
 		declareWinner = []IPlayer{stealer}
 		winner = []IPlayer{stealer}
 	}
-	if declareWinner != nil {
+	if len(declareWinner) > 0 {
 		logger.Info(declareWinner, "宣告胜利，胜利者有", winner)
 		for _, p := range game.GetPlayers() {
 			p.NotifyWin(declareWinner, winner)
