@@ -559,6 +559,14 @@ func (ck *CheckKillerWin) Resolve() (next Fsm, continueResolve bool) {
 			}
 		}
 	}
+	if alivePlayer == nil {
+		// 全部死亡，游戏结束
+		logger.Info("全部死亡，游戏结束")
+		for _, p := range game.GetPlayers() {
+			p.NotifyWin(([]IPlayer)(nil), ([]IPlayer)(nil))
+		}
+		return nil, false
+	}
 	// 只剩1个人存活，游戏结束
 	winner := []IPlayer{alivePlayer}
 	if identity1, _ := alivePlayer.GetIdentity(); identity1 != protos.Color_Black {
