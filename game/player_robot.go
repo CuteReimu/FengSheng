@@ -192,7 +192,7 @@ func (r *RobotPlayer) WaitForDieGiveCard(whoDie IPlayer) {
 							for _, card := range cards {
 								r.DeleteCard(card.GetId())
 							}
-							target := r.GetGame().GetPlayers()[p.Location()]
+							target := p
 							target.AddCards(cards...)
 							logger.Info(r, "给了", target, cards)
 							for _, p := range r.GetGame().GetPlayers() {
