@@ -51,6 +51,7 @@ func (r *HumanPlayer) IncrSeq() {
 	r.Seq++
 	if r.Timer != nil {
 		r.Timer.Stop()
+		r.Timer = nil
 	}
 }
 
