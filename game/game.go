@@ -317,13 +317,12 @@ func (game *Game) ContinueResolve() {
 }
 
 func (game *Game) TryContinueResolveProtocol(player IPlayer, pb proto.Message) {
-	fsm, ok := game.GetFsm().(WaitingFsm)
-	if !ok {
-		logger.Error("时机错误", fsm)
-		return
-	}
 	Post(func() {
-		game.fsm = fsm
+		fsm, ok := game.GetFsm().(WaitingFsm)
+		if !ok {
+			logger.Error("时机错误", fsm)
+			return
+		}
 		var continueResolve bool
 		game.fsm, continueResolve = fsm.ResolveProtocol(player, pb)
 		if continueResolve {
