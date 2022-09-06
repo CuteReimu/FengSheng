@@ -270,7 +270,9 @@ func (game *Game) start() {
 		game.Players[(whoseTurn+i)%len(game.Players)].Draw(config.GetHandCardCountBegin())
 	}
 	time.AfterFunc(time.Second, func() {
-		game.Resolve(&DrawPhase{Player: game.Players[whoseTurn]})
+		Post(func() {
+			game.Resolve(&DrawPhase{Player: game.Players[whoseTurn]})
+		})
 	})
 }
 
