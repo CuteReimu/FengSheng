@@ -48,7 +48,9 @@ func (r *RobotPlayer) NotifyMainPhase(player IPlayer, _ uint32) {
 		}
 	}
 	time.AfterFunc(2*time.Second, func() {
-		r.GetGame().Resolve(&SendPhaseStart{Player: r})
+		Post(func() {
+			r.GetGame().Resolve(&SendPhaseStart{Player: r})
+		})
 	})
 }
 
@@ -119,7 +121,9 @@ func (r *RobotPlayer) NotifyFightPhase(_, _, whoseFightTurn IPlayer, _ ICard, _ 
 		}
 	}
 	time.AfterFunc(2*time.Second, func() {
-		r.GetGame().Resolve(&FightPhaseNext{FightPhase: fsm})
+		Post(func() {
+			r.GetGame().Resolve(&FightPhaseNext{FightPhase: fsm})
+		})
 	})
 }
 
@@ -156,7 +160,9 @@ func (r *RobotPlayer) NotifyAskForChengQing(_ IPlayer, askWhom IPlayer) {
 		return
 	}
 	time.AfterFunc(2*time.Second, func() {
-		r.GetGame().Resolve(&WaitNextForChengQing{WaitForChengQing: fsm})
+		Post(func() {
+			r.GetGame().Resolve(&WaitNextForChengQing{WaitForChengQing: fsm})
+		})
 	})
 }
 
