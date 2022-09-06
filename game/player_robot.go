@@ -60,7 +60,9 @@ func (r *RobotPlayer) NotifySendPhaseStart(IPlayer, uint32) {
 		return
 	}
 	time.AfterFunc(2*time.Second, func() {
-		autoSendMessageCard(r, true)
+		Post(func() {
+			autoSendMessageCard(r, true)
+		})
 	})
 }
 
