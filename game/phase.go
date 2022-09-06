@@ -379,7 +379,7 @@ func (cw *CheckWinOrDie) Resolve() (next Fsm, continueResolve bool) {
 	if blueWin {
 		winner = append(winner, bluePlayers...)
 	}
-	if declareWinner != nil && stealer != nil && cw.WhoseTurn.Location() == stealer.Location() {
+	if len(declareWinner) > 0 && stealer != nil && cw.WhoseTurn.Location() == stealer.Location() {
 		declareWinner = []IPlayer{stealer}
 		winner = []IPlayer{stealer}
 	}
