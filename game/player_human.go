@@ -251,9 +251,11 @@ func (r *HumanPlayer) NotifyReceivePhaseWithWaiting(whoseTurn, inFrontOfWhom IPl
 		msg.Seq = r.Seq
 		seq := r.Seq
 		r.Timer = time.AfterFunc(time.Second*time.Duration(waitSecond+2), func() {
-			if seq == r.Seq {
-				r.GetGame().TryContinueResolveProtocol(r, &protos.EndReceivePhaseTos{Seq: seq})
-			}
+			Post(func() {
+				if seq == r.Seq {
+					r.GetGame().TryContinueResolveProtocol(r, &protos.EndReceivePhaseTos{Seq: seq})
+				}
+			})
 		})
 	}
 	r.Send(msg)

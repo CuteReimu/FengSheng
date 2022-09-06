@@ -83,26 +83,28 @@ func (r *RobotPlayer) NotifySendPhase(whoseTurn, inFrontOfWhom IPlayer, lockedPl
 		}
 	}
 	time.AfterFunc(2*time.Second, func() {
-		colors := messageCard.GetColors()
-		certainlyReceive := isMessageFaceUp && len(colors) == 1 && colors[0] != protos.Color_Black
-		certainlyReject := isMessageFaceUp && len(colors) == 1 && colors[0] == protos.Color_Black
-		if certainlyReceive || func(e int, lockedPlayers []IPlayer) bool {
-			for _, a := range lockedPlayers {
-				if a.Location() == e {
-					return true
+		Post(func() {
+			colors := messageCard.GetColors()
+			certainlyReceive := isMessageFaceUp && len(colors) == 1 && colors[0] != protos.Color_Black
+			certainlyReject := isMessageFaceUp && len(colors) == 1 && colors[0] == protos.Color_Black
+			if certainlyReceive || func(e int, lockedPlayers []IPlayer) bool {
+				for _, a := range lockedPlayers {
+					if a.Location() == e {
+						return true
+					}
 				}
+				return false
+			}(r.Location(), lockedPlayers) || r.Location() == whoseTurn.Location() || (!certainlyReject && utils.Random.Intn((len(r.GetGame().GetPlayers())-1)*2) == 0) {
+				r.GetGame().Resolve(&OnChooseReceiveCard{
+					WhoseTurn:           whoseTurn,
+					MessageCard:         messageCard,
+					InFrontOfWhom:       inFrontOfWhom,
+					IsMessageCardFaceUp: isMessageFaceUp,
+				})
+			} else {
+				r.GetGame().Resolve(&MessageMoveNext{SendPhase: fsm})
 			}
-			return false
-		}(r.Location(), lockedPlayers) || r.Location() == whoseTurn.Location() || (!certainlyReject && utils.Random.Intn((len(r.GetGame().GetPlayers())-1)*2) == 0) {
-			r.GetGame().Resolve(&OnChooseReceiveCard{
-				WhoseTurn:           whoseTurn,
-				MessageCard:         messageCard,
-				InFrontOfWhom:       inFrontOfWhom,
-				IsMessageCardFaceUp: isMessageFaceUp,
-			})
-		} else {
-			r.GetGame().Resolve(&MessageMoveNext{SendPhase: fsm})
-		}
+		})
 	})
 }
 
