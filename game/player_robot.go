@@ -177,9 +177,6 @@ func (r *RobotPlayer) WaitForDieGiveCard(whoDie IPlayer) {
 	}
 	time.AfterFunc(2*time.Second, func() {
 		Post(func() {
-			if r.Location() != whoDie.Location() {
-				return
-			}
 			identity1, _ := r.GetIdentity()
 			if identity1 != protos.Color_Black {
 				for _, p := range r.GetGame().GetPlayers() {
