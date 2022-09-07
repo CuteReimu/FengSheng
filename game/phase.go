@@ -85,6 +85,7 @@ func (sp *SendPhaseStart) Resolve() (next Fsm, continueResolve bool) {
 			logger.Info(sp.Player, "没有情报可传，输掉了游戏")
 			game.GetDeck().Discard(sp.Player.DeleteAllMessageCards()...)
 			sp.Player.SetLose(true)
+			sp.Player.SetAlive(false)
 			for _, p := range game.GetPlayers() {
 				p.NotifyDie(sp.Player.Location(), true)
 			}
