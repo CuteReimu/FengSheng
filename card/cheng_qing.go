@@ -32,6 +32,9 @@ func (card *ChengQing) CanUse(g *game.Game, r game.IPlayer, args ...interface{})
 			logger.Error("澄清的使用时机不对")
 			return false
 		}
+	default:
+		logger.Error("澄清的使用时机不对")
+		return false
 	}
 	if !target.IsAlive() {
 		logger.Error("目标已死亡")
