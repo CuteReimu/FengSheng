@@ -21,7 +21,7 @@ func chengQing(e *game.MainPhaseIdle, card game.ICard) bool {
 	var playerAndCards []playerAndCard
 	identity1, _ := player.GetIdentity()
 	for _, p := range player.GetGame().GetPlayers() {
-		if identity2, _ := p.GetIdentity(); (identity1 == protos.Color_Black || identity1 == identity2) && p.IsAlive() {
+		if identity2, _ := p.GetIdentity(); (p.Location() == player.Location() || identity1 != protos.Color_Black && identity1 == identity2) && p.IsAlive() {
 			for _, c := range p.GetMessageCards() {
 				if utils.IsColorIn(protos.Color_Black, c.GetColors()) {
 					playerAndCards = append(playerAndCards, playerAndCard{p, c})
