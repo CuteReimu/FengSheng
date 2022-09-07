@@ -13,20 +13,10 @@ func init() {
 
 func pingHeng(e *game.MainPhaseIdle, card game.ICard) bool {
 	player := e.Player
-	chooseHuman := utils.Random.Intn(2) == 0
 	var players []game.IPlayer
 	for _, p := range player.GetGame().GetPlayers() {
-		if p.Location() != player.Location() && p.IsAlive() {
-			if _, ok := p.(*game.HumanPlayer); ok == chooseHuman {
-				players = append(players, p)
-			}
-		}
-	}
-	if len(players) == 0 {
-		for _, p := range player.GetGame().GetPlayers() {
-			if p.Location() != player.Location() && p.IsAlive() {
-				players = append(players, p)
-			}
+		if p.IsAlive() {
+			players = append(players, p)
 		}
 	}
 	if len(players) == 0 {
