@@ -24,7 +24,7 @@ func (card *WeiBi) CanUse(g *game.Game, r game.IPlayer, args ...interface{}) boo
 	target := args[0].(game.IPlayer)
 	wantType := args[1].(protos.CardType)
 	fsm, ok := g.GetFsm().(*game.MainPhaseIdle)
-	if !ok && r.Location() != fsm.Player.Location() {
+	if !ok || r.Location() != fsm.Player.Location() {
 		logger.Error("威逼的使用时机不对")
 		return false
 	}
@@ -40,6 +40,7 @@ func (card *WeiBi) CanUse(g *game.Game, r game.IPlayer, args ...interface{}) boo
 	case protos.CardType_Cheng_Qing, protos.CardType_Jie_Huo, protos.CardType_Diao_Bao, protos.CardType_Wu_Dao:
 	default:
 		logger.Error("威逼选择的卡牌类型错误：", protos.CardType_name[int32(wantType)])
+		return false
 	}
 	return true
 }
@@ -120,10 +121,7 @@ func (e *executeWeiBi) Resolve() (next game.Fsm, continueResolve bool) {
 				player.Timer = time.AfterFunc(time.Second*time.Duration(msg.WaitingSecond+2), func() {
 					game.Post(func() {
 						if player.Seq == seq {
-							player.Seq++
-							if player.Timer != nil {
-								player.Timer.Stop()
-							}
+							player.IncrSeq()
 							e.autoSelect()
 							g.Resolve(&game.MainPhaseIdle{Player: e.player})
 						}

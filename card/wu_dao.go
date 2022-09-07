@@ -18,9 +18,8 @@ func (card *WuDao) GetType() protos.CardType {
 	return protos.CardType_Wu_Dao
 }
 
-func (card *WuDao) CanUse(g *game.Game, r game.IPlayer, args ...interface{}) bool {
+func (card *WuDao) CanUse(g *game.Game, _ game.IPlayer, args ...interface{}) bool {
 	target := args[0].(game.IPlayer)
-	logger.Info(r, "对", target, "使用了", card)
 	fsm, ok := g.GetFsm().(*game.FightPhaseIdle)
 	if !ok {
 		logger.Error("误导的使用时机不对")

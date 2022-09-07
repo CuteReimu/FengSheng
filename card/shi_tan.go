@@ -104,10 +104,7 @@ func (e *executeShiTan) Resolve() (next game.Fsm, continueResolve bool) {
 				player.Timer = time.AfterFunc(time.Second*time.Duration(msg.WaitingSecond+2), func() {
 					game.Post(func() {
 						if player.Seq == seq {
-							player.Seq++
-							if player.Timer != nil {
-								player.Timer.Stop()
-							}
+							player.IncrSeq()
 							e.autoSelect()
 							g.Resolve(&game.MainPhaseIdle{Player: e.player})
 						}
