@@ -512,7 +512,7 @@ func (r *HumanPlayer) onSendMessageCard(pb *protos.SendMessageCardTos) {
 		return
 	}
 	if r.FindSkill(SkillIdLianLuo) == nil && pb.CardDir != card.GetDirection() {
-		r.logger.Error("方向错误: ", pb.TargetPlayerId)
+		r.logger.Error("方向错误: ", pb.CardDir)
 		return
 	}
 	var targetLocation int
@@ -634,7 +634,7 @@ func (r *HumanPlayer) onChengQingSaveDie(pb *protos.ChengQingSaveDieTos) {
 		return
 	}
 	fsm, ok := r.GetGame().GetFsm().(*WaitForChengQing)
-	if !ok {
+	if !ok || r.location != fsm.AskWhom.Location() {
 		r.logger.Error("现在不是使用澄清的时机")
 		return
 	}
@@ -703,12 +703,13 @@ func (r *HumanPlayer) onDieGiveCard(pb *protos.DieGiveCardTos) {
 			msg := &protos.NotifyDieGiveCardToc{
 				PlayerId:       p.GetAlternativeLocation(r.Location()),
 				TargetPlayerId: p.GetAlternativeLocation(target.Location()),
-				CardCount:      uint32(len(cards)),
 			}
 			if p.Location() == r.Location() || p.Location() == target.Location() {
 				for _, card := range cards {
 					msg.Card = append(msg.Card, card.ToPbCard())
 				}
+			} else {
+				msg.CardCount = uint32(len(cards))
 			}
 			player.Send(msg)
 		}
