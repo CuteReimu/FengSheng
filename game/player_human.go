@@ -321,7 +321,6 @@ func (r *HumanPlayer) WaitForDieGiveCard(whoDie IPlayer) {
 	msg := &protos.WaitForDieGiveCardToc{
 		PlayerId:      r.GetAlternativeLocation(whoDie.Location()),
 		WaitingSecond: 30,
-		Seq:           r.Seq,
 	}
 	if whoDie.Location() == r.Location() {
 		msg.Seq = r.Seq
