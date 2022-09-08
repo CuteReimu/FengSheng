@@ -60,7 +60,11 @@ func (e *executeQiHuoKeJu) ResolveProtocol(player game.IPlayer, message proto.Me
 		logger.Error("不是你发技能的时机")
 		return e, false
 	}
-	if _, ok := message.(*protos.EndReceivePhaseTos); ok {
+	if pb, ok := message.(*protos.EndReceivePhaseTos); ok {
+		if r, ok := player.(*game.HumanPlayer); ok && r.Seq != pb.Seq {
+			logger.Error("操作太晚了, required Seq: ", r.Seq, ", actual Seq: ", pb.Seq)
+			return e, false
+		}
 		if player.Location() == e.fsm.InFrontOfWhom.Location() {
 			player.IncrSeq()
 			return e.fsm, true
