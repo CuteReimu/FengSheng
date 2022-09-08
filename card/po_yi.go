@@ -69,7 +69,17 @@ func (e *executePoYi) Resolve() (next game.Fsm, continueResolve bool) {
 			if p.Location() == r.Location() {
 				msg.MessageCard = e.sendPhase.MessageCard.ToPbCard()
 				msg.WaitingSecond = 20
+				seq := p.Seq
 				msg.Seq = p.Seq
+				time.AfterFunc(time.Second*time.Duration(msg.WaitingSecond+2), func() {
+					game.Post(func() {
+						if seq == p.Seq {
+							p.IncrSeq()
+							e.showAndDrawCard(false)
+							p.GetGame().Resolve(e.sendPhase)
+						}
+					})
+				})
 			}
 			p.Send(msg)
 		}
