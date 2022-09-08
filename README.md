@@ -1,5 +1,7 @@
 # FengSheng
 
+本项目已转移至 https://github.com/CuteReimu/TheMessage
+
 ## 声明
 
 - **本项目采用`AGPLv3`协议开源，任何直接、间接接触本项目的软件也要求使用`AGPLv3`协议开源**
